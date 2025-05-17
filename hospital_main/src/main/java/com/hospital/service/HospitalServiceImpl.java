@@ -26,7 +26,7 @@ public class HospitalServiceImpl implements HospitalService {
     }
 
     @Override
-    public List<HospitalDTO> getHospitals(String sub, double userLat, double userLng, double radius, String emergencyRoomInfo, Integer parkingInfo) {
+    public List<HospitalDTO> getHospitals(String sub, double userLat, double userLng, double radius, Boolean emergencyRoomInfo, Boolean parkingInfo) {
 
         List<HospitalEntity> hospitalEntities = HospitalRepository.getAllHospitals(sub);
 

@@ -103,18 +103,20 @@ public class HospitalEntity {
     }
 
     // 도메인 로직: 응급실 가능 여부 확인
-    public boolean isEmergencyAvailable(String emergencyRoomInfo) {
-        if (emergencyRoomInfo == null || emergencyRoomInfo.isEmpty() || emergencyRoomInfo.equals("0")) {
-            return true; // 필터링 안 함
+    public boolean isEmergencyAvailable(Boolean emergencyRoomInfo) {
+        // true일 때만 필터링 적용
+        if (Boolean.TRUE.equals(emergencyRoomInfo)) {
+            return "Y".equals(this.emergencyAvailable);
         }
-        return "1".equals(emergencyRoomInfo) && !"N".equals(this.emergencyAvailable);
+        return true;
     }
 
     // 도메인 로직: 주차 가능 여부 확인
-    public boolean isParkingAvailable(Integer parkingInfo) {
-        if (parkingInfo == null || parkingInfo == 0) {
-            return true; // 필터링 안 함
+    public boolean isParkingAvailable(Boolean parkingInfo) {
+        // true일 때만 필터링 적용
+        if (Boolean.TRUE.equals(parkingInfo)) {
+            return this.parkAvailable != null && this.parkAvailable != 0;
         }
-        return parkingInfo == 1 && this.parkAvailable != null && this.parkAvailable != 0;
+        return true;
     }
 }
