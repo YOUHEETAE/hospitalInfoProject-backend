@@ -2,6 +2,9 @@ package com.hospital.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Table;
 
@@ -103,20 +106,22 @@ public class HospitalEntity {
     }
 
     // 도메인 로직: 응급실 가능 여부 확인
-    public boolean isEmergencyAvailable(Boolean emergencyRoomInfo) {
-        // true일 때만 필터링 적용
-        if (Boolean.TRUE.equals(emergencyRoomInfo)) {
-            return "Y".equals(this.emergencyAvailable);
+    public boolean matchesTags(List<String> tags) {
+        if (tags == null || tags.isEmpty()) {
+            return true; // 태그가 없으면 필터링 안 함
         }
-        return true;
+
+        for (String tag : tags) {
+            if ("응급실".equals(tag) && !"Y".equals(this.emergencyAvailable)) {
+                return false; // 응급실 필터링 조건에 안 맞으면 제외
+            }
+            if ("주차가능".equals(tag) && (this.parkAvailable == null || this.parkAvailable == 0)) {
+                return false; // 주차 가능 조건에 안 맞으면 제외
+            }
+            // 필요하면 추가 태그 조건도 여기 추가 가능
+        }
+
+        return true; // 모든 태그 조건을 만족하면 포함
     }
 
-    // 도메인 로직: 주차 가능 여부 확인
-    public boolean isParkingAvailable(Boolean parkingInfo) {
-        // true일 때만 필터링 적용
-        if (Boolean.TRUE.equals(parkingInfo)) {
-            return this.parkAvailable != null && this.parkAvailable != 0;
-        }
-        return true;
-    }
 }

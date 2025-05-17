@@ -26,13 +26,12 @@ public class HospitalServiceImpl implements HospitalService {
     }
 
     @Override
-    public List<HospitalDTO> getHospitals(String sub, double userLat, double userLng, double radius, Boolean emergencyRoomInfo, Boolean parkingInfo) {
+    public List<HospitalDTO> getHospitals(String sub, double userLat, double userLng, double radius, List<String> tags) {
 
         List<HospitalEntity> hospitalEntities = HospitalRepository.getAllHospitals(sub);
 
         List<HospitalDTO> hospitals = hospitalEntities.stream()        
-                .filter(hospitalEntity -> hospitalEntity.isEmergencyAvailable(emergencyRoomInfo))
-                .filter(hospitalEntity -> hospitalEntity.isParkingAvailable(parkingInfo))
+                .filter(hospitalEntity -> hospitalEntity.matchesTags(tags))
                 .map(HospitalConverter::convertToDTO) // HospitalEntity를 HospitalDTO로 변환
                 .filter(hospital -> hospitalFilter.filterByDistance(hospital, userLat, userLng, radius))
                 .collect(Collectors.toList());

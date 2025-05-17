@@ -27,9 +27,8 @@ public class MapController {
     
     @GetMapping("/mapData")
     public List<HospitalDTO> getHospitals(@RequestParam String sub, @RequestParam double userLat, 
-    		                              @RequestParam double userLng ,@RequestParam double radius,  
-    		                              @RequestParam(required = false) Boolean emergencyRoomInfo, 
-    		                              @RequestParam(required = false) Boolean parkingInfo) {
-        return hospitalService.getHospitals(sub, userLat, userLng, radius, emergencyRoomInfo, parkingInfo); // 서비스에서 병원 데이터 가져오기
+    		                              @RequestParam double userLng ,@RequestParam double radius,      		                              
+    		                              @RequestParam(required = false) List<String> tags) {
+        return hospitalService.getHospitals(sub, userLat, userLng, radius, tags); // 서비스에서 병원 데이터 가져오기
     }
 }
