@@ -20,6 +20,7 @@ public class HospitalEntityRowMapper implements RowMapper<HospitalEntity> {
         hospitalEntity.setCoordinateY(rs.getDouble("coordinate_y"));
         hospitalEntity.setEmergencyAvailable(rs.getString("emergency_available"));
         hospitalEntity.setParkAvailable(rs.getInt("park_available"));
+        hospitalEntity.setProDoc(rs.getInt("pro_doc"));
         return hospitalEntity;
     }
 }

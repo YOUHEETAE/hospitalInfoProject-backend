@@ -12,7 +12,8 @@ public class HospitalConverter {
                 hospitalEntity.getCoordinateX(),
                 hospitalEntity.getCoordinateY(),
                 hospitalEntity.getEmergencyAvailable(),
-                hospitalEntity.getParkAvailable()
+                hospitalEntity.getParkAvailable(),
+                hospitalEntity.getProDoc()
         );
     }
 

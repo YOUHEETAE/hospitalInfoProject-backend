@@ -10,10 +10,12 @@ public class HospitalDTO {
     private double coordinateY;
     private String emergency_available;
     private Integer park_available;
+    private Integer pro_doc;
 
     public HospitalDTO() {}
 
-    public HospitalDTO(String hospital_name, String medical_subject,String hospital_address, double coordinateX, double coordinateY, String emergency_available, Integer park_available) {
+    public HospitalDTO(String hospital_name, String medical_subject,String hospital_address, double coordinateX, 
+    		double coordinateY, String emergency_available, Integer park_available, Integer pro_doc) {
     	this.hospital_name = hospital_name;
     	this.medical_subject = medical_subject;
     	this.hospital_address = hospital_address;
@@ -21,6 +23,7 @@ public class HospitalDTO {
         this.coordinateY = coordinateY;
         this.emergency_available = emergency_available;
         this.park_available = park_available;
+        this.pro_doc = pro_doc;
     }
     public String getHospitalAddress() {
         return hospital_address;
@@ -73,6 +76,14 @@ public class HospitalDTO {
 
     public void setPark_available(Integer park_available) {
         this.park_available = park_available;
+    }
+    
+    public int getPro_doc() {
+    	return pro_doc;
+    }
+    
+    public void setPro_doc(Integer pro_doc) {
+    	this.pro_doc = pro_doc;
     }
     
 }

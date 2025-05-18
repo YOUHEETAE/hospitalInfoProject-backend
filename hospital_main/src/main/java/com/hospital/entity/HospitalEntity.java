@@ -36,6 +36,9 @@ public class HospitalEntity {
 
     @Column(name = "park_available")
     private Integer parkAvailable;
+    
+    @Column(name = "pro_doc")
+    private Integer proDoc;
 
     // 생성자
     public HospitalEntity() {}
@@ -104,6 +107,14 @@ public class HospitalEntity {
     public void setParkAvailable(Integer parkAvailable) {
         this.parkAvailable = parkAvailable;
     }
+    
+    public Integer getProDoc() {
+    	return proDoc;
+    }
+    
+    public void setProDoc(Integer proDoc) {
+    	this.proDoc = proDoc;    
+    }
 
     // 도메인 로직: 응급실 가능 여부 확인
     public boolean matchesTags(List<String> tags) {
@@ -118,7 +129,9 @@ public class HospitalEntity {
             if ("주차가능".equals(tag) && (this.parkAvailable == null || this.parkAvailable == 0)) {
                 return false; // 주차 가능 조건에 안 맞으면 제외
             }
-            // 필요하면 추가 태그 조건도 여기 추가 가능
+            if ("전문의".equals(tag) && (this.proDoc == null || this.proDoc == 0)) {
+            	return false;
+            }
         }
 
         return true; // 모든 태그 조건을 만족하면 포함
