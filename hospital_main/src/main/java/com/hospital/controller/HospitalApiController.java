@@ -1,25 +1,26 @@
 package com.hospital.controller;
 
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.hospital.service.HospitalApiService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/hospital")
 public class HospitalApiController {
 
-    private static final Logger logger = LoggerFactory.getLogger(HospitalApiController.class);
+    private final HospitalApiService hospitalApiService;
 
-    @Autowired
-    private HospitalApiService hospitalApiService;
+    public HospitalApiController(HospitalApiService hospitalApiService) {
+        this.hospitalApiService = hospitalApiService;
+    }
 
-    @GetMapping("/list")
-    public String getHospitalData() {
-        logger.info("Received request for /api/hospital/list");
-        String result = hospitalApiService.fetchHospitalData();
-        logger.info("Response from HospitalApiService: {}", result);
-        return result;
+    @GetMapping(value = "apiData", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<String> getHospitalsJson() {
+        // 서비스에서 고정된 시군구코드로 API 호출 후 JSON 리스트를 받아옴
+        List<String> jsonResults = hospitalApiService.fetchAllHospitals();
+        return jsonResults;
     }
 }
