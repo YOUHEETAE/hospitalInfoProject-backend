@@ -31,8 +31,8 @@ public class HospitalApiService {
     // @Autowired 어노테이션은 생성자가 하나일 경우 생략 가능하지만 명시적으로 두어도 무방합니다.
     public HospitalApiService(HospitalApiRepository hospitalApiRepository) {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(10000); // 연결 타임아웃 10초 (10000ms)
-        factory.setReadTimeout(30000);    // 읽기 타임아웃 30초 (30000ms)
+        factory.setConnectTimeout(15000); // 연결 타임아웃 10초 (10000ms)
+        factory.setReadTimeout(60000);    // 읽기 타임아웃 30초 (30000ms)
         this.restTemplate = new RestTemplate(factory); // RestTemplate 객체를 생성자 내에서 직접 생성
 
         this.objectMapper = new ObjectMapper(); // ObjectMapper 객체를 생성자 내에서 직접 생성
@@ -129,6 +129,7 @@ public class HospitalApiService {
                         } else {
                             hasMorePages = false; // 더 이상 가져올 데이터가 없거나 마지막 페이지
                         }
+                        Thread.sleep(500);
 
                     } else {
                  
