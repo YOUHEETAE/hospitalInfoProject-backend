@@ -1,12 +1,15 @@
 package com.hospital.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.hospital.entity.Hospital;
 import com.hospital.entity.HospitalApiEntity;
-import com.hospital.repository.HospitalApiRepository;
+import com.hospital.entity.HospitalEntity;
+import com.hospital.repository.HospitalMainRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -19,24 +22,25 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.springframework.transaction.annotation.Transactional;
+
 
 @Service
-public class HospitalApiService {
+public class HospitalMainServiceImpl implements HospitalMainService{
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
-    private final HospitalApiRepository hospitalApiRepository;
+    private final HospitalMainRepository hospitalMainRepository;
 
     // @Autowired 어노테이션은 생성자가 하나일 경우 생략 가능하지만 명시적으로 두어도 무방합니다.
-    public HospitalApiService(HospitalApiRepository hospitalApiRepository) {
+    public HospitalMainServiceImpl(HospitalMainRepository hospitalMainRepository) {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(15000); // 연결 타임아웃 10초 (10000ms)
         factory.setReadTimeout(60000);    // 읽기 타임아웃 30초 (30000ms)
         this.restTemplate = new RestTemplate(factory); // RestTemplate 객체를 생성자 내에서 직접 생성
 
         this.objectMapper = new ObjectMapper(); // ObjectMapper 객체를 생성자 내에서 직접 생성
-        this.hospitalApiRepository = hospitalApiRepository;
+        this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        this.hospitalMainRepository = hospitalMainRepository;
     }
 
     // 서비스 키와 기본 URL은 필드 초기화로 처리
@@ -53,10 +57,10 @@ public class HospitalApiService {
     public int fetchParseAndSaveHospitals() {
         System.out.println("Starting to fetch, parse, and save hospitals to DB...");
         int totalSavedOrUpdatedCount = 0;
-        List<HospitalApiEntity> allHospitalsToSave = new ArrayList<>(); // 모든 시군구의 병원을 담을 리스트
+        List<Hospital> allHospitalsToSave = new ArrayList<>(); // 모든 시군구의 병원을 담을 리스트
 
         // 테이블 생성 (이미 있으면 스킵). ykiho UNIQUE 제약조건 추가 로직 포함되어야 함.
-        hospitalApiRepository.createHospitalTable();
+        hospitalMainRepository.createHospitalTable();
 
         for (String sgguCd : sigunguCodes) {
             System.out.println("Processing sigunguCode: " + sgguCd);
@@ -100,16 +104,16 @@ public class HospitalApiService {
                     JsonNode itemsNode = bodyNode.path("items").path("item");
                     int totalCount = bodyNode.path("totalCount").asInt(0); // 총 데이터 수
 
-                    List<HospitalApiEntity> currentBatch = new ArrayList<>();
+                    List<Hospital> currentBatch = new ArrayList<>();
 
                     if (itemsNode.isArray()) {
                         for (JsonNode itemNode : itemsNode) {
-                            HospitalApiEntity hospital = objectMapper.treeToValue(itemNode, HospitalApiEntity.class);
+                            Hospital hospital = objectMapper.treeToValue(itemNode, Hospital.class);
                             currentBatch.add(hospital);
                         }
                     } else if (itemsNode.isObject() && !itemsNode.isMissingNode()) {
                         // 결과가 단일 객체일 경우 (item이 1개일 때)
-                        HospitalApiEntity hospital = objectMapper.treeToValue(itemsNode, HospitalApiEntity.class);
+                        Hospital hospital = objectMapper.treeToValue(itemsNode, Hospital.class);
                         currentBatch.add(hospital);
                     }
                     // else if (itemsNode.isMissingNode()) { // items 노드가 없는 경우 (데이터 없음)
@@ -158,7 +162,7 @@ public class HospitalApiService {
         if (!allHospitalsToSave.isEmpty()) {
             try {
              
-                int[] savedRows = hospitalApiRepository.insertHospitals(allHospitalsToSave);
+                int[] savedRows = hospitalMainRepository.insertHospitals(allHospitalsToSave);
                 totalSavedOrUpdatedCount = Arrays.stream(savedRows).sum(); // 실제로 삽입/업데이트된 레코드 수
                 System.out.println("Successfully saved or updated " + totalSavedOrUpdatedCount + " hospitals into DB.");
             } catch (Exception e) {
@@ -175,7 +179,7 @@ public class HospitalApiService {
 
 
     
-    public List<HospitalApiEntity> getAllHospitals() {
-        return hospitalApiRepository.findAllHospitals();
+    public List<Hospital> getAllHospitals() {
+        return hospitalMainRepository.findAllHospitals();
     }
 }
