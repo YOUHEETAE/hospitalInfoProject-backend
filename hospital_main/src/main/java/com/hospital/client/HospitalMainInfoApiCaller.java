@@ -1,24 +1,26 @@
+
 package com.hospital.client;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder; // URL 빌더 사용
-import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import com.hospital.dto.HospitalMainApiResponse; 
+
 import java.net.URI;
-import java.io.UnsupportedEncodingException; // URLEncoder.encode 사용 시 필요
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-@Component // 이 클래스를 Spring 빈으로 등록합니다.
+@Component
 public class HospitalMainInfoApiCaller {
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
-
 
     @Value("${api.data.go.kr.base-url}")
     private String baseUrl;
@@ -31,8 +33,8 @@ public class HospitalMainInfoApiCaller {
         this.objectMapper = objectMapper;
     }
 
-  
-    public JsonNode callApi(String apiPath, String queryParams) {
+
+    public HospitalMainApiResponse callApi(String apiPath, String queryParams) {
         String encodedServiceKey;
         try {
             encodedServiceKey = URLEncoder.encode(serviceKey, StandardCharsets.UTF_8.toString());
@@ -42,9 +44,9 @@ public class HospitalMainInfoApiCaller {
 
         URI uri = UriComponentsBuilder.fromUriString(baseUrl + apiPath)
                                      .query(queryParams)
-                                     .queryParam("serviceKey", encodedServiceKey) // 서비스 키 추가
-                                     .queryParam("_type", "json") // 응답 타입을 JSON으로 강제
-                                     .build(true) // 인코딩된 쿼리 파라미터를 허용합니다.
+                                     .queryParam("serviceKey", encodedServiceKey)
+                                     .queryParam("_type", "json")
+                                     .build(true)
                                      .toUri();
 
         String responseJson;
@@ -53,14 +55,15 @@ public class HospitalMainInfoApiCaller {
         } catch (Exception e) {
             throw new RuntimeException("API 호출 중 오류 발생: " + uri.toString() + ", " + e.getMessage(), e);
         }
-        JsonNode rootNode = null;
 
-        // API 응답의 resultCode 검사 (여기서 처리)
+        HospitalMainApiResponse apiResponseDto; // ★★★ DTO 객체 선언 ★★★
         try {
-        	rootNode = objectMapper.readTree(responseJson);
-            JsonNode headerNode = rootNode.path("response").path("header");
-            String resultCode = headerNode.path("resultCode").asText();
-            String resultMsg = headerNode.path("resultMsg").asText();
+            // ★★★ JSON 문자열을 DTO 객체로 직접 매핑 ★★★
+            apiResponseDto = objectMapper.readValue(responseJson, HospitalMainApiResponse.class);
+
+            // resultCode 검사도 DTO 객체를 통해 수행
+            String resultCode = apiResponseDto.getResponse().getHeader().getResultCode();
+            String resultMsg = apiResponseDto.getResponse().getHeader().getResultMsg();
 
             if (!"00".equals(resultCode)) {
                 throw new RuntimeException("API 응답 오류: " + resultCode + " - " + resultMsg + " (URL: " + uri.toString() + ")");
@@ -68,7 +71,7 @@ public class HospitalMainInfoApiCaller {
         } catch (JsonProcessingException e) {
             throw new RuntimeException("API 응답 JSON 파싱 오류: " + e.getMessage() + " (응답: " + responseJson + ")", e);
         }
-        return rootNode;
+
+        return apiResponseDto; // ★★★ DTO 객체 반환 ★★★
     }
-    
 }

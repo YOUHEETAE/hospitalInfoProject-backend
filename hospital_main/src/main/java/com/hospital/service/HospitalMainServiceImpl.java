@@ -1,41 +1,38 @@
+
 package com.hospital.service;
 
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hospital.entity.Hospital;
 import com.hospital.repository.HospitalMainRepository;
-import com.hospital.client.HospitalMainInfoApiCaller; 
+import com.hospital.client.HospitalMainInfoApiCaller;
 
 import org.springframework.stereotype.Service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import com.hospital.parser.HospitalMainInfoApiParser;
-
+import com.hospital.dto.HospitalMainApiResponse;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class HospitalMainServiceImpl implements HospitalMainService {
 
-   
-    
     private final HospitalMainRepository hospitalMainRepository;
-    private final HospitalMainInfoApiCaller hospitalMainInfoApiCaller; // 여기에 `final` 키워드를 추가합니다.
-    private final HospitalMainInfoApiParser  hospitalMainInfoApiParser;
+    private final HospitalMainInfoApiCaller hospitalMainInfoApiCaller;
+    private final HospitalMainInfoApiParser hospitalMainInfoApiParser;
 
     @Autowired
-    public HospitalMainServiceImpl(HospitalMainRepository hospitalMainRepository, HospitalMainInfoApiCaller hospitalMainInfoApiCaller, HospitalMainInfoApiParser hospitalMainInfoApiParser) { // HospitalMainInfoApiCaller 주입
+    public HospitalMainServiceImpl(HospitalMainRepository hospitalMainRepository, HospitalMainInfoApiCaller hospitalMainInfoApiCaller, HospitalMainInfoApiParser hospitalMainInfoApiParser) {
         this.hospitalMainRepository = hospitalMainRepository;
         this.hospitalMainInfoApiCaller = hospitalMainInfoApiCaller;
         this.hospitalMainInfoApiParser = hospitalMainInfoApiParser;
     }
-
-   
 
     private final List<String> sigunguCodes = Arrays.asList("310401", "310402", "310403");
 
@@ -62,38 +59,43 @@ public class HospitalMainServiceImpl implements HospitalMainService {
                     break;
                 }
 
-                // API 호출 로직을 HospitalMainInfoApiCaller에게 위임합니다.
                 String apiPath = "hospInfoServicev2/getHospBasisList";
                 String queryParams = String.format("pageNo=%d&numOfRows=%d&sgguCd=%s",
                                                   pageNo, numOfRows, encodedSgguCd);
 
                 try {
-                	JsonNode rootNode = hospitalMainInfoApiCaller.callApi(apiPath, queryParams);
-                	
-                	List<Hospital> currentBatch = hospitalMainInfoApiParser.parseHospitals(rootNode);
+                    // ★★★ API Caller의 반환 타입 변경에 맞춰 수정 ★★★
+                    HospitalMainApiResponse apiResponseDto = hospitalMainInfoApiCaller.callApi(apiPath, queryParams);
 
-                    int totalCount = rootNode.path("response").path("body").path("totalCount").asInt(0);
+                    // ★★★ Parser에게 DTO 객체를 넘겨줌 ★★★
+                    List<Hospital> currentBatch = hospitalMainInfoApiParser.parseHospitals(apiResponseDto);
+
+                    // ★★★ totalCount도 DTO 객체를 통해 접근 ★★★
+                    // Optional을 사용하여 null-safe하게 접근
+                    int totalCount = Optional.ofNullable(apiResponseDto)
+                                             .map(HospitalMainApiResponse::getResponse)
+                                             .map(HospitalMainApiResponse.Response::getBody)
+                                             .map(HospitalMainApiResponse.Body::getTotalCount)
+                                             .orElse(0); // totalCount가 없을 경우 0으로 기본값 설정
 
                     if (!currentBatch.isEmpty()) {
                         allHospitalsToSave.addAll(currentBatch);
                         currentPageFetchedCount += currentBatch.size();
                         System.out.println("Sigungu " + sgguCd + ", Page " + pageNo + ": Fetched " + currentBatch.size() + " hospitals. Total fetched for sigungu: " + currentPageFetchedCount);
 
+                        // 페이징 로직 개선: 현재 배치 사이즈가 numOfRows와 같고, 아직 총 개수에 도달하지 않았으면 다음 페이지로
                         if (currentPageFetchedCount < totalCount && currentBatch.size() == numOfRows) {
                             pageNo++;
                         } else {
                             hasMorePages = false;
                         }
-                        Thread.sleep(500);
+                        Thread.sleep(500); // 과도한 API 호출 방지를 위해 잠시 대기
 
                     } else {
                         hasMorePages = false;
                         System.out.println("Sigungu " + sgguCd + ", Page " + pageNo + ": No more data found.");
                     }
 
-                } catch (JsonProcessingException e) {
-                    System.err.println("JSON 파싱 오류 (JsonProcessingException) for sigunguCode " + sgguCd + ", page " + pageNo + ": " + e.getMessage());
-                    hasMorePages = false;
                 } catch (RuntimeException e) {
                     System.err.println("API 호출 또는 응답 처리 중 오류 발생 for sigunguCode " + sgguCd + ", page " + pageNo + ": " + e.getMessage());
                     e.printStackTrace();

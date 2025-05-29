@@ -1,40 +1,55 @@
-package com.hospital.parser; // 요청하신 패키지
 
-import com.fasterxml.jackson.databind.JsonNode;
+package com.hospital.parser;
+
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.JsonProcessingException; // 예외 처리를 위해 필요
-import com.hospital.entity.Hospital; 
-import org.springframework.stereotype.Component; // 스프링 빈으로 등록하기 위해 필요
+import com.hospital.dto.HospitalMainApiItem; 
+import com.hospital.dto.HospitalMainApiResponse; 
+import com.hospital.entity.Hospital;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional; // Optional 임포트
 
-@Component 
-public class HospitalMainInfoApiParser { // 요청하신 클래스 이름
+@Component
+public class HospitalMainInfoApiParser {
 
-    private final ObjectMapper objectMapper; // JSON 파싱을 위해 필요
+    private final ObjectMapper objectMapper;
 
-   
     public HospitalMainInfoApiParser(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
-    public List<Hospital> parseHospitals(JsonNode rootNode) throws JsonProcessingException {
+    // ★★★ JsonNode에서 HospitalMainApiResponse로 매개변수 타입 변경 ★★★
+    public List<Hospital> parseHospitals(HospitalMainApiResponse apiResponseDto) {
         List<Hospital> hospitals = new ArrayList<>();
-        JsonNode itemsNode = rootNode.path("response").path("body").path("items").path("item");
 
-        if (itemsNode.isArray()) {
-            for (JsonNode itemNode : itemsNode) {
-                // JsonNode를 Hospital 엔티티로 변환
-                Hospital hospital = objectMapper.treeToValue(itemNode, Hospital.class);
-                hospitals.add(hospital);
-            }
-        } else if (itemsNode.isObject() && !itemsNode.isMissingNode()) {
-            // 결과가 단일 객체일 경우 (item이 1개일 때)
-            Hospital hospital = objectMapper.treeToValue(itemsNode, Hospital.class);
-            hospitals.add(hospital);
-        }
-       
+        // API 응답 구조에 따라 items 객체에서 item 리스트를 추출
+        // items가 null이거나 item 리스트가 null일 수 있으므로 Optional로 안전하게 처리
+        Optional.ofNullable(apiResponseDto)
+                .map(HospitalMainApiResponse::getResponse)
+                .map(HospitalMainApiResponse.Response::getBody)
+                .map(HospitalMainApiResponse.Body::getItems)
+                .map(HospitalMainApiResponse.ApiItemsWrapper::getItem)
+                .orElseGet(ArrayList::new) // item 리스트가 없으면 빈 리스트 반환
+                .forEach(itemDto -> {
+                    Hospital hospital = new Hospital();
+                    // HospitalMainApiItem의 필드를 Hospital 엔티티의 필드로 매핑
+                    hospital.setHospitalCode(itemDto.getYkiho());
+                    hospital.setHospitalName(itemDto.getYadmNm());
+                    hospital.setProvinceName(itemDto.getSidoCdNm());
+                    hospital.setDistrictName(itemDto.getSgguCdNm());
+                    hospital.setHospitalAddress(itemDto.getAddr());
+                    hospital.setHospitalTel(itemDto.getTelno());
+                    hospital.setHospitalHomepage(itemDto.getHospUrl());
+                    hospital.setDoctorNum(itemDto.getDrTotCnt());
+                    hospital.setCoordinateX(itemDto.getXPos());
+                    hospital.setCoordinateY(itemDto.getYPos());
+                  
+
+                    hospitals.add(hospital);
+                });
 
         return hospitals;
     }
