@@ -1,4 +1,4 @@
-package com.hospital.dto;
+package com.hospital.dto.web;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

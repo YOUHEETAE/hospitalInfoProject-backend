@@ -2,8 +2,8 @@ package com.hospital.service;
 
 import com.hospital.entity.HospitalEntity;
 import com.hospital.repository.HospitalRepository;
-import com.hospital.dto.HospitalDTO;
 import com.hospital.converter.HospitalConverter;
+import com.hospital.dto.web.HospitalDTO;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

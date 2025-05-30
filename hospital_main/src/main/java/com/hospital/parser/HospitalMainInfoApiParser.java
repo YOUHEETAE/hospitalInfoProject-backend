@@ -3,8 +3,8 @@ package com.hospital.parser;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hospital.dto.HospitalMainApiItem; 
-import com.hospital.dto.HospitalMainApiResponse; 
+import com.hospital.dto.api.HospitalMainApiItem;
+import com.hospital.dto.api.HospitalMainApiResponse;
 import com.hospital.entity.Hospital;
 import org.springframework.stereotype.Component;
 

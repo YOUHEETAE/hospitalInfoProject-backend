@@ -1,6 +1,6 @@
 package com.hospital.controller;
 
-import com.hospital.dto.HospitalDTO;
+import com.hospital.dto.web.HospitalDTO;
 import com.hospital.service.HospitalService;
 import org.springframework.beans.factory.annotation.Autowired;
 

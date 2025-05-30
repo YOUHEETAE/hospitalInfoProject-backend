@@ -7,9 +7,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hospital.dto.api.HospitalMainApiResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
-
-import com.hospital.dto.HospitalMainApiResponse; 
 
 import java.net.URI;
 import java.io.UnsupportedEncodingException;

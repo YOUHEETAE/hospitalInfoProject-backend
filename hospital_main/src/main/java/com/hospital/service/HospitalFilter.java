@@ -3,7 +3,7 @@ package com.hospital.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.hospital.dto.HospitalDTO;
+import com.hospital.dto.web.HospitalDTO;
 import com.hospital.util.DistanceCalculator;
 
 @Component

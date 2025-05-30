@@ -6,12 +6,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hospital.entity.Hospital;
 import com.hospital.repository.HospitalMainRepository;
 import com.hospital.client.HospitalMainInfoApiCaller;
+import com.hospital.dto.api.HospitalMainApiResponse;
 
 import org.springframework.stereotype.Service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import com.hospital.parser.HospitalMainInfoApiParser;
-import com.hospital.dto.HospitalMainApiResponse;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;

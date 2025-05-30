@@ -1,6 +1,6 @@
 package com.hospital.converter;
 
-import com.hospital.dto.HospitalDTO;
+import com.hospital.dto.web.HospitalDTO;
 import com.hospital.entity.HospitalEntity;
 
 public class HospitalConverter {
