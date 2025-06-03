@@ -4,10 +4,9 @@ import com.hospital.entity.Hospital;
 
 import java.util.List;
 
-public interface HospitalMainRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
 
-	int[] insertHospitals(List<Hospital> hospitals);
+public interface HospitalMainRepository extends JpaRepository<Hospital, String>{
 
-	void createHospitalTable();
-    List<Hospital> findAllHospitals(); 
+
 }

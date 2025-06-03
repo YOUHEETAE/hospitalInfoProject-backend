@@ -8,5 +8,7 @@ public interface HospitalMainService {
 	int fetchParseAndSaveHospitals();
 
 	List<Hospital> getAllHospitals();
+	
+	List<String> getAllHospitalCodes();
 
 }

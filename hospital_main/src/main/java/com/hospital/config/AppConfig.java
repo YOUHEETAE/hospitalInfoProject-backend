@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class AppConfig {
 	@Bean
 	public RestTemplate restTemplate() {
+		
 		SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
 		factory.setConnectTimeout(15000);
 		factory.setReadTimeout(60000);

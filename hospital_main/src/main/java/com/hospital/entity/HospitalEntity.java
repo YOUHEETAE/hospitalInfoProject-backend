@@ -8,7 +8,7 @@ import java.util.List;
 import jakarta.persistence.Column;
 import jakarta.persistence.Table;
 
-@Entity
+
 @Table(name = "hospital_main")
 public class HospitalEntity {
 
