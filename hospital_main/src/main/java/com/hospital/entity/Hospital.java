@@ -50,10 +50,10 @@ public class Hospital {
     private int doctorNum;
 
     @Column(name = "coordinate_x") // double 타입은 기본적으로 DB에서 DOUBLE 또는 REAL로 매핑됩니다.
-    private double coordinateX;
+    private Double coordinateX;
 
     @Column(name = "coordinate_y")
-    private double coordinateY;
+    private Double coordinateY;
 
 
 }
