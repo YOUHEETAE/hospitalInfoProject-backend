@@ -176,6 +176,11 @@
 			<artifactId>httpclient5</artifactId>
 			<version>5.2.1</version> <!-- 최신 안정 버전 확인 -->
 		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webflux</artifactId>
+			<version>5.3.29</version> <!-- 또는 사용 중인 스프링 버전 맞게 -->
+		</dependency>
 
 	</dependencies>
 

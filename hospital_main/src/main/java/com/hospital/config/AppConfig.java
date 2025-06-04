@@ -1,6 +1,7 @@
 package com.hospital.config;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -11,6 +12,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.http.HttpHeaders; // HttpHeaders 임포트
+import org.springframework.http.HttpRequest; // HttpRequest 임포트
+import org.springframework.http.MediaType; // MediaType 임포트
+import org.springframework.http.client.ClientHttpRequestExecution; // ClientHttpRequestExecution 임포트
+import org.springframework.http.client.ClientHttpRequestInterceptor; // ClientHttpRequestInterceptor 임포트
+import org.springframework.http.client.ClientHttpResponse; // ClientHttpResponse 임포트
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
@@ -27,6 +34,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
+import java.io.IOException; // IOException 임포트
 import java.nio.charset.StandardCharsets;
 
 @Configuration
@@ -57,6 +65,26 @@ public class AppConfig {
         messageConverters.add(xmlConverter);
         
         restTemplate.setMessageConverters(messageConverters);
+        
+        // --- ★ 핵심 변경 사항 시작 ★ ---
+        // RestTemplate에 인터셉터 추가하여 User-Agent 및 Accept 헤더 명시
+        restTemplate.setInterceptors(Collections.singletonList(new ClientHttpRequestInterceptor() {
+            @Override
+            public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
+                // User-Agent 헤더 설정 (브라우저와 유사하게)
+                if (!request.getHeaders().containsKey(HttpHeaders.USER_AGENT)) {
+                    request.getHeaders().set(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36");
+                }
+                // Accept 헤더 설정 (XML 응답 명시)
+                if (!request.getHeaders().containsKey(HttpHeaders.ACCEPT)) {
+                    request.getHeaders().setAccept(Collections.singletonList(MediaType.APPLICATION_XML));
+                }
+                
+                // 요청 전송
+                return execution.execute(request, body);
+            }
+        }));
+        // --- ★ 핵심 변경 사항 끝 ★ ---
         
         System.out.println("RestTemplate 설정 완료. 메시지 컨버터 개수: " + messageConverters.size());
         return restTemplate;
