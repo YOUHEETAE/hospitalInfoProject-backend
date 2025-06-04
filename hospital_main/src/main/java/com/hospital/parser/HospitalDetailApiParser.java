@@ -42,8 +42,8 @@ public class HospitalDetailApiParser {
         // 실제 API 응답 필드에 맞춰 수정
         return HospitalDetail.builder()
                 .hospitalCode(itemDto.getYkiho()) // 이 필드가 없다면 다른 식별자 사용 필요
-                .emDayYn(itemDto.getEmyDayYn())
-                .emNightYn(itemDto.getEmyNightYn())
+                .emyDayYn(itemDto.getEmyDayYn())
+                .emyNightYn(itemDto.getEmyNightYn())
                 .parkQty(parseInteger(itemDto.getParkQty()))
                 .lunchWeek(itemDto.getLunchWeek())
                 .rcvWeek(itemDto.getRcvWeek())

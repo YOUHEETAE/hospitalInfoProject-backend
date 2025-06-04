@@ -171,7 +171,11 @@
 			<artifactId>spring-data-commons</artifactId>
 			<version>${spring-data.version}</version>
 		</dependency>
-	
+		<dependency>
+			<groupId>org.apache.httpcomponents.client5</groupId>
+			<artifactId>httpclient5</artifactId>
+			<version>5.2.1</version> <!-- 최신 안정 버전 확인 -->
+		</dependency>
 
 	</dependencies>
 

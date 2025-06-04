@@ -1,41 +1,51 @@
 package com.hospital.emergency.dto;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
-public class EmergencyRoomApiItem {
-    @JacksonXmlProperty(localName = "cnt")
-    private Integer cnt; // 응급실 병상수 (진료과목코드, 실제 응답에서는 'cnt'로 표시됨)
-    @JacksonXmlProperty(localName = "distance")
-    private Double distance; // 요청 좌표와의 거리 (km)
-    @JacksonXmlProperty(localName = "dutyAddr")
-    private String dutyAddr; // 주소
-    @JacksonXmlProperty(localName = "dutyDiv")
-    private String dutyDiv; // 진료구분 (A:종합병원, B:병원 등)
-    @JacksonXmlProperty(localName = "dutyDivName")
-    private String dutyDivName; // 진료구분명
-    @JacksonXmlProperty(localName = "dutyName")
-    private String dutyName; // 기관명
-    @JacksonXmlProperty(localName = "dutyTel1")
-    private String dutyTel1; // 대표전화1
-    @JacksonXmlProperty(localName = "endTime")
-    private String endTime; // 진료종료시간 (HHMM)
-    @JacksonXmlProperty(localName = "hpid")
-    private String hpid; // 기관ID (고유 식별자)
-    @JacksonXmlProperty(localName = "latitude")
-    private Double latitude; // WGS84 위도
-    @JacksonXmlProperty(localName = "longitude")
-    private Double longitude; // WGS84 경도
-    @JacksonXmlProperty(localName = "rnum")
-    private Integer rnum; // 순번
-    @JacksonXmlProperty(localName = "startTime")
-    private String startTime; // 진료시작시간 (HHMM)
+public class EmergencyRoomApiItem { // 이 클래스는 <item> 태그의 내용을 매핑합니다.
 
-    // API 응답에 따라 다른 필요한 필드들도 추가할 수 있습니다.
-    // 예를 들어, emClsName (응급의료기관 구분명), emrmChrtCnt (응급실 차트수), etc.
+    @JacksonXmlProperty(localName = "cnt") // <cnt> 태그 매핑
+    private Integer cnt; // 정수 값이므로 Integer
+
+    @JacksonXmlProperty(localName = "distance") // <distance> 태그 매핑
+    private Double distance; // 실수 값이므로 Double
+
+    @JacksonXmlProperty(localName = "dutyAddr") // <dutyAddr> 태그 매핑
+    private String dutyAddr;
+
+    @JacksonXmlProperty(localName = "dutyDiv") // <dutyDiv> 태그 매핑
+    private String dutyDiv;
+
+    @JacksonXmlProperty(localName = "dutyDivName") // <dutyDivName> 태그 매핑
+    private String dutyDivName;
+
+    @JacksonXmlProperty(localName = "dutyName") // <dutyName> 태그 매핑
+    private String dutyName;
+
+    @JacksonXmlProperty(localName = "dutyTel1") // <dutyTel1> 태그 매핑
+    private String dutyTel1;
+
+    // endTime은 시간 정보이므로 String으로 받는 것이 안전
+    @JacksonXmlProperty(localName = "endTime") // <endTime> 태그 매핑
+    private String endTime;
+
+    @JacksonXmlProperty(localName = "hpid") // <hpid> 태그 매핑
+    private String hpid;
+
+    @JacksonXmlProperty(localName = "latitude") // <latitude> 태그 매핑
+    private Double latitude; // 위도이므로 Double
+
+    @JacksonXmlProperty(localName = "longitude") // <longitude> 태그 매핑
+    private Double longitude; // 경도이므로 Double
+
+    @JacksonXmlProperty(localName = "rnum") // <rnum> 태그 매핑
+    private Integer rnum; // 순번이므로 Integer
+
+    // startTime은 시간 정보이므로 String으로 받는 것이 안전
+    @JacksonXmlProperty(localName = "startTime") // <startTime> 태그 매핑
+    private String startTime;
 }

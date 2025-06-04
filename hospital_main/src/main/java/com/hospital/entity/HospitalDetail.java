@@ -23,10 +23,10 @@ public class HospitalDetail {
     private String hospitalCode; // API의 <ykiho>
 
     @Column(name = "em_day_yn", length = 1)
-    private String emDayYn; // 주간 응급 진료 가능 여부 (Y/N)
+    private String emyDayYn; // 주간 응급 진료 가능 여부 (Y/N)
 
     @Column(name = "em_night_yn", length = 1)
-    private String emNightYn; // 야간 응급 진료 가능 여부 (Y/N)
+    private String emyNightYn; // 야간 응급 진료 가능 여부 (Y/N)
 
     @Column(name = "parking_capacity")
     private Integer parkQty; // 주차 가능 대수 (API는 parkQty)

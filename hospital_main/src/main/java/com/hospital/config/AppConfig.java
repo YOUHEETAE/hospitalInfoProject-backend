@@ -1,5 +1,8 @@
 package com.hospital.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -9,6 +12,9 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -19,8 +25,9 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
-
+import java.nio.charset.StandardCharsets;
 
 @Configuration
 @PropertySource("classpath:mainApi.properties")
@@ -28,75 +35,95 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @EnableTransactionManagement
 @EnableJpaRepositories(basePackages = "com.hospital.repository")
 public class AppConfig {
-	@Bean
-	public RestTemplate restTemplate() {
-		
-		SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-		factory.setConnectTimeout(15000);
-		factory.setReadTimeout(60000);
-		return new RestTemplate(factory);		
-	}
-	@Bean
-	public ObjectMapper objectMapper() {
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		return mapper;
-	}
-	 @Bean
-	    public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
-	        return new PropertySourcesPlaceholderConfigurer();
-	    }
-	 // DataSource 빈 (JDBC Template과 JPA 모두 사용합니다. 이미 설정되어 있다면 이 부분은 건너뛰세요.)
-	    // 만약 db.properties 또는 application.properties에 DB 연결 정보가 있다면 @Value로 주입받아 사용합니다.
-	    @Bean
-	    public DataSource dataSource(@Value("${jdbc.driverClassName}") String driverClassName,
-	                                 @Value("${jdbc.url}") String url,
-	                                 @Value("${jdbc.username}") String username,
-	                                 @Value("${jdbc.password}") String password) {
-	        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-	        dataSource.setDriverClassName(driverClassName);
-	        dataSource.setUrl(url);
-	        dataSource.setUsername(username);
-	        dataSource.setPassword(password);
-	        return dataSource;
-	    }
 
+    @Bean
+    public RestTemplate restTemplate() {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(15000);
+        factory.setReadTimeout(60000);
+        
+        RestTemplate restTemplate = new RestTemplate(factory);
+        
+        List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
+        
+        // String 컨버터 - UTF-8 인코딩 명시적 설정
+        StringHttpMessageConverter stringConverter = new StringHttpMessageConverter(StandardCharsets.UTF_8);
+        stringConverter.setWriteAcceptCharset(false); // Accept-Charset 헤더 자동 추가 방지
+        messageConverters.add(stringConverter);
+        
+        // XML 컨버터 - 커스텀 XmlMapper 사용
+        MappingJackson2XmlHttpMessageConverter xmlConverter = new MappingJackson2XmlHttpMessageConverter();
+        xmlConverter.setObjectMapper(xmlMapper());
+        messageConverters.add(xmlConverter);
+        
+        restTemplate.setMessageConverters(messageConverters);
+        
+        System.out.println("RestTemplate 설정 완료. 메시지 컨버터 개수: " + messageConverters.size());
+        return restTemplate;
+    }
 
-	    // ★ JPA 설정 시작 ★
+    // 기존 ObjectMapper - JSON 처리용
+    @Bean
+    public ObjectMapper objectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        return mapper;
+    }
 
-	    // 1. LocalContainerEntityManagerFactoryBean: JPA의 EntityManagerFactory를 생성하는 핵심 빈
-	    @Bean
-	    public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
-	        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-	        em.setDataSource(dataSource); // 위에서 정의한 DataSource 빈 주입
-	        em.setPackagesToScan("com.hospital.entity"); // ★ JPA 엔티티가 위치한 패키지 지정 (Hospital, HospitalDetail 등)
+    // XML 전용 Mapper
+    @Bean
+    public XmlMapper xmlMapper() {
+        XmlMapper xmlMapper = new XmlMapper();
+        xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        xmlMapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
+        xmlMapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+        xmlMapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true);
+        
+        System.out.println("XmlMapper 설정 완료");
+        return xmlMapper;
+    }
 
-	        // JPA 벤더 어댑터 설정 (Hibernate 사용)
-	        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-	        em.setJpaVendorAdapter(vendorAdapter);
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+        return new PropertySourcesPlaceholderConfigurer();
+    }
 
-	        // 하이버네이트 속성 설정 (사용 DB, SQL 로깅 등)
-	        java.util.Properties jpaProperties = new java.util.Properties();
-	        // ★ 개발 환경에서만 'update'를 사용하고, 운영 환경에서는 'none' 또는 'validate'로 변경해야 합니다.
-	        jpaProperties.setProperty("hibernate.hbm2ddl.auto", "update"); // 엔티티 기반으로 DB 스키마 자동 생성/업데이트
-	        jpaProperties.setProperty("hibernate.dialect", "org.hibernate.dialect.MariaDBDialect"); // 사용 DB에 맞는 Dialect
-	                                                                                              // MariaDB를 사용하시니 MariaDBDialect를 사용합니다.
-	                                                                                              // MySQL 8.x는 MySQL8Dialect
-	        jpaProperties.setProperty("hibernate.show_sql", "true"); // 콘솔에 실행되는 SQL 쿼리 출력
-	        jpaProperties.setProperty("hibernate.format_sql", "true"); // SQL 쿼리 포맷팅
-	        // jpaProperties.setProperty("hibernate.use_sql_comments", "true"); // SQL 주석 추가 (디버깅에 유용)
+    @Bean
+    public DataSource dataSource(@Value("${jdbc.driverClassName}") String driverClassName,
+                                 @Value("${jdbc.url}") String url,
+                                 @Value("${jdbc.username}") String username,
+                                 @Value("${jdbc.password}") String password) {
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setDriverClassName(driverClassName);
+        dataSource.setUrl(url);
+        dataSource.setUsername(username);
+        dataSource.setPassword(password);
+        return dataSource;
+    }
 
-	        em.setJpaProperties(jpaProperties);
+    @Bean
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
+        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
+        em.setDataSource(dataSource);
+        em.setPackagesToScan("com.hospital.entity");
 
-	        return em;
-	    }
+        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        em.setJpaVendorAdapter(vendorAdapter);
 
-	    // 2. JpaTransactionManager: JPA를 위한 트랜잭션 매니저
-	    @Bean
-	    public PlatformTransactionManager transactionManager(LocalContainerEntityManagerFactoryBean entityManagerFactory) {
-	        JpaTransactionManager transactionManager = new JpaTransactionManager();
-	        // .getObject()를 사용하여 실제 EntityManagerFactory 인스턴스를 주입합니다.
-	        transactionManager.setEntityManagerFactory(entityManagerFactory.getObject());
-	        return transactionManager;
-	    }
+        java.util.Properties jpaProperties = new java.util.Properties();
+        jpaProperties.setProperty("hibernate.hbm2ddl.auto", "update");
+        jpaProperties.setProperty("hibernate.dialect", "org.hibernate.dialect.MariaDBDialect");
+        jpaProperties.setProperty("hibernate.show_sql", "true");
+        jpaProperties.setProperty("hibernate.format_sql", "true");
+
+        em.setJpaProperties(jpaProperties);
+        return em;
+    }
+
+    @Bean
+    public PlatformTransactionManager transactionManager(LocalContainerEntityManagerFactoryBean entityManagerFactory) {
+        JpaTransactionManager transactionManager = new JpaTransactionManager();
+        transactionManager.setEntityManagerFactory(entityManagerFactory.getObject());
+        return transactionManager;
+    }
 }

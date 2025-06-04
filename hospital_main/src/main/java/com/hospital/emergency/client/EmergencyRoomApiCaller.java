@@ -1,85 +1,153 @@
 package com.hospital.emergency.client;
 
-import com.hospital.emergency.dto.EmergencyRoomApiResponse; // 새로 만든 DTO 임포트
+import com.hospital.emergency.dto.EmergencyRoomApiResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-@Component // 스프링 빈으로 등록하여 다른 곳에서 주입받아 사용할 수 있도록 합니다.
+@Component
 public class EmergencyRoomApiCaller {
 
-    // application.properties에서 API 기본 URL을 주입받습니다.
     @Value("${hospital.emergency.api.baseUrl}")
     private String baseUrl;
 
-    // application.properties에서 서비스 키를 주입받습니다.
     @Value("${hospital.emergency.api.serviceKey}")
     private String serviceKey;
 
     private final RestTemplate restTemplate;
+    private final XmlMapper xmlMapper;
 
-    // RestTemplate은 외부 API 호출을 위한 스프링의 핵심 도구입니다.
-    // RestTemplateConfig에서 빈으로 등록한 RestTemplate을 주입받습니다.
-    public EmergencyRoomApiCaller(RestTemplate restTemplate) {
+    public EmergencyRoomApiCaller(RestTemplate restTemplate, XmlMapper xmlMapper) {
         this.restTemplate = restTemplate;
+        this.xmlMapper = xmlMapper;
     }
 
-    /**
-     * 사용자의 위도, 경도에 기반하여 주변 응급실 정보를 공공데이터 포털 API로부터 조회합니다.
-     * @param latitude 사용자 위치의 위도 (WGS84_LAT)
-     * @param longitude 사용자 위치의 경도 (WGS84_LON)
-     * @return API 응답을 매핑한 EmergencyRoomApiResponse 객체 (호출 실패 시 null 반환)
-     */
     public EmergencyRoomApiResponse callEmergencyRoomApi(double latitude, double longitude) {
         try {
-            // 서비스 키를 URL 인코딩합니다. '+' 문자가 공백으로 인코딩되는 문제를 방지합니다.
             String encodedServiceKey = URLEncoder.encode(serviceKey, StandardCharsets.UTF_8.toString())
                                                 .replace("+", "%2B");
 
-            // API 호출 URL을 동적으로 구성합니다.
-            // API 문서에 따르면 'getEmgMedInfo'가 실제 오퍼레이션 경로입니다.
-            URI uri = UriComponentsBuilder.fromUriString(baseUrl + "/getEmgMedInfo")
-                    .queryParam("serviceKey", encodedServiceKey) // 인증키
-                    .queryParam("WGS84_LAT", latitude)           // 필수 파라미터: 위도
-                    .queryParam("WGS84_LON", longitude)          // 필수 파라미터: 경도
-                    .queryParam("pageNo", 1)                     // 페이지 번호 (기본 1)
-                    .queryParam("numOfRows", 100)                // 한 페이지당 목록 수 (넉넉하게 100개 요청)
-                    .queryParam("_type", "json")                // JSON 형식으로 응답 요청 (이전 로그에 JSON 응답이 확인되었으므로)
-                    .build(true) // 인코딩된 URI 생성 (true: 이미 인코딩된 쿼리 파라미터는 다시 인코딩하지 않음)
+            URI uri = UriComponentsBuilder.fromUriString(baseUrl + "/getEgytLcinfoInqire")
+                    .queryParam("serviceKey", encodedServiceKey)
+                    .queryParam("WGS84_LAT", latitude)
+                    .queryParam("WGS84_LON", longitude)
+                    .queryParam("pageNo", 1)
+                    .queryParam("numOfRows", 10)
+                    .queryParam("_type", "xml")
+                    .build(true)
                     .toUri();
 
-            System.out.println("Emergency Room API Request URL: " + uri.toString());
+            System.out.println("응급실 API 요청 URL: " + uri.toString());
 
-            // RestTemplate을 사용하여 GET 요청을 보내고, JSON 응답을 EmergencyRoomApiResponse DTO로 직접 매핑합니다.
-            // RestTemplate은 내부적으로 Jackson 라이브러리를 사용하여 JSON -> DTO 변환을 자동으로 처리합니다.
-            ResponseEntity<EmergencyRoomApiResponse> responseEntity = restTemplate.getForEntity(uri, EmergencyRoomApiResponse.class);
+            // HTTP 헤더 설정 - User-Agent와 Accept 헤더 명시적 설정
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+            headers.set("Accept", "application/xml, text/xml, */*");
+            headers.set("Accept-Charset", "UTF-8");
+            headers.set("Accept-Encoding", "gzip, deflate");
+            headers.set("Accept-Encoding", "identity"); 
+            
+            HttpEntity<?> entity = new HttpEntity<>(headers);
 
-            if (responseEntity.getStatusCode().is2xxSuccessful()) { // HTTP 상태 코드가 200번대 (성공)인지 확인
-                EmergencyRoomApiResponse apiResponse = responseEntity.getBody();
-                if (apiResponse != null) {
-                    System.out.println("API Call Successful. HTTP Status: " + responseEntity.getStatusCode());
-                    System.out.println("API Result Code: " + apiResponse.getResponse().getHeader().getResultCode());
-                    System.out.println("Total Count: " + apiResponse.getResponse().getBody().getTotalCount());
-                    // rawResponse 로그는 DTO 변환 후에는 필요 없지만, 디버깅을 위해 잠시 추가할 수 있습니다.
-                    // System.out.println("Raw JSON Response (after conversion to DTO): " + responseEntity.getBody());
-                }
-                return apiResponse;
+            System.out.println("=== 요청 헤더 정보 ===");
+            headers.forEach((key, value) -> System.out.println(key + ": " + value));
+
+            // exchange 메소드로 헤더와 함께 요청
+            ResponseEntity<String> rawResponseEntity = restTemplate.exchange(
+                uri, HttpMethod.GET, entity, String.class);
+
+            System.out.println("=== 응답 정보 ===");
+            System.out.println("HTTP 상태: " + rawResponseEntity.getStatusCode());
+            System.out.println("응답 헤더:");
+            rawResponseEntity.getHeaders().forEach((key, value) -> 
+                System.out.println("  " + key + ": " + value));
+
+            String rawResponse = rawResponseEntity.getBody();
+            
+            System.out.println("=== 응답 본문 길이 ===");
+            if (rawResponse != null) {
+                System.out.println("응답 본문 길이: " + rawResponse.length() + " 문자");
+                System.out.println("응답 본문 바이트 길이: " + rawResponse.getBytes(StandardCharsets.UTF_8).length + " 바이트");
             } else {
-                System.err.println("API Call Failed. HTTP Status: " + responseEntity.getStatusCode());
-                System.err.println("Response Body: " + responseEntity.getBody()); // 에러 응답 내용 로깅
-                // HTTP 상태 코드가 성공이 아닐 경우 (예: 400, 500 에러)
+                System.out.println("응답 본문이 null입니다.");
             }
+
+            System.out.println("--- 원본 API 응답 시작 ---");
+            if (rawResponse != null && !rawResponse.isEmpty()) {
+                // 처음 500자만 출력하여 로그가 너무 길어지지 않도록 함
+                String preview = rawResponse.length() > 500 ? 
+                    rawResponse.substring(0, 500) + "... (총 " + rawResponse.length() + "자)" : 
+                    rawResponse;
+                System.out.println(preview);
+            } else {
+                System.out.println("[API 응답 본문이 비어있거나 null입니다]");
+            }
+            System.out.println("--- 원본 API 응답 끝 ---");
+
+            if (!rawResponseEntity.getStatusCode().is2xxSuccessful()) {
+                System.err.println("API 호출 실패. HTTP 상태: " + rawResponseEntity.getStatusCode());
+                return null;
+            }
+
+            // 응답이 비어있다면 여기서 리턴
+            if (rawResponse == null || rawResponse.trim().isEmpty()) {
+                System.err.println("API 응답 본문이 비어있습니다. 서버에서 빈 응답을 반환했습니다.");
+                return null;
+            }
+
+            // XML 파싱 시도
+            EmergencyRoomApiResponse apiResponse = null;
+            try {
+                System.out.println("XML 파싱 시작...");
+                apiResponse = xmlMapper.readValue(rawResponse, EmergencyRoomApiResponse.class);
+                System.out.println("XML 파싱 성공!");
+            } catch (Exception parseException) {
+                System.err.println("XML 파싱 실패: " + parseException.getMessage());
+                parseException.printStackTrace();
+                
+                // 파싱 실패 시 응답의 시작 부분을 더 자세히 확인
+                System.err.println("=== 파싱 실패한 응답 분석 ===");
+                if (rawResponse.length() > 0) {
+                    System.err.println("첫 100자: " + rawResponse.substring(0, Math.min(100, rawResponse.length())));
+                    System.err.println("XML 선언 확인: " + (rawResponse.startsWith("<?xml") ? "있음" : "없음"));
+                    System.err.println("루트 엘리먼트 확인: " + (rawResponse.contains("<response>") ? "response 태그 있음" : "response 태그 없음"));
+                }
+                return null;
+            }
+
+            if (apiResponse != null) {
+                System.out.println("API 호출 성공!");
+                if (apiResponse.getHeader() != null) {
+                    System.out.println("API 결과 코드: " + apiResponse.getHeader().getResultCode());
+                    System.out.println("API 결과 메시지: " + apiResponse.getHeader().getResultMsg());
+                }
+                if (apiResponse.getBody() != null) {
+                    System.out.println("총 개수: " + apiResponse.getBody().getTotalCount());
+                    System.out.println("페이지 번호: " + apiResponse.getBody().getPageNo());
+                    System.out.println("페이지 크기: " + apiResponse.getBody().getNumOfRows());
+                } else {
+                    System.err.println("응답 body가 null입니다.");
+                }
+            }
+            
+            return apiResponse;
+
         } catch (Exception e) {
-            // API 호출 중 발생할 수 있는 네트워크 오류, 파싱 오류 등을 catch합니다.
-            System.err.println("Error calling Emergency Room API: " + e.getMessage());
-            e.printStackTrace(); // 상세 스택 트레이스 출력
+            System.err.println("응급실 API 호출 중 예외 발생: " + e.getClass().getName());
+            System.err.println("예외 메시지: " + e.getMessage());
+            e.printStackTrace();
         }
-        return null; // 호출 실패 시 null 반환 (서비스 계층에서 적절히 처리 필요)
+        return null;
     }
 }

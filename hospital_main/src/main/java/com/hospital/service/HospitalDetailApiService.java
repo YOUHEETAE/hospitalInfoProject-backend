@@ -62,8 +62,8 @@ public class HospitalDetailApiService {
                 HospitalDetail updatedDetail = existingDetail.get();
                 // 파서에서 변환된 최신 데이터로 필드들을 업데이트합니다.
                 // 모든 필드를 하나씩 set 해주는 것이 가장 명확합니다.
-                updatedDetail.setEmDayYn(hospitalDetail.getEmDayYn());
-                updatedDetail.setEmNightYn(hospitalDetail.getEmNightYn());
+                updatedDetail.setEmyDayYn(hospitalDetail.getEmyDayYn());
+                updatedDetail.setEmyNightYn(hospitalDetail.getEmyNightYn());
                 updatedDetail.setParkQty(hospitalDetail.getParkQty());
                 updatedDetail.setLunchWeek(hospitalDetail.getLunchWeek());
                 updatedDetail.setRcvWeek(hospitalDetail.getRcvWeek());
