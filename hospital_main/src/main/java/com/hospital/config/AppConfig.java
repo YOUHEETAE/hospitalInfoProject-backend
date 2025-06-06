@@ -100,12 +100,7 @@ public class AppConfig {
     // WebClient 빈 등록 추가
     @Bean
     public WebClient webClient() {
-        return WebClient.builder()
-                // 필요시 기본 헤더 설정 가능
-                .defaultHeader(HttpHeaders.USER_AGENT,
-                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36")
-                .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_XML_VALUE)
-                .build();
+        return WebClient.builder().build();
     }
   
 

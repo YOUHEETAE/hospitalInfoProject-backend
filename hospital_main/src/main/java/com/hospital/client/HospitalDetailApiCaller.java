@@ -1,95 +1,63 @@
 package com.hospital.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hospital.dto.api.HospitalDetailApiResponse;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
+import com.hospital.service.HospitalCodeFetcher;
+
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
 public class HospitalDetailApiCaller {
 
     private final RestTemplate restTemplate;
-    private final ObjectMapper objectMapper;
+    private final HospitalCodeFetcher hospitalCodeFetcher; 
 
-    @Value("${hospital.detail.api.base-url}")
-    private String baseUrl;
+    private static final String BASE_URL = "https://apis.data.go.kr/B551182/MadmDtlInfoService2.7/getDtlInfo2.7";
+    private static final String SERVICE_KEY = "6IeDxLyk3cFOR8Fpgdyar0bwLjz07UptNyvbUC3KT3SRjcKdjyHG8Rt+DJ90JVPGwgH+GalAJveVPKnlYSKIfg==";
 
-    @Value("${hospital.detail.api.key}")
-    private String serviceKey;
-
-    public HospitalDetailApiCaller(RestTemplate restTemplate, ObjectMapper objectMapper) {
+    public HospitalDetailApiCaller(RestTemplate restTemplate, HospitalCodeFetcher hospitalCodeFetcher) {
         this.restTemplate = restTemplate;
-        this.objectMapper = objectMapper;
-
-        // XML 메시지 컨버터 추가
-        this.restTemplate.getMessageConverters().add(0, new MappingJackson2XmlHttpMessageConverter());
+        this.hospitalCodeFetcher = hospitalCodeFetcher;
     }
 
-    public HospitalDetailApiResponse callApi(String hospitalCode) {
-
-        String encodedServiceKey;
+    public String fetchHospitalDetailByCode(String hospitalCode, int pageNo, int numOfRows) {
         try {
-            encodedServiceKey = URLEncoder.encode(serviceKey, StandardCharsets.UTF_8.toString());
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("서비스 키 인코딩 실패: " + e.getMessage(), e);
-        }
+            String encodedServiceKey = URLEncoder.encode(SERVICE_KEY, StandardCharsets.UTF_8.toString());
 
-        // API 요청 URL 빌드
-        URI uri = UriComponentsBuilder.fromUriString(baseUrl)
-                .queryParam("serviceKey", encodedServiceKey)
-                .queryParam("ykiho", hospitalCode)
-                .queryParam("pageNo", 1)
-                .queryParam("numOfRows", 1)
-                .queryParam("_type", "xml")
-                .build(true)
-                .toUri();
+            var uri = UriComponentsBuilder.fromHttpUrl(BASE_URL)
+                    .queryParam("serviceKey", encodedServiceKey)
+                    .queryParam("ykiho", hospitalCode)
+                    .queryParam("pageNo", pageNo)
+                    .queryParam("numOfRows", numOfRows)
+                    .queryParam("_type", "json")
+                    .build(true)
+                    .toUri();
 
-        System.out.println("HospitalDetail API URL: " + uri.toString());
-
-        HospitalDetailApiResponse apiResponseDto;
-        try {
-            // HttpHeaders 설정
-            HttpHeaders headers = new HttpHeaders();
-            headers.setAccept(List.of(MediaType.APPLICATION_XML));
-
-            HttpEntity<String> entity = new HttpEntity<>(headers);
-
-            // API 호출
-            apiResponseDto = restTemplate.exchange(
-                uri, 
-                HttpMethod.GET, 
-                entity, 
-                HospitalDetailApiResponse.class
-            ).getBody();
-
-            System.out.println("HospitalDetail API Parsed Response (XML): " + apiResponseDto);
-
-            // DTO 구조 변경에 따른 수정: getResponse() 제거
-            String resultCode = apiResponseDto.getHeader().getResultCode();
-            String resultMsg = apiResponseDto.getHeader().getResultMsg();
-
-            if (!"00".equals(resultCode)) {
-                throw new RuntimeException("HospitalDetail API 응답 오류: " + resultCode + " - " + resultMsg + " (URL: " + uri.toString() + ")");
-            }
+            return restTemplate.getForObject(uri, String.class);
 
         } catch (Exception e) {
-            System.err.println("HospitalDetail API 호출 또는 XML 응답 파싱 중 오류 발생: " + uri.toString() + ", " + e.getMessage());
-            throw new RuntimeException("HospitalDetail API 호출 또는 XML 응답 파싱 오류: " + e.getMessage(), e);
+            System.err.println("HospitalDetail API 호출 중 오류 발생 (code: " + hospitalCode + "): " + e.getMessage());
+            return null;
         }
+    }
+    // 여러 병원 코드에 대해 API 호출을 수행하는 메서드 추가
+    public List<String> fetchAllHospitalDetails(int pageNo, int numOfRows) {
+        List<String> hospitalCodes = hospitalCodeFetcher.getAllHospitalCodes();
+        List<String> responses = new ArrayList<>();
 
-        return apiResponseDto;
+        for (String code : hospitalCodes) {
+            String response = fetchHospitalDetailByCode(code, pageNo, numOfRows);
+            if (response != null && !response.isEmpty()) {
+                responses.add(response);
+            } else {
+                System.out.println("병원 코드 " + code + " 에 대한 데이터가 없거나 호출 실패, 넘어갑니다.");
+            }
+        }
+        return responses;
     }
 }

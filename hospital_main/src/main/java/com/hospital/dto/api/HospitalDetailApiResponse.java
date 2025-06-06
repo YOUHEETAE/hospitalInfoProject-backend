@@ -1,68 +1,50 @@
 package com.hospital.dto.api;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString
-@JacksonXmlRootElement(localName = "response") // XML 루트 엘리먼트
+@Data
 public class HospitalDetailApiResponse {
-    
-    @JacksonXmlProperty(localName = "header")
-    private Header header;
-    
-    @JacksonXmlProperty(localName = "body")
-    private Body body;
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @ToString
+    @JsonProperty("response")
+    private Response response;
+
+    @Data
+    public static class Response {
+        @JsonProperty("header")
+        private Header header;
+
+        @JsonProperty("body")
+        private Body body;
+    }
+
+    @Data
     public static class Header {
-        @JacksonXmlProperty(localName = "resultCode")
+        @JsonProperty("resultCode")
         private String resultCode;
-        
-        @JacksonXmlProperty(localName = "resultMsg")
+
+        @JsonProperty("resultMsg")
         private String resultMsg;
     }
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @ToString
+    @Data
     public static class Body {
-        @JacksonXmlProperty(localName = "items")
+        @JsonProperty("items")
         private Items items;
-        
-        @JacksonXmlProperty(localName = "numOfRows")
+
+        @JsonProperty("numOfRows")
         private int numOfRows;
-        
-        @JacksonXmlProperty(localName = "pageNo")
+
+        @JsonProperty("pageNo")
         private int pageNo;
-        
-        @JacksonXmlProperty(localName = "totalCount")
+
+        @JsonProperty("totalCount")
         private int totalCount;
     }
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @ToString
+    @Data
     public static class Items {
-        // 중요: JSON 구조를 보면 items.item이 단일 객체입니다 (배열이 아님)
-        @JacksonXmlProperty(localName = "item")
-        private HospitalDetailApiItem item; // List가 아닌 단일 객체
+        @JsonProperty("item")
+        private java.util.List<HospitalDetailApiItem> item;
     }
 }

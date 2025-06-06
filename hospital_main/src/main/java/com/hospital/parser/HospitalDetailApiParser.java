@@ -1,75 +1,88 @@
 package com.hospital.parser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hospital.dto.api.HospitalDetailApiItem;
 import com.hospital.dto.api.HospitalDetailApiResponse;
+import com.hospital.dto.api.HospitalDetailApiItem;
 import com.hospital.entity.HospitalDetail;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+
+import org.springframework.stereotype.Component;
 
 @Component
 public class HospitalDetailApiParser {
 
     private final ObjectMapper objectMapper;
 
-    public HospitalDetailApiParser(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
+    public HospitalDetailApiParser() {
+        this.objectMapper = new ObjectMapper();
     }
 
-    /**
-     * HospitalDetailApiResponse DTO를 받아서 HospitalDetail 엔티티로 변환합니다.
-     * 
-     * @param apiResponseDto 외부 API로부터 받은 HospitalDetailApiResponse DTO
-     * @return 변환된 HospitalDetail 엔티티 (단일 항목이거나 null)
-     */
-    public HospitalDetail parseHospitalDetail(HospitalDetailApiResponse apiResponseDto) {
-        // 실제 API 구조에 맞춘 수정: item이 단일 객체임
-        HospitalDetailApiItem itemDto = Optional.ofNullable(apiResponseDto)
-                .map(HospitalDetailApiResponse::getBody)
-                .map(HospitalDetailApiResponse.Body::getItems)
-                .map(HospitalDetailApiResponse.Items::getItem) // 단일 객체 반환
-                .orElse(null);
-
-        if (itemDto == null) {
-            System.out.println("No item found in HospitalDetail API response.");
-            return null;
-        }
-
-        // HospitalDetailApiItem의 필드를 HospitalDetail 엔티티의 필드로 매핑
-        // 실제 API 응답 필드에 맞춰 수정
-        return HospitalDetail.builder()
-                .hospitalCode(itemDto.getYkiho()) // 이 필드가 없다면 다른 식별자 사용 필요
-                .emyDayYn(itemDto.getEmyDayYn())
-                .emyNightYn(itemDto.getEmyNightYn())
-                .parkQty(parseInteger(itemDto.getParkQty()))
-                .lunchWeek(itemDto.getLunchWeek())
-                .rcvWeek(itemDto.getRcvWeek())
-                .rcvSat(itemDto.getRcvSat())
-                .trmtMonStart(itemDto.getTrmtMonStart())
-                .trmtMonEnd(itemDto.getTrmtMonEnd())
-                .trmtTueStart(itemDto.getTrmtTueStart())
-                .trmtTueEnd(itemDto.getTrmtTueEnd())
-                .trmtWedStart(itemDto.getTrmtWedStart())
-                .trmtWedEnd(itemDto.getTrmtWedEnd())
-                .trmtThurStart(itemDto.getTrmtThurStart())
-                .trmtThurEnd(itemDto.getTrmtThurEnd())
-                .trmtFriStart(itemDto.getTrmtFriStart())
-                .trmtFriEnd(itemDto.getTrmtFriEnd())
-                .build();
+    // JSON 파싱 중 오류 발생 시 예외를 호출자에게 던짐 -> 즉시 중단 가능
+    public HospitalDetailApiResponse parseResponse(String json) throws Exception {
+        return objectMapper.readValue(json, HospitalDetailApiResponse.class);
     }
 
-    /**
-     * 문자열을 Integer로 안전하게 변환하는 헬퍼 메서드
-     */
-    private Integer parseInteger(String str) {
+    // 예외를 잡아서 로그 출력 후, 필요에 따라 RuntimeException으로 다시 던져서 호출자도 중단하도록 함
+    public List<HospitalDetailApiItem> parseItems(String json) {
         try {
-            return (str != null && !str.trim().isEmpty()) ? Integer.parseInt(str.trim()) : null;
-        } catch (NumberFormatException e) {
-            System.err.println("Cannot parse '" + str + "' to Integer in HospitalDetailApiParser. Setting to null.");
-            return null;
+            HospitalDetailApiResponse response = parseResponse(json);
+            if (response != null &&
+                response.getResponse() != null &&
+                response.getResponse().getBody() != null &&
+                response.getResponse().getBody().getItems() != null) {
+                return response.getResponse().getBody().getItems().getItem();
+            }
+        } catch (Exception e) {
+            // 오류 내용 확인 가능하게 출력
+            System.err.println("HospitalDetailApiParser parseItems 오류:");
+            e.printStackTrace();
+
+            // 필요시 여기서 바로 중단시키기 위해 RuntimeException으로 던질 수 있음
+            throw new RuntimeException("HospitalDetailApiParser에서 JSON 파싱 오류 발생", e);
         }
+        return Collections.emptyList();
+    }
+
+    /**
+     * JSON 응답에서 아이템들을 파싱하고,
+     * 각 아이템과 병원 코드를 받아 엔티티 리스트로 변환해서 반환
+     */
+    public List<HospitalDetail> parseToEntities(String json, String hospitalCode) {
+        List<HospitalDetailApiItem> items = parseItems(json);
+        List<HospitalDetail> entities = new ArrayList<>();
+
+        for (HospitalDetailApiItem item : items) {
+            HospitalDetail entity = convertDtoToEntity(item, hospitalCode);
+            entities.add(entity);
+        }
+        return entities;
+    }
+
+    /**
+     * DTO -> Entity 변환 메서드 (코드 재사용용)
+     */
+    private HospitalDetail convertDtoToEntity(HospitalDetailApiItem dto, String hospitalCode) {
+        return HospitalDetail.builder()
+                .hospitalCode(hospitalCode)
+                .emyDayYn(dto.getEmyDayYn())
+                .emyNightYn(dto.getEmyNgtYn())
+                .parkQty(dto.getParkQty() != null ? Integer.valueOf(dto.getParkQty()) : null)
+                .lunchWeek(dto.getLunchWeek())
+                .rcvWeek(dto.getRcvWeek())
+                .rcvSat(dto.getRcvSat())
+                .trmtMonStart(dto.getTrmtMonStart())
+                .trmtMonEnd(dto.getTrmtMonEnd())
+                .trmtTueStart(dto.getTrmtTueStart())
+                .trmtTueEnd(dto.getTrmtTueEnd())
+                .trmtWedStart(dto.getTrmtWedStart())
+                .trmtWedEnd(dto.getTrmtWedEnd())
+                .trmtThurStart(dto.getTrmtThuStart())
+                .trmtThurEnd(dto.getTrmtThuEnd())
+                .trmtFriStart(dto.getTrmtFriStart())
+                .trmtFriEnd(dto.getTrmtFriEnd())
+                .build();
     }
 }
