@@ -1,5 +1,6 @@
 package com.hospital.parser;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hospital.dto.api.HospitalDetailApiResponse;
 import com.hospital.dto.api.HospitalDetailApiItem;
@@ -33,7 +34,17 @@ public class HospitalDetailApiParser {
                 response.getResponse() != null &&
                 response.getResponse().getBody() != null &&
                 response.getResponse().getBody().getItems() != null) {
-                return response.getResponse().getBody().getItems().getItem();
+            	 JsonNode itemsNode = response.getResponse().getBody().getItems();
+                 JsonNode itemArrayNode = itemsNode.get("item");
+                
+                if (itemArrayNode != null && itemArrayNode.isArray()) {
+                    List<HospitalDetailApiItem> result = new ArrayList<>();
+                    for (JsonNode itemNode : itemArrayNode) {
+                        HospitalDetailApiItem item = objectMapper.treeToValue(itemNode, HospitalDetailApiItem.class);
+                        result.add(item);
+                    }
+                    return result;
+                }
             }
         } catch (Exception e) {
             // 오류 내용 확인 가능하게 출력

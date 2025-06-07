@@ -1,6 +1,9 @@
 package com.hospital.dto.api;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+
 import lombok.Data;
 
 @Data
@@ -30,7 +33,7 @@ public class HospitalDetailApiResponse {
     @Data
     public static class Body {
         @JsonProperty("items")
-        private Items items;
+        private JsonNode items;
 
         @JsonProperty("numOfRows")
         private int numOfRows;
@@ -45,6 +48,7 @@ public class HospitalDetailApiResponse {
     @Data
     public static class Items {
         @JsonProperty("item")
+        @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
         private java.util.List<HospitalDetailApiItem> item;
     }
 }

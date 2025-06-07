@@ -42,9 +42,42 @@ public class HospitalDetailApiService {
             }
 
             List<HospitalDetail> details = parser.parseToEntities(jsonResponse, code);
-            allDetails.addAll(details);
-        }
+            
+            for (HospitalDetail newDetail : details) {
+                // 기존 엔티티 조회 (Optional)
+                HospitalDetail existingDetail = hospitalDetailRepository.findById(newDetail.getHospitalCode())
+                        .orElse(null);
 
-        hospitalDetailRepository.saveAll(allDetails);
+                if (existingDetail != null) {
+                    // 기존 엔티티가 있으면 업데이트
+                    updateEntityWithNewData(existingDetail, newDetail);
+                    hospitalDetailRepository.save(existingDetail);
+                } else {
+                    // 없으면 새로 저장
+                    hospitalDetailRepository.save(newDetail);
+                }
+            }
+        }
+    }
+
+    // 기존 엔티티 필드를 덮어쓰는 메서드
+    private HospitalDetail updateEntityWithNewData(HospitalDetail existing, HospitalDetail newData) {
+        existing.setEmyDayYn(newData.getEmyDayYn());
+        existing.setEmyNightYn(newData.getEmyNightYn());
+        existing.setParkQty(newData.getParkQty());
+        existing.setLunchWeek(newData.getLunchWeek());
+        existing.setRcvWeek(newData.getRcvWeek());
+        existing.setRcvSat(newData.getRcvSat());
+        existing.setTrmtMonStart(newData.getTrmtMonStart());
+        existing.setTrmtMonEnd(newData.getTrmtMonEnd());
+        existing.setTrmtTueStart(newData.getTrmtTueStart());
+        existing.setTrmtTueEnd(newData.getTrmtTueEnd());
+        existing.setTrmtWedStart(newData.getTrmtWedStart());
+        existing.setTrmtWedEnd(newData.getTrmtWedEnd());
+        existing.setTrmtThurStart(newData.getTrmtThurStart());
+        existing.setTrmtThurEnd(newData.getTrmtThurEnd());
+        existing.setTrmtFriStart(newData.getTrmtFriStart());
+        existing.setTrmtFriEnd(newData.getTrmtFriEnd());
+        return existing;
     }
 }

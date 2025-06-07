@@ -1,5 +1,6 @@
 package com.hospital.dto.api;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,6 +16,7 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class HospitalDetailApiItem {
 
     @JsonProperty("emyDayYn")

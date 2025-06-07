@@ -35,6 +35,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.cfg.CoercionAction;
+import com.fasterxml.jackson.databind.cfg.CoercionInputShape;
+import com.fasterxml.jackson.databind.type.LogicalType;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
 import java.io.IOException;
@@ -109,6 +112,9 @@ public class AppConfig {
     public ObjectMapper objectMapper() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
+        mapper.coercionConfigFor(LogicalType.POJO)
+        .setCoercion(CoercionInputShape.EmptyString, CoercionAction.AsNull);
         return mapper;
     }
 
