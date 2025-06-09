@@ -1,27 +1,28 @@
 package com.hospital.service;
 
-/**
- * 🏥 ProDocService
- * 전문의(ProDoc) 정보 관련 비즈니스 로직 인터페이스
- */
 public interface HospitalDetailApiService {
-
+    
     /**
-     * ✅ 전체 병원 대상 전문의 데이터 API 호출 → 파싱 → 저장
-     * 비동기 방식으로 실행되며, 병원별 데이터를 병렬 처리함.
-     * @return 전체 병원 수 (작업 대상 수)
+     * 병원 전체를 대상으로 API 호출 후 병원 상세 데이터 비동기 저장 실행
+     * @return 처리 대상 병원 수
      */
     int updateAllHospitalDetails();
-
+    
     /**
-     * ✅ 완료된 병원 처리 건수 반환
-     * @return 완료된 병원 수
+     * 완료된 병원 처리 수 조회
+     * @return 완료된 작업 수
      */
     int getCompletedCount();
-
+    
     /**
-     * ✅ 실패한 병원 처리 건수 반환
-     * @return 실패한 병원 수
+     * 실패한 병원 처리 수 조회
+     * @return 실패한 작업 수
      */
     int getFailedCount();
+    
+    /**
+     * 전체 작업 수 조회
+     * @return 전체 작업 수
+     */
+    int getTotalCount();
 }

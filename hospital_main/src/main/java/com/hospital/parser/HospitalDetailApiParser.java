@@ -72,19 +72,38 @@ public class HospitalDetailApiParser {
                 response.getResponse().getBody().getItems() != null) {
                 
                 JsonNode itemsNode = response.getResponse().getBody().getItems();
-                JsonNode itemArrayNode = itemsNode.get("item");
-
-                if (itemArrayNode != null && itemArrayNode.isArray()) {
-                    for (JsonNode itemNode : itemArrayNode) {
+                
+                // 🔥 수정: 단일 item과 배열 item 모두 처리
+                if (itemsNode.isArray()) {
+                    // items가 직접 배열인 경우
+                    for (JsonNode itemNode : itemsNode) {
                         HospitalDetailApiItem item = objectMapper.treeToValue(itemNode, HospitalDetailApiItem.class);
                         HospitalDetail entity = convertDtoToEntity(item, hospitalCode);
                         entities.add(entity);
+                    }
+                } else {
+                    // items 안에 item 배열이 있는 경우
+                    JsonNode itemArrayNode = itemsNode.get("item");
+                    if (itemArrayNode != null) {
+                        if (itemArrayNode.isArray()) {
+                            for (JsonNode itemNode : itemArrayNode) {
+                                HospitalDetailApiItem item = objectMapper.treeToValue(itemNode, HospitalDetailApiItem.class);
+                                HospitalDetail entity = convertDtoToEntity(item, hospitalCode);
+                                entities.add(entity);
+                            }
+                        } else {
+                            // 단일 item인 경우
+                            HospitalDetailApiItem item = objectMapper.treeToValue(itemArrayNode, HospitalDetailApiItem.class);
+                            HospitalDetail entity = convertDtoToEntity(item, hospitalCode);
+                            entities.add(entity);
+                        }
                     }
                 }
             }
         } catch (Exception e) {
             log.error("HospitalDetailApiParser parse 오류 - hospitalCode: {}", hospitalCode, e);
-            throw new RuntimeException("HospitalDetailApiParser에서 엔티티 변환 오류 발생", e);
+            // 🔥 수정: 예외를 던지지 않고 빈 리스트 반환 (비동기 처리에서 한 병원 실패가 전체를 멈추지 않도록)
+            log.warn("병원코드 {} 파싱 실패, 빈 결과 반환", hospitalCode);
         }
         
         return entities;
@@ -112,22 +131,22 @@ public class HospitalDetailApiParser {
     private HospitalDetail convertDtoToEntity(HospitalDetailApiItem dto, String hospitalCode) {
         return HospitalDetail.builder()
                 .hospitalCode(hospitalCode)
-                .emyDayYn(dto.getEmyDayYn())
-                .emyNightYn(dto.getEmyNgtYn()) // 🔥 수정: 메서드명 통일
+                .emyDayYn(safeGetString(dto.getEmyDayYn()))
+                .emyNightYn(safeGetString(dto.getEmyNgtYn())) // 🔥 수정: 메서드명 통일
                 .parkQty(parseInteger(dto.getParkQty())) // 🔥 수정: 안전한 정수 변환
-                .lunchWeek(dto.getLunchWeek())
-                .rcvWeek(dto.getRcvWeek())
-                .rcvSat(dto.getRcvSat())
-                .trmtMonStart(dto.getTrmtMonStart())
-                .trmtMonEnd(dto.getTrmtMonEnd())
-                .trmtTueStart(dto.getTrmtTueStart())
-                .trmtTueEnd(dto.getTrmtTueEnd())
-                .trmtWedStart(dto.getTrmtWedStart())
-                .trmtWedEnd(dto.getTrmtWedEnd())
-                .trmtThurStart(dto.getTrmtThuStart()) // 🔥 수정: 메서드명 통일
-                .trmtThurEnd(dto.getTrmtThuEnd())   // 🔥 수정: 메서드명 통일
-                .trmtFriStart(dto.getTrmtFriStart())
-                .trmtFriEnd(dto.getTrmtFriEnd())
+                .lunchWeek(safeGetString(dto.getLunchWeek()))
+                .rcvWeek(safeGetString(dto.getRcvWeek()))
+                .rcvSat(safeGetString(dto.getRcvSat()))
+                .trmtMonStart(safeGetString(dto.getTrmtMonStart()))
+                .trmtMonEnd(safeGetString(dto.getTrmtMonEnd()))
+                .trmtTueStart(safeGetString(dto.getTrmtTueStart()))
+                .trmtTueEnd(safeGetString(dto.getTrmtTueEnd()))
+                .trmtWedStart(safeGetString(dto.getTrmtWedStart()))
+                .trmtWedEnd(safeGetString(dto.getTrmtWedEnd()))
+                .trmtThurStart(safeGetString(dto.getTrmtThuStart())) // 🔥 수정: 메서드명 통일
+                .trmtThurEnd(safeGetString(dto.getTrmtThuEnd()))   // 🔥 수정: 메서드명 통일
+                .trmtFriStart(safeGetString(dto.getTrmtFriStart()))
+                .trmtFriEnd(safeGetString(dto.getTrmtFriEnd()))
                 .build();
     }
 
@@ -145,5 +164,16 @@ public class HospitalDetailApiParser {
             log.warn("정수 변환 실패: {}", value);
             return null;
         }
+    }
+
+    /**
+     * 🔥 추가: 안전한 문자열 변환 메서드
+     * null이나 빈 문자열을 안전하게 처리
+     */
+    private String safeGetString(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
+        return value.trim();
     }
 }

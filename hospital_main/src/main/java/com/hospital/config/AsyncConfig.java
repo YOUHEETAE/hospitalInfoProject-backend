@@ -1,29 +1,37 @@
 package com.hospital.config;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.ThreadPoolExecutor;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-@EnableAsync
+import java.util.concurrent.Executor;
+
 @Configuration
+@EnableAsync
 public class AsyncConfig {
-	 @Bean(name = "proDocExecutor")
-	    public Executor taskExecutor() {
-	        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-	        executor.setCorePoolSize(20);
-	        executor.setMaxPoolSize(50);
-	        executor.setQueueCapacity(2000);
-	        executor.setThreadNamePrefix("ProDoc-Thread-");
 
-	        // ✨ 큐가 가득 찼을 때 현재 스레드가 직접 실행하게 처리
-	        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+    @Bean(name = "hospitalDetailExecutor")
+    public Executor hospitalDetailExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(5);        // 기본 스레드 수
+        executor.setMaxPoolSize(10);        // 최대 스레드 수
+        executor.setQueueCapacity(100);     // 큐 용량
+        executor.setThreadNamePrefix("HospitalDetail-");
+        executor.setRejectedExecutionHandler(new java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy());
+        executor.initialize();
+        return executor;
+    }
 
-	        executor.initialize();
-	        return executor;
-	    }
-
+    @Bean(name = "proDocExecutor")
+    public Executor proDocExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(5);
+        executor.setMaxPoolSize(10);
+        executor.setQueueCapacity(100);
+        executor.setThreadNamePrefix("ProDoc-");
+        executor.setRejectedExecutionHandler(new java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy());
+        executor.initialize();
+        return executor;
+    }
 }

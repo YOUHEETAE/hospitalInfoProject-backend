@@ -59,12 +59,6 @@ public class Hospital {
     @Column(name = "coordinate_y")
     private Double coordinateY;
     
-    @OneToOne(mappedBy = "hospital", cascade = CascadeType.ALL)
-    private HospitalDetail hospitalDetail;
-
-    @OneToMany(mappedBy = "hospital", cascade = CascadeType.ALL)
-    private List<ProDoc> proDocs;
-
 
 
 }
