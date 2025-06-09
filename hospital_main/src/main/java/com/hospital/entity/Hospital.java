@@ -1,13 +1,17 @@
 package com.hospital.entity;
 
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
 // JPA 관련 임포트 추가
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 // import jakarta.persistence.GeneratedValue; // 필요한 경우 (자동 생성되는 ID)
 // import jakarta.persistence.GenerationType; // 필요한 경우
-
 // Lombok 어노테이션은 유지합니다.
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -54,6 +58,13 @@ public class Hospital {
 
     @Column(name = "coordinate_y")
     private Double coordinateY;
+    
+    @OneToOne(mappedBy = "hospital", cascade = CascadeType.ALL)
+    private HospitalDetail hospitalDetail;
+
+    @OneToMany(mappedBy = "hospital", cascade = CascadeType.ALL)
+    private List<ProDoc> proDocs;
+
 
 
 }

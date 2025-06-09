@@ -65,6 +65,12 @@ public class HospitalDetail {
     private String trmtFriStart;
     @Column(name = "fri_end", length = 20)
     private String trmtFriEnd;
+    
+    // ✅ hospital_main 과의 1:1 관계 설정 추가
+    @OneToOne
+    @MapsId // hospital_code 를 공유 (PK = FK)
+    @JoinColumn(name = "hospital_code") // 외래키 설정
+    private Hospital hospital;
 
     
 }

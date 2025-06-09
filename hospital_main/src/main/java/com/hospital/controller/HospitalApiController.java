@@ -24,6 +24,7 @@ public class HospitalApiController {
 	private final HospitalMainService hospitalMainService;
 	private final HospitalDetailApiService hospitalDetailApiService; // HospitalDetailApiService 주입을 위해 추가
 	private final HospitalDetailApiCaller hospitalDetailApiCaller;
+	
 
 	public HospitalApiController(HospitalMainService hospitalMainService,
 			HospitalDetailApiService hospitalDetailApiService, HospitalDetailApiCaller hospitalDetailApiCaller) {
@@ -51,22 +52,11 @@ public class HospitalApiController {
 		return hospitalMainService.getAllHospitals();
 	}
 
-	@GetMapping("/details")
-	public ResponseEntity<String> fetchHospitalDetails() {
-		List<String> allDetails = hospitalDetailApiCaller.fetchAllHospitalDetails(1, 10);
-		String combinedJson = "[" + String.join(",", allDetails) + "]";
-		return ResponseEntity.ok().header("Content-Type", "application/json; charset=UTF-8").body(combinedJson);
+	 @GetMapping(value = "/save/details", produces = MediaType.TEXT_PLAIN_VALUE)
+		    public String updateHospitalDetails() {
+		        int total = hospitalDetailApiService.updateAllHospitalDetails(); // 전체 병원 수 반환
+		        return String.format("전문의 정보 저장 시작됨! 전체 병원 수: %d개.\n(실시간 진행상황은 로그에서 확인 가능)\n", total);
+		    }	
 	}
-
-	@PostMapping("/update-details")
-	public ResponseEntity<String> updateHospitalDetails() {
-		try {
-			// 페이지 번호, 한 페이지당 데이터 수 등 필요시 조절 가능
-			hospitalDetailApiService.updateAllHospitalDetails(1, 10);
-			return ResponseEntity.ok("병원 상세 정보 업데이트 성공");
-		} catch (Exception e) {
-			e.printStackTrace();
-			return ResponseEntity.status(500).body("병원 상세 정보 업데이트 실패: " + e.getMessage());
-		}
-	}
-}
+	
+	
