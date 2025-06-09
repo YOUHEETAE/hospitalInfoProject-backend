@@ -73,7 +73,7 @@ public class HospitalDetailApiParser {
                 
                 JsonNode itemsNode = response.getResponse().getBody().getItems();
                 
-                // 🔥 수정: 단일 item과 배열 item 모두 처리
+                // 🔥 기존 파싱 로직 복원
                 if (itemsNode.isArray()) {
                     // items가 직접 배열인 경우
                     for (JsonNode itemNode : itemsNode) {
@@ -97,18 +97,33 @@ public class HospitalDetailApiParser {
                             HospitalDetail entity = convertDtoToEntity(item, hospitalCode);
                             entities.add(entity);
                         }
+                    } else {
+                        // ← 여기에 빈 Entity 생성 추가
+                        log.info("상세 데이터 없음 - 빈 Entity 생성: {}", hospitalCode);
+                        HospitalDetail emptyEntity = HospitalDetail.builder()
+                                .hospitalCode(hospitalCode)
+                                .build();
+                        entities.add(emptyEntity);
                     }
                 }
+            } else {
+                // API 응답 자체가 이상할 때도 빈 Entity 생성
+                log.info("API 응답 이상 - 빈 Entity 생성: {}", hospitalCode);
+                HospitalDetail emptyEntity = HospitalDetail.builder()
+                        .hospitalCode(hospitalCode)
+                        .build();
+                entities.add(emptyEntity);
             }
         } catch (Exception e) {
-            log.error("HospitalDetailApiParser parse 오류 - hospitalCode: {}", hospitalCode, e);
-            // 🔥 수정: 예외를 던지지 않고 빈 리스트 반환 (비동기 처리에서 한 병원 실패가 전체를 멈추지 않도록)
-            log.warn("병원코드 {} 파싱 실패, 빈 결과 반환", hospitalCode);
+            log.error("파싱 오류 - 빈 Entity 생성: {}", hospitalCode, e);
+            HospitalDetail emptyEntity = HospitalDetail.builder()
+                    .hospitalCode(hospitalCode)
+                    .build();
+            entities.add(emptyEntity);
         }
         
         return entities;
     }
-
     /**
      * JSON 응답에서 아이템들을 파싱하고,
      * 각 아이템과 병원 코드를 받아 엔티티 리스트로 변환해서 반환

@@ -18,6 +18,7 @@ import lombok.AllArgsConstructor;
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class HospitalDetailApiItem {
+	
 
     @JsonProperty("emyDayYn")
     private String emyDayYn; // 주간 응급 진료 가능 여부

@@ -5,7 +5,6 @@ import com.hospital.repository.HospitalDetailRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -40,23 +39,12 @@ public class HospitalDetailApiServiceImpl implements HospitalDetailApiService {
      * @return 처리 대상 병원 수
      */
     @Override
-    @Transactional
     public int updateAllHospitalDetails() {
-        log.info("병원 상세정보 업데이트 시작");
-        
         // 기존 데이터 전체 삭제
-        long deletedCount = hospitalDetailRepository.count();
         hospitalDetailRepository.deleteAll();
-        log.info("기존 병원 상세정보 {}개 삭제 완료", deletedCount);
         
         // 병원 코드 리스트 불러오기
         List<String> hospitalCodes = hospitalMainService.getAllHospitalCodes();
-        if (hospitalCodes.isEmpty()) {
-            log.warn("처리할 병원 코드가 없습니다.");
-            return 0;
-        }
-        
-        log.info("총 {}개 병원의 상세정보를 처리합니다.", hospitalCodes.size());
         
         // 비동기 상태 초기화
         asyncRunner.resetCounter();
@@ -67,7 +55,6 @@ public class HospitalDetailApiServiceImpl implements HospitalDetailApiService {
             asyncRunner.runAsync(hospitalCode); // 🔁 비동기 실행
         }
         
-        log.info("비동기 처리 요청 완료. 진행상황은 로그에서 확인하세요.");
         return hospitalCodes.size(); // 전체 병원 수 반환
     }
     

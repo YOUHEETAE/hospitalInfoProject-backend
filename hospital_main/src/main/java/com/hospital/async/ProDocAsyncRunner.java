@@ -70,6 +70,8 @@ public class ProDocAsyncRunner {
         try {
             // 1. 병원코드를 쿼리 파라미터로 설정
             String queryParams = String.format("ykiho=%s", hospitalCode);
+            
+            log.info("🔍 API 파라미터: {}", hospitalCode); // ← 여기 추가
 
             // 2. 공공 API 호출 → JSON 파싱 → DTO 매핑
             ProDocApiResponse response = apiCaller.callApi("getSpcSbjtSdrInfo2.7", queryParams);
@@ -79,6 +81,7 @@ public class ProDocAsyncRunner {
 
             // 4. 변환된 데이터가 있을 경우에만 저장
             if (!parsed.isEmpty()) {
+            	
                 repository.saveAll(parsed);
             }
 
