@@ -1,7 +1,7 @@
 package com.hospital.service;
 
 import com.hospital.async.ProDocAsyncRunner;
-import com.hospital.repository.ProDocRepository;
+import com.hospital.repository.ProDocApiRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,16 +12,16 @@ import java.util.List;
  * 전문의(ProDoc) 정보 수집 및 저장 기능 구현체
  */
 @Service
-public class ProDocServiceImpl implements ProDocService {
+public class ProDocApiServiceImpl implements ProDocApiService {
 
-    private final HospitalMainService hospitalMainService; // 병원 목록 가져오는 서비스
+    private final HospitalMainApiService hospitalMainService; // 병원 목록 가져오는 서비스
     private final ProDocAsyncRunner asyncRunner;           // 전문의 API 비동기 실행기
-    private final ProDocRepository proDocRepository;       // 전문의 정보 저장소 (JPA)
+    private final ProDocApiRepository proDocRepository;       // 전문의 정보 저장소 (JPA)
 
     @Autowired
-    public ProDocServiceImpl(HospitalMainService hospitalMainService,
+    public ProDocApiServiceImpl(HospitalMainApiService hospitalMainService,
                              ProDocAsyncRunner asyncRunner,
-                             ProDocRepository proDocRepository) {
+                             ProDocApiRepository proDocRepository) {
         this.hospitalMainService = hospitalMainService;
         this.asyncRunner = asyncRunner;
         this.proDocRepository = proDocRepository;

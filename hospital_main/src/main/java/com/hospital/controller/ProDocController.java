@@ -1,6 +1,6 @@
 package com.hospital.controller;
 
-import com.hospital.service.ProDocService;
+import com.hospital.service.ProDocApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/prodoc") // ✔️ 전문의 관련 API는 이 prefix를 사용함
 public class ProDocController {
 
-    private final ProDocService proDocService;
+    private final ProDocApiService proDocService;
 
     @Autowired
-    public ProDocController(ProDocService proDocService) {
+    public ProDocController(ProDocApiService proDocService) {
         this.proDocService = proDocService;
     }
 

@@ -5,7 +5,7 @@ import com.hospital.client.HospitalDetailApiCaller;
 import com.hospital.dto.api.HospitalDetailApiResponse;
 import com.hospital.entity.HospitalDetail;
 import com.hospital.parser.HospitalDetailApiParser;
-import com.hospital.repository.HospitalDetailRepository;
+import com.hospital.repository.HospitalDetailApiRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -22,7 +22,7 @@ public class HospitalDetailAsyncRunner {
     // 의존성 주입: API 호출, 파싱, 저장을 담당하는 객체들
     private final HospitalDetailApiCaller apiCaller;
     private final HospitalDetailApiParser parser;
-    private final HospitalDetailRepository repository;
+    private final HospitalDetailApiRepository repository;
 
     // 처리 상태 추적용 카운터
     private final AtomicInteger completedCount = new AtomicInteger(0); // 성공
@@ -32,7 +32,7 @@ public class HospitalDetailAsyncRunner {
     @Autowired
     public HospitalDetailAsyncRunner(HospitalDetailApiCaller apiCaller,
                                    HospitalDetailApiParser parser,
-                                   HospitalDetailRepository repository) {
+                                   HospitalDetailApiRepository repository) {
         this.apiCaller = apiCaller;
         this.parser = parser;
         this.repository = repository;

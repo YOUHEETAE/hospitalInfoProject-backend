@@ -12,33 +12,39 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hospital.client.HospitalDetailApiCaller;
-import com.hospital.entity.Hospital;
+import com.hospital.entity.HospitalMain;
 import com.hospital.service.HospitalDetailApiService;
-import com.hospital.service.HospitalMainService;
+import com.hospital.service.HospitalMainApiService;
+import com.hospital.service.MedicalSubjectApiService;
+import com.hospital.service.ProDocApiService;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/hospitals")
+@RequestMapping("/api")
 public class HospitalApiController {
     
-    private final HospitalMainService hospitalMainService;
+    private final HospitalMainApiService hospitalMainService;
     private final HospitalDetailApiService hospitalDetailApiService;
-    private final HospitalDetailApiCaller hospitalDetailApiCaller;
+    private final MedicalSubjectApiService medicalSubjectApiService;
+    private final ProDocApiService proDocApiService;
     
-    public HospitalApiController(HospitalMainService hospitalMainService,
+    public HospitalApiController(HospitalMainApiService hospitalMainService,
                                HospitalDetailApiService hospitalDetailApiService, 
-                               HospitalDetailApiCaller hospitalDetailApiCaller) {
+                               MedicalSubjectApiService medicalSubjectApiService,
+                               ProDocApiService proDocApiService) {
         this.hospitalMainService = hospitalMainService;
         this.hospitalDetailApiService = hospitalDetailApiService;
-        this.hospitalDetailApiCaller = hospitalDetailApiCaller;
+        this.medicalSubjectApiService = medicalSubjectApiService;
+        this.proDocApiService = proDocApiService;
+        
     }
     
     /**
      * 병원 기본 정보를 DB에 저장
      */
-    @PostMapping(value = "/save", produces = MediaType.TEXT_PLAIN_VALUE)
+    @PostMapping(value = "/main/save", produces = MediaType.TEXT_PLAIN_VALUE)
     public String saveHospitalsToDb() {
         int savedCount = 0;
         try {
@@ -57,7 +63,7 @@ public class HospitalApiController {
      * DB에 저장된 모든 병원 정보 조회
      */
     @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Hospital> getAllHospitals() {
+    public List<HospitalMain> getAllHospitals() {
         log.info("DB에서 모든 병원 정보 조회 중...");
         return hospitalMainService.getAllHospitals();
     }
@@ -65,7 +71,7 @@ public class HospitalApiController {
     /**
      * 병원 상세 정보 수집 시작 (비동기 처리)
      */
-    @PostMapping(value = "/details/update", produces = MediaType.TEXT_PLAIN_VALUE)
+    @PostMapping(value = "/details/save", produces = MediaType.TEXT_PLAIN_VALUE)
     public String updateHospitalDetails() {
         try {
             int total = hospitalDetailApiService.updateAllHospitalDetails(); // 전체 병원 수 반환
@@ -102,5 +108,35 @@ public class HospitalApiController {
         }
         
         return ResponseEntity.ok(status);
+    }
+    @GetMapping(value = "/medical/save", produces = MediaType.TEXT_PLAIN_VALUE)
+    public String saveSubjects() {
+        int total = medicalSubjectApiService.fetchParseAndSaveMedicalSubjects(); // 전체 병원 수 반환
+        return String.format("진료과목 저장 시작됨! 전체 병원 수: %d개\n(진행상황은 로그 또는 /status API로 확인)\n", total);
+    }
+
+   
+    @GetMapping(value = "/medical/status", produces = MediaType.TEXT_PLAIN_VALUE)
+    public String getMedicalStatus() {
+        int done = medicalSubjectApiService.getCompletedCount(); // 완료된 병원 수
+        int fail = medicalSubjectApiService.getFailedCount();    // 실패한 병원 수
+        return String.format("진료과목 진행상황: 완료 %d건, 실패 %d건\n", done, fail);
+    }
+    
+    @GetMapping(value = "/proDoc/save", produces = MediaType.TEXT_PLAIN_VALUE)
+    public String syncProDocData() {
+        int total = proDocApiService.fetchParseAndSaveProDocs(); // 전체 병원 수 반환
+        return String.format("전문의 정보 저장 시작됨! 전체 병원 수: %d개.\n(실시간 진행상황은 로그에서 확인 가능)\n", total);
+    }
+
+    /**
+     * 전문의 정보 저장 진행상황 확인 API
+     * - 병원 단위로 완료/실패 카운트 반환
+     */
+    @GetMapping(value = "/proDoc/status", produces = MediaType.TEXT_PLAIN_VALUE)
+    public String getProDocStatus() {
+        int done = proDocApiService.getCompletedCount(); // 저장 완료된 병원 수
+        int fail = proDocApiService.getFailedCount();    // 실패한 병원 수
+        return String.format("현재 진행상황: 완료 %d건, 실패 %d건\n", done, fail);
     }
 }

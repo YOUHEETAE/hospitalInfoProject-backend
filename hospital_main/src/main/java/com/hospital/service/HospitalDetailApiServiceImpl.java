@@ -1,7 +1,7 @@
 package com.hospital.service;
 
 import com.hospital.async.HospitalDetailAsyncRunner;
-import com.hospital.repository.HospitalDetailRepository;
+import com.hospital.repository.HospitalDetailApiRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,14 +16,14 @@ import java.util.List;
 @Service
 public class HospitalDetailApiServiceImpl implements HospitalDetailApiService {
     
-    private final HospitalMainService hospitalMainService; // 병원 목록 가져오는 서비스
+    private final HospitalMainApiService hospitalMainService; // 병원 목록 가져오는 서비스
     private final HospitalDetailAsyncRunner asyncRunner;   // 병원 상세정보 API 비동기 실행기
-    private final HospitalDetailRepository hospitalDetailRepository; // 병원 상세정보 저장소 (JPA)
+    private final HospitalDetailApiRepository hospitalDetailRepository; // 병원 상세정보 저장소 (JPA)
     
     @Autowired
-    public HospitalDetailApiServiceImpl(HospitalMainService hospitalMainService,
+    public HospitalDetailApiServiceImpl(HospitalMainApiService hospitalMainService,
                                       HospitalDetailAsyncRunner asyncRunner,
-                                      HospitalDetailRepository hospitalDetailRepository) {
+                                      HospitalDetailApiRepository hospitalDetailRepository) {
         this.hospitalMainService = hospitalMainService;
         this.asyncRunner = asyncRunner;
         this.hospitalDetailRepository = hospitalDetailRepository;

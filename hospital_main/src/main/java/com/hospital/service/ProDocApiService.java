@@ -4,7 +4,7 @@ package com.hospital.service;
  * 🏥 ProDocService
  * 전문의(ProDoc) 정보 관련 비즈니스 로직 인터페이스
  */
-public interface ProDocService {
+public interface ProDocApiService {
 
     /**
      * ✅ 전체 병원 대상 전문의 데이터 API 호출 → 파싱 → 저장

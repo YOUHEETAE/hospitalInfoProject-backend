@@ -1,5 +1,7 @@
 package com.hospital.entity;
 
+import java.util.List;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -65,6 +67,43 @@ public class HospitalDetail {
     private String trmtFriStart;
     @Column(name = "fri_end", length = 20)
     private String trmtFriEnd;
+    
+    @OneToOne
+    @JoinColumn(name = "hospital_code", referencedColumnName = "hospital_code", insertable = false, updatable = false)
+    private HospitalMain hospital;
+    
+    
+    // ✅ 도메인 로직: 태그 필터링
+    public boolean matchesTags(List<String> tags) {
+        if (tags == null || tags.isEmpty()) {
+            return true; // 태그가 없으면 필터링 안 함
+        }
+        
+        for (String tag : tags) {
+            if ("응급실".equals(tag) && !hasEmergencyService()) {
+                return false; // 응급실 필터링 조건에 안 맞으면 제외
+            }
+            if ("주차가능".equals(tag) && !hasParkingSpace()) {
+                return false; // 주차 가능 조건에 안 맞으면 제외
+            }
+        }
+        return true; // 모든 태그 조건을 만족하면 포함
+    }
+    
+    // ✅ 응급실 서비스 가능 여부 체크
+    public boolean hasEmergencyService() {
+        // em_day_yn과 em_night_yn이 둘 다 null이거나 둘 다 'N'이면 false
+        boolean dayAvailable = "Y".equals(this.emyDayYn);
+        boolean nightAvailable = "Y".equals(this.emyNightYn);
+        
+        return dayAvailable || nightAvailable; // 하나라도 Y면 true
+    }
+    
+    // ✅ 주차 가능 여부 체크
+    public boolean hasParkingSpace() {
+        // parking_capacity가 null이거나 0이면 false
+        return this.parkQty != null && this.parkQty > 0;
+    }
     
   
     

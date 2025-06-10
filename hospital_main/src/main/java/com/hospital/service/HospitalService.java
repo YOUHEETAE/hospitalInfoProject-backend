@@ -1,9 +1,14 @@
 package com.hospital.service;
 
+import com.hospital.dto.web.HospitalResponseDTO;
 import java.util.List;
 
-import com.hospital.dto.web.HospitalDTO;
-
 public interface HospitalService {
-    List<HospitalDTO> getHospitals(String sub, double userLat, double userLng, double radius, List<String> tags);
+    
+    /**
+     * 진료과목으로 병원 검색 (모든 필터링 포함)
+     */
+    List<HospitalResponseDTO> getHospitals(String subject, double userLat, double userLng, double radius, List<String> tags);
+    
+  
 }

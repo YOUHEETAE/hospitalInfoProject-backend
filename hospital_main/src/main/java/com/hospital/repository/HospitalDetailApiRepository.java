@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface HospitalDetailRepository extends JpaRepository<HospitalDetail, String> {
+public interface HospitalDetailApiRepository extends JpaRepository<HospitalDetail, String> {
     // JpaRepository는 기본적인 CRUD (Create, Read, Update, Delete) 메서드를 제공합니다.
     // HospitalDetail 엔티티와 그 엔티티의 ID 타입(String)을 지정합니다.
 

@@ -6,6 +6,7 @@ import jakarta.persistence.CascadeType;
 // JPA 관련 임포트 추가
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
@@ -26,7 +27,7 @@ import lombok.ToString; // toString() 메서드를 자동으로 생성해주는 
 @ToString // 디버깅에 유용
 @Entity // 이 클래스가 JPA 엔티티임을 선언
 @Table(name = "hospital_main") // 매핑할 테이블 이름 지정 (원하는 이름으로 변경 가능)
-public class Hospital {
+public class HospitalMain {
 
     @Id // 이 필드가 테이블의 기본 키(Primary Key)임을 나타냅니다.
     @Column(name = "hospital_code", nullable = false, length = 255) // 컬럼 이름과 속성 지정
@@ -58,6 +59,15 @@ public class Hospital {
 
     @Column(name = "coordinate_y")
     private Double coordinateY;
+    
+    @OneToOne(mappedBy = "hospital", fetch = FetchType.LAZY)
+    private HospitalDetail hospitalDetail;
+    
+    @OneToMany(mappedBy = "hospital", fetch = FetchType.LAZY)
+    private List<MedicalSubject> medicalSubjects;
+    
+    @OneToMany(mappedBy = "hospital", fetch = FetchType.LAZY)
+    private List<ProDoc> proDocs;
     
 
 

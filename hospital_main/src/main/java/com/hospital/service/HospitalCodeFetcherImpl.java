@@ -1,6 +1,6 @@
 package com.hospital.service;
 
-import com.hospital.repository.HospitalMainRepository;
+import com.hospital.repository.HospitalMainApiRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -8,9 +8,9 @@ import java.util.List;
 @Service
 public class HospitalCodeFetcherImpl implements HospitalCodeFetcher {
 
-    private final HospitalMainRepository hospitalMainRepository;
+    private final HospitalMainApiRepository hospitalMainRepository;
 
-    public HospitalCodeFetcherImpl(HospitalMainRepository hospitalMainRepository) {
+    public HospitalCodeFetcherImpl(HospitalMainApiRepository hospitalMainRepository) {
         this.hospitalMainRepository = hospitalMainRepository;
     }
 

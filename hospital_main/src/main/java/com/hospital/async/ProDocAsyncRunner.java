@@ -6,7 +6,7 @@ import com.hospital.client.ProDocApiCaller;
 import com.hospital.dto.api.ProDocApiResponse;
 import com.hospital.entity.ProDoc;
 import com.hospital.parser.ProDocApiParser;
-import com.hospital.repository.ProDocRepository;
+import com.hospital.repository.ProDocApiRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -23,7 +23,7 @@ public class ProDocAsyncRunner {
     // 의존성 주입: API 호출, 파싱, 저장을 담당하는 객체들
     private final ProDocApiCaller apiCaller;
     private final ProDocApiParser parser;
-    private final ProDocRepository repository;
+    private final ProDocApiRepository repository;
 
     // 처리 상태 추적용 카운터
     private final AtomicInteger completedCount = new AtomicInteger(0); // 성공
@@ -33,7 +33,7 @@ public class ProDocAsyncRunner {
     @Autowired
     public ProDocAsyncRunner(ProDocApiCaller apiCaller,
                               ProDocApiParser parser,
-                              ProDocRepository repository) {
+                              ProDocApiRepository repository) {
         this.apiCaller = apiCaller;
         this.parser = parser;
         this.repository = repository;

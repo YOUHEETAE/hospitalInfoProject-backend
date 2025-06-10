@@ -2,12 +2,12 @@ package com.hospital.service;
 
 import java.util.List;
 
-import com.hospital.entity.Hospital;
+import com.hospital.entity.HospitalMain;
 
-public interface HospitalMainService {
+public interface HospitalMainApiService {
 	int fetchParseAndSaveHospitals();
 
-	List<Hospital> getAllHospitals();
+	List<HospitalMain> getAllHospitals();
 	
 	List<String> getAllHospitalCodes();
 
