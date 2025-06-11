@@ -28,19 +28,6 @@ public class ProDoc {
     private HospitalMain hospital;
     
     
- // ✅ 도메인 로직: 태그 필터링
-    public boolean matchesTags(List<String> tags) {
-        if (tags == null || tags.isEmpty()) {
-            return true; // 태그가 없으면 필터링 안 함
-        }
-
-        for (String tag : tags) {
-            if ("전문의".equals(tag) && !hasSpecialist()) {
-                return false; // 전문의 필터링 조건에 안 맞으면 제외
-            }
-        }
-        return true; // 모든 태그 조건을 만족하면 포함
-    }
 
     // ✅ 전문의 존재 여부 체크
     public boolean hasSpecialist() {

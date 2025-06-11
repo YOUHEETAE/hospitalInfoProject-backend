@@ -109,7 +109,7 @@ public class HospitalApiController {
         
         return ResponseEntity.ok(status);
     }
-    @GetMapping(value = "/medical/save", produces = MediaType.TEXT_PLAIN_VALUE)
+    @PostMapping(value = "/medical/save", produces = MediaType.TEXT_PLAIN_VALUE)
     public String saveSubjects() {
         int total = medicalSubjectApiService.fetchParseAndSaveMedicalSubjects(); // 전체 병원 수 반환
         return String.format("진료과목 저장 시작됨! 전체 병원 수: %d개\n(진행상황은 로그 또는 /status API로 확인)\n", total);

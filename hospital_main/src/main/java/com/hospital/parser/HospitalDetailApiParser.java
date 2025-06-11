@@ -149,6 +149,7 @@ public class HospitalDetailApiParser {
                 .emyDayYn(safeGetString(dto.getEmyDayYn()))
                 .emyNightYn(safeGetString(dto.getEmyNgtYn())) // 🔥 수정: 메서드명 통일
                 .parkQty(parseInteger(dto.getParkQty())) // 🔥 수정: 안전한 정수 변환
+                .parkXpnsYn(safeGetString(dto.getParkXpnsYn()))  
                 .lunchWeek(safeGetString(dto.getLunchWeek()))
                 .rcvWeek(safeGetString(dto.getRcvWeek()))
                 .rcvSat(safeGetString(dto.getRcvSat()))
@@ -162,6 +163,10 @@ public class HospitalDetailApiParser {
                 .trmtThurEnd(safeGetString(dto.getTrmtThuEnd()))   // 🔥 수정: 메서드명 통일
                 .trmtFriStart(safeGetString(dto.getTrmtFriStart()))
                 .trmtFriEnd(safeGetString(dto.getTrmtFriEnd()))
+                .trmtSatStart(safeGetString(dto.getTrmtSatStart()))  // 토요일 진료 시작
+                .trmtSatEnd(safeGetString(dto.getTrmtSatEnd()))      // 토요일 진료 종료
+                .trmtSunStart(safeGetString(dto.getTrmtSunStart()))  // 일요일 진료 시작
+                .trmtSunEnd(safeGetString(dto.getTrmtSunEnd())) 
                 .build();
     }
 

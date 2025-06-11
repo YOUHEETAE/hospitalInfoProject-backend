@@ -28,6 +28,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -35,6 +36,9 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.socket.config.annotation.EnableWebSocket;
+import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
+import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,6 +46,7 @@ import com.fasterxml.jackson.databind.cfg.CoercionAction;
 import com.fasterxml.jackson.databind.cfg.CoercionInputShape;
 import com.fasterxml.jackson.databind.type.LogicalType;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.hospital.websocket.EmergencyApiWebSocketHandler;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -52,7 +57,9 @@ import java.nio.charset.StandardCharsets;
 @EnableTransactionManagement
 @EnableJpaRepositories(basePackages = "com.hospital.repository")
 @EnableWebMvc
-public class AppConfig {
+@EnableWebSocket
+@EnableScheduling
+public class AppConfig implements WebMvcConfigurer, WebSocketConfigurer{
 	
 
     @Bean
@@ -102,12 +109,30 @@ public class AppConfig {
         System.out.println("RestTemplate 설정 완료. 메시지 컨버터 개수: " + messageConverters.size());
         return restTemplate;
     }
-
-    // WebClient 빈 등록 추가
     @Bean
-    public WebClient webClient() {
-        return WebClient.builder().build();
+    public EmergencyApiWebSocketHandler emergencyApiWebSocketHandler() {
+        return new EmergencyApiWebSocketHandler();
     }
+    
+    // WebSocket 핸들러 등록
+    @Override
+    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+        registry.addHandler(emergencyApiWebSocketHandler(), "/emergency-websocket")
+                .setAllowedOrigins("*"); // 실제 운영에서는 도메인 명시하세요
+    }
+    
+    // 스케줄링을 위한 TaskExecutor
+    @Bean
+    public Executor taskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(5);
+        executor.setQueueCapacity(100);
+        executor.setThreadNamePrefix("Emergency-");
+        executor.initialize();
+        return executor;
+    }
+
   
 
     // 기존 ObjectMapper - JSON 처리용

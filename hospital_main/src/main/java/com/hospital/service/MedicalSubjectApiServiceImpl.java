@@ -38,7 +38,9 @@ public class MedicalSubjectApiServiceImpl implements MedicalSubjectApiService {
      */
     @Override
     public int fetchParseAndSaveMedicalSubjects() {
-    	medicalSubjectRepository.deleteAll();
+    	 medicalSubjectRepository.deleteAllSubjects();
+
+         medicalSubjectRepository.resetAutoIncrement();
     	
         List<String> hospitalCodes = hospitalMainService.getAllHospitalCodes();
 

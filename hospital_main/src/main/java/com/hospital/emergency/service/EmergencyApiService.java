@@ -1,5 +1,6 @@
 package com.hospital.emergency.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -9,10 +10,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.hospital.websocket.EmergencyApiWebSocketHandler;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -31,12 +34,46 @@ public class EmergencyApiService {
 
     @Value("${hospital.emergency.api.serviceKey}")
     private String serviceKey;
+    
+    @Autowired
+    private EmergencyApiWebSocketHandler webSocketHandler;
+
+    
+    
 
     public EmergencyApiService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
         this.xmlMapper = new XmlMapper();
         this.jsonMapper = new ObjectMapper();
+        
+        
     }
+    
+    // 스케줄링 메서드 추가 - 30초마다 실행
+    @Scheduled(fixedRate = 30000)
+    public void updateEmergencyRoomData() {
+        try {
+            System.out.println("응급실 데이터 업데이트 시작...");
+            String apiData = callEmergencyApi();
+            
+            if (apiData != null && !apiData.trim().isEmpty()) {
+                webSocketHandler.broadcastEmergencyRoomData(apiData);
+                System.out.println("응급실 데이터 WebSocket 브로드캐스트 완료");
+            } else {
+                System.out.println("API 응답 데이터가 비어있습니다.");
+            }
+            
+        } catch (Exception e) {
+            System.err.println("응급실 데이터 업데이트 중 오류 발생:");
+            e.printStackTrace();
+        }
+    }
+    
+    // 초기 데이터 가져오기용 메서드 추가
+    public String getEmergencyRoomData() {
+        return callEmergencyApi();
+    }
+    
 
     public String callEmergencyApi() {
         String stage1 = "성남시";

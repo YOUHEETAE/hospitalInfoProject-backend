@@ -32,6 +32,10 @@ public class HospitalDetail {
 
     @Column(name = "parking_capacity")
     private Integer parkQty; // 주차 가능 대수 (API는 parkQty)
+    
+    // 주차비 유료 여부
+    @Column(name = "park_xpns_yn")
+    private String parkXpnsYn;
 
     @Column(name = "weekday_lunch", length = 50)
     private String lunchWeek; // 점심시간
@@ -68,27 +72,28 @@ public class HospitalDetail {
     @Column(name = "fri_end", length = 20)
     private String trmtFriEnd;
     
+ // 토요일 진료시간
+    @Column(name = "trmt_sat_start")
+    private String trmtSatStart;
+
+    @Column(name = "trmt_sat_end") 
+    private String trmtSatEnd;
+
+    // 일요일 진료시간
+    @Column(name = "trmt_sun_start")
+    private String trmtSunStart;
+
+    @Column(name = "trmt_sun_end")
+    private String trmtSunEnd;
+
+  
+    
     @OneToOne
     @JoinColumn(name = "hospital_code", referencedColumnName = "hospital_code", insertable = false, updatable = false)
     private HospitalMain hospital;
     
     
-    // ✅ 도메인 로직: 태그 필터링
-    public boolean matchesTags(List<String> tags) {
-        if (tags == null || tags.isEmpty()) {
-            return true; // 태그가 없으면 필터링 안 함
-        }
-        
-        for (String tag : tags) {
-            if ("응급실".equals(tag) && !hasEmergencyService()) {
-                return false; // 응급실 필터링 조건에 안 맞으면 제외
-            }
-            if ("주차가능".equals(tag) && !hasParkingSpace()) {
-                return false; // 주차 가능 조건에 안 맞으면 제외
-            }
-        }
-        return true; // 모든 태그 조건을 만족하면 포함
-    }
+   
     
     // ✅ 응급실 서비스 가능 여부 체크
     public boolean hasEmergencyService() {
@@ -104,7 +109,43 @@ public class HospitalDetail {
         // parking_capacity가 null이거나 0이면 false
         return this.parkQty != null && this.parkQty > 0;
     }
-    
+    /**
+     * 무료주차 가능 여부
+     */
+    public boolean isFreeParking() {
+        return "N".equals(this.parkXpnsYn); // N = 무료
+    }
+
+    /**
+     * 토요일 진료 가능 여부
+     */
+    public boolean isSaturdayAvailable() {
+        return isValidTime(this.trmtSatStart) && isValidTime(this.trmtSatEnd);
+    }
+
+    /**
+     * 일요일 진료 가능 여부
+     */
+    public boolean isSundayAvailable() {
+        return isValidTime(this.trmtSunStart) && isValidTime(this.trmtSunEnd);
+    }
+
+    /**
+     * 주말 진료 가능 여부 (토요일 또는 일요일)
+     */
+    public boolean isWeekendAvailable() {
+        return isSaturdayAvailable() || isSundayAvailable() || hasEmergencyService();
+    }
+
+    /**
+     * 유효한 시간 값인지 체크
+     */
+    private boolean isValidTime(String timeStr) {
+        return timeStr != null && 
+               !timeStr.trim().isEmpty() && 
+               !"(NULL)".equals(timeStr) &&
+               timeStr.matches("\\d{4}"); // 4자리 숫자
+    }
   
     
 }
