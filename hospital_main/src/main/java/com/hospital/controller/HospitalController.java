@@ -16,17 +16,17 @@ import java.util.List;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
-public class MapController {
+public class HospitalController {
 
     private final HospitalService hospitalService;
 
     @Autowired
-    public MapController(HospitalService hospitalService) {
+    public HospitalController(HospitalService hospitalService) {
         this.hospitalService = hospitalService;
     }
     
     
-    @GetMapping(value ="/mapData", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value ="/hospitalData", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<HospitalResponseDTO> getHospitals(@RequestParam String sub, @RequestParam double userLat, 
     		                              @RequestParam double userLng ,@RequestParam double radius,      		                              
     		                              @RequestParam(required = false) List<String> tags) {

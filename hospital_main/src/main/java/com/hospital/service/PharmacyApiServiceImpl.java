@@ -18,10 +18,12 @@ import java.util.List;
 public class PharmacyApiServiceImpl implements PharmacyApiService {
 
     private final PharmacyApiCaller apiCaller;
-    private final PharmacyApiRepository repository;
+    private final PharmacyApiRepository pharmacyApirepository;
 
     @Override
     public int fetchAndSaveByDistrict(String sgguCd) {
+    	pharmacyApirepository.deleteAll();
+    	
         OpenApiWrapper.Body body = apiCaller.callApiByDistrict(sgguCd);
 
         // ✅ 예외 처리: 응답 또는 아이템이 비어있는 경우
@@ -46,7 +48,7 @@ public class PharmacyApiServiceImpl implements PharmacyApiService {
 
         for (PharmacyApiItem item : items) {
             // 중복 여부 확인
-            if (repository.existsByYkiho(item.getYkiho())) {
+            if (pharmacyApirepository.existsByYkiho(item.getYkiho())) {
                 continue;
             }
 
@@ -60,7 +62,7 @@ public class PharmacyApiServiceImpl implements PharmacyApiService {
             pharmacy.setYkiho(item.getYkiho());
 
             // 저장
-            repository.save(pharmacy);
+            pharmacyApirepository.save(pharmacy);
             savedCount++;
             
             

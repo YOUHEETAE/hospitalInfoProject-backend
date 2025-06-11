@@ -18,7 +18,7 @@ import java.util.List;
 
 
 
-@Repository
+
 
 public interface MedicalSubjectApiRepository extends JpaRepository<MedicalSubject, Long> {
 

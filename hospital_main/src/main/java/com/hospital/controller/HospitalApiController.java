@@ -16,6 +16,7 @@ import com.hospital.entity.HospitalMain;
 import com.hospital.service.HospitalDetailApiService;
 import com.hospital.service.HospitalMainApiService;
 import com.hospital.service.MedicalSubjectApiService;
+import com.hospital.service.PharmacyApiService;
 import com.hospital.service.ProDocApiService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -29,15 +30,18 @@ public class HospitalApiController {
     private final HospitalDetailApiService hospitalDetailApiService;
     private final MedicalSubjectApiService medicalSubjectApiService;
     private final ProDocApiService proDocApiService;
+    private final PharmacyApiService pharmacyApiService;
     
     public HospitalApiController(HospitalMainApiService hospitalMainService,
                                HospitalDetailApiService hospitalDetailApiService, 
                                MedicalSubjectApiService medicalSubjectApiService,
-                               ProDocApiService proDocApiService) {
+                               ProDocApiService proDocApiService,
+                               PharmacyApiService pharmacyApiService) {
         this.hospitalMainService = hospitalMainService;
         this.hospitalDetailApiService = hospitalDetailApiService;
         this.medicalSubjectApiService = medicalSubjectApiService;
         this.proDocApiService = proDocApiService;
+        this.pharmacyApiService = pharmacyApiService;
         
     }
     
@@ -138,5 +142,17 @@ public class HospitalApiController {
         int done = proDocApiService.getCompletedCount(); // 저장 완료된 병원 수
         int fail = proDocApiService.getFailedCount();    // 실패한 병원 수
         return String.format("현재 진행상황: 완료 %d건, 실패 %d건\n", done, fail);
+    }
+    
+    @PostMapping(value = "/save", produces = "text/plain;charset=UTF-8")
+    public String savePharmacyData() {
+        String[] sgguCodes = {"310401", "310402", "310403"};
+        int totalSaved = 0;
+
+        for (String sgguCd : sgguCodes) {
+            totalSaved += pharmacyApiService.fetchAndSaveByDistrict(sgguCd);
+        }
+
+        return String.format("✅ 약국 데이터 저장 완료! 총 %d건 저장됨 (성남시 전체)", totalSaved);
     }
 }

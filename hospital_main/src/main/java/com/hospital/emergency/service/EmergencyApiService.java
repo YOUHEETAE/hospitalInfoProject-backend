@@ -50,7 +50,7 @@ public class EmergencyApiService {
     }
     
     // 스케줄링 메서드 추가 - 30초마다 실행
-    @Scheduled(fixedRate = 30000)
+    //@Scheduled(fixedRate = 30000)
     public void updateEmergencyRoomData() {
         try {
             System.out.println("응급실 데이터 업데이트 시작...");
