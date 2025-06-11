@@ -11,11 +11,13 @@ import com.hospital.dto.web.HospitalResponseDTO;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(readOnly = true)
 public class HospitalServiceImpl implements HospitalService {
 
 	private final HospitalRepository hospitalRepository;
@@ -35,10 +37,10 @@ public class HospitalServiceImpl implements HospitalService {
 	}
 
 	@Override
-	public List<HospitalResponseDTO> getHospitals(String sub, double userLat, double userLng, double radius,
+	public List<HospitalResponseDTO> getHospitals(List<String> subs, double userLat, double userLng, double radius,
 			List<String> tags) {
 
-		List<HospitalMain> hospitalEntities = hospitalRepository.findHospitalsBySubject(sub);
+		List<HospitalMain> hospitalEntities = hospitalRepository.findHospitalsBySubjects(subs);
 		
 		List<HospitalResponseDTO> hospitals = hospitalEntities.stream()
 

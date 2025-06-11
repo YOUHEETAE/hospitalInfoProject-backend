@@ -27,9 +27,9 @@ public class HospitalController {
     
     
     @GetMapping(value ="/hospitalData", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<HospitalResponseDTO> getHospitals(@RequestParam String sub, @RequestParam double userLat, 
+    public List<HospitalResponseDTO> getHospitals(@RequestParam List<String> subs, @RequestParam double userLat, 
     		                              @RequestParam double userLng ,@RequestParam double radius,      		                              
     		                              @RequestParam(required = false) List<String> tags) {
-        return hospitalService.getHospitals(sub, userLat, userLng, radius, tags); // 서비스에서 병원 데이터 가져오기
+        return hospitalService.getHospitals(subs, userLat, userLng, radius, tags); // 서비스에서 병원 데이터 가져오기
     }
 }

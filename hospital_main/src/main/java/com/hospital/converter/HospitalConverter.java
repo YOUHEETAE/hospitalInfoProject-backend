@@ -2,8 +2,10 @@ package com.hospital.converter;
 
 import com.hospital.dto.web.HospitalResponseDTO;
 import com.hospital.entity.HospitalMain;
+import com.hospital.entity.MedicalSubject;
 import com.hospital.entity.HospitalDetail;
 import com.hospital.entity.ProDoc;
+
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -21,6 +23,7 @@ public class HospitalConverter {
         }
         
         HospitalDetail detail = hospital.getHospitalDetail();
+        List<MedicalSubject> subject = hospital.getMedicalSubjects();
         
         return HospitalResponseDTO.builder()
             // 기본 정보
@@ -42,6 +45,7 @@ public class HospitalConverter {
             .emergencyNightAvailable(detail != null ? detail.getEmyNightYn() : null)
             .weekdayLunch(detail != null ? detail.getLunchWeek() : null)
             .parkingCapacity(detail != null ? detail.getParkQty() : null)
+            .parkingFee(detail != null ? detail.getParkXpnsYn() : null)
             .weekdayReception(detail != null ? detail.getRcvWeek() : null)
             .saturdayReception(detail != null ? detail.getRcvSat() : null)
             
@@ -56,10 +60,29 @@ public class HospitalConverter {
             .thursdayClose(detail != null ? detail.getTrmtThurEnd() : null)
             .fridayOpen(detail != null ? detail.getTrmtFriStart() : null)
             .fridayClose(detail != null ? detail.getTrmtFriEnd() : null)
+            .saturdayOpen(detail != null ? detail.getTrmtSatStart() : null)
+            .saturdayClose(detail != null ? detail.getTrmtSatEnd() : null)
+            .sundayOpen(detail != null ? detail.getTrmtSunStart() : null)
+            .sundayClose(detail != null ? detail.getTrmtSunEnd() : null)
             
+            .medicalSubject(convertMedicalSubjectsToString(hospital.getMedicalSubjects()))
+            
+         
             // 전문의 정보를 문자열로 변환
             .professionalDoctors(convertProDocsToString(hospital.getProDocs()))
             .build();
+    }
+    
+    private String convertMedicalSubjectsToString(List<MedicalSubject> medicalSubjects) {
+        if (medicalSubjects == null || medicalSubjects.isEmpty()) {
+            return null;
+        }
+        return medicalSubjects.stream()
+                .map(MedicalSubject::getSubjectName)
+                .filter(name -> name != null && !name.trim().isEmpty())
+                .distinct()  // 중복 제거
+                .sorted()    // 정렬
+                .collect(Collectors.joining(", "));
     }
     
     /**

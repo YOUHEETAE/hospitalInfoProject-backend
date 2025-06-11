@@ -33,6 +33,7 @@ public class HospitalResponseDTO {
     private String emergencyNightAvailable;  // Y/N
     private String weekdayLunch;
     private Integer parkingCapacity;
+    private String parkingFee;
     private String weekdayReception;
     private String saturdayReception;
     
@@ -47,6 +48,12 @@ public class HospitalResponseDTO {
     private String thursdayClose;
     private String fridayOpen;
     private String fridayClose;
+    private String saturdayOpen;
+    private String saturdayClose;
+    private String sundayOpen;
+    private String sundayClose;
+    
+    private String medicalSubject;
     
     // 전문의 정보 (JSON 문자열로 저장)
     private String professionalDoctors;  // "안과:1|이비인후과:1|비뇨의학과:1" 형태
