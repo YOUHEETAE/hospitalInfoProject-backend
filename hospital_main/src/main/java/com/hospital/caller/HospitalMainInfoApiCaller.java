@@ -1,5 +1,5 @@
 
-package com.hospital.client;
+package com.hospital.caller;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

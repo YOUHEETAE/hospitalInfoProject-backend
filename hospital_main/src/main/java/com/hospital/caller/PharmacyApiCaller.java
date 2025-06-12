@@ -1,4 +1,4 @@
-package com.hospital.client;
+package com.hospital.caller;
 
 import com.hospital.dto.api.OpenApiWrapper;
 import jakarta.xml.bind.JAXBContext;

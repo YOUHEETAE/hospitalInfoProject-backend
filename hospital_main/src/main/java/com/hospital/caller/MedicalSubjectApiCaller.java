@@ -1,4 +1,4 @@
-package com.hospital.client;
+package com.hospital.caller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hospital.dto.api.MedicalSubjectApiResponse;

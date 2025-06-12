@@ -1,7 +1,7 @@
 package com.hospital.async;
 
 import com.google.common.util.concurrent.RateLimiter;
-import com.hospital.client.HospitalDetailApiCaller;
+import com.hospital.caller.HospitalDetailApiCaller;
 import com.hospital.dto.api.HospitalDetailApiResponse;
 import com.hospital.entity.HospitalDetail;
 import com.hospital.parser.HospitalDetailApiParser;

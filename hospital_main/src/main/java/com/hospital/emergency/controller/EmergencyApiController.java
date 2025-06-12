@@ -37,7 +37,7 @@ public class EmergencyApiController {
 
 		try {
 			// 서비스에서 JSON 문자열을 받아옴
-			JsonNode jsonNode = emergencyApiService.callEmergencyApiAsJsonNode();
+			JsonNode jsonNode = emergencyApiService.getEmergencyRoomData();
 
 			response.put("success", true);
 			response.put("message", "응급실 정보 조회 성공");

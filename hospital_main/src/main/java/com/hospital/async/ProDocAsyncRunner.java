@@ -2,7 +2,7 @@
 package com.hospital.async;
 
 import com.google.common.util.concurrent.RateLimiter;
-import com.hospital.client.ProDocApiCaller;
+import com.hospital.caller.ProDocApiCaller;
 import com.hospital.dto.api.ProDocApiResponse;
 import com.hospital.entity.ProDoc;
 import com.hospital.parser.ProDocApiParser;

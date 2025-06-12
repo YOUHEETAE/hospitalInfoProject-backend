@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hospital.client.HospitalDetailApiCaller;
+import com.hospital.caller.HospitalDetailApiCaller;
 import com.hospital.entity.HospitalMain;
 import com.hospital.service.HospitalDetailApiService;
 import com.hospital.service.HospitalMainApiService;

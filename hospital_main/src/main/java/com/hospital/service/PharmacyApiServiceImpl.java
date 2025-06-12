@@ -1,6 +1,6 @@
 package com.hospital.service;
 
-import com.hospital.client.PharmacyApiCaller;
+import com.hospital.caller.PharmacyApiCaller;
 import com.hospital.dto.api.OpenApiWrapper;
 import com.hospital.dto.api.PharmacyApiItem;
 import com.hospital.entity.Pharmacy;
