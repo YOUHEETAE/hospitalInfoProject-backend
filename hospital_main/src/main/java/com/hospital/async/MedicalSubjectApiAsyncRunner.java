@@ -60,7 +60,7 @@ public class MedicalSubjectApiAsyncRunner {
         return failedCount.get();
     }
 
-    @Async("proDocExecutor") // ✅ 병렬 실행을 위한 스레드 풀 사용
+    @Async("apiExecutor") // ✅ 병렬 실행을 위한 스레드 풀 사용
     public void runAsync(String hospitalCode) {
     	rateLimiter.acquire();;
         try {

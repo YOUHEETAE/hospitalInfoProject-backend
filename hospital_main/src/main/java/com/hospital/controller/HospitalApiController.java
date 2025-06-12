@@ -144,7 +144,7 @@ public class HospitalApiController {
         return String.format("현재 진행상황: 완료 %d건, 실패 %d건\n", done, fail);
     }
     
-    @PostMapping(value = "/save", produces = "text/plain;charset=UTF-8")
+    @PostMapping(value = "/pharmacy/save", produces = "text/plain;charset=UTF-8")
     public String savePharmacyData() {
         String[] sgguCodes = {"310401", "310402", "310403"};
         int totalSaved = 0;
