@@ -1,4 +1,4 @@
-package com.hospital.emergency.parser;
+package com.hospital.emergency.caller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,7 +14,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 @Component
-public class EmergencyApiParser {
+public class EmergencyApiCaller {
 
     private final RestTemplate restTemplate;
     private final XmlMapper xmlMapper;
@@ -26,7 +26,7 @@ public class EmergencyApiParser {
     @Value("${hospital.emergency.api.serviceKey}")
     private String serviceKey;
 
-    public EmergencyApiParser(RestTemplate restTemplate) {
+    public EmergencyApiCaller(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
         this.xmlMapper = new XmlMapper();
         this.jsonMapper = new ObjectMapper();
