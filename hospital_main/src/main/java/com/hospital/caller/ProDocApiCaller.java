@@ -10,10 +10,10 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class ProDocApiCaller {
 
-	@Value("${hospital.porDoc.api.base-url}")
+	@Value("${hospital.proDoc.api.base-url}")
 	private String baseUrl;
 
-	@Value("${hospital.porDoc.api.key}")
+	@Value("${hospital.proDoc.api.key}")
 	private String serviceKey;
 	
     private final RestTemplate restTemplate;
