@@ -16,7 +16,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 @Component
-public class HospitalMainInfoApiCaller {
+public class HospitalMainApiCaller {
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
@@ -27,7 +27,7 @@ public class HospitalMainInfoApiCaller {
     @Value("${hospital.main.api.key}")
     private String serviceKey;
 
-    public HospitalMainInfoApiCaller(RestTemplate restTemplate, ObjectMapper objectMapper) {
+    public HospitalMainApiCaller(RestTemplate restTemplate, ObjectMapper objectMapper) {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
     }
