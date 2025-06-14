@@ -15,9 +15,8 @@ import java.util.stream.Collectors;
 @Component
 public class HospitalConverter {
     
-    /**
-     * Hospital 엔티티를 HospitalResponseDto로 변환
-     */
+    
+    //Hospital 엔티티를 HospitalResponseDto로 변환
     public HospitalResponse convertToDTO(HospitalMain hospitalMain) {
         if (hospitalMain == null) {
             return null;
@@ -76,9 +75,8 @@ public class HospitalConverter {
                 .collect(Collectors.joining(", "));
     }
     
-    /**
-     * Hospital 엔티티 리스트를 DTO 리스트로 변환
-     */
+    
+    //Hospital 엔티티 리스트를 DTO 리스트로 변환
     public List<HospitalResponse> convertToDtos(List<HospitalMain> hospitals) {
         if (hospitals == null) {
             return List.of();
@@ -89,10 +87,8 @@ public class HospitalConverter {
             .collect(Collectors.toList());
     }
     
-    /**
-     * ProDoc 리스트를 문자열로 변환
-     * 형태: "안과:1|이비인후과:1|비뇨의학과:1"
-     */
+    
+     //ProDoc 리스트를 문자열로 변환
     private String convertProDocsToString(List<ProDoc> proDocs) {
         if (proDocs == null || proDocs.isEmpty()) {
             return null;

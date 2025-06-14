@@ -15,9 +15,9 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
-@Service // Spring 서비스 컴포넌트로 등록 (비즈니스 로직 실행 담당)
+@Service 
 public class HospitalDetailAsyncRunner {
-    private final RateLimiter rateLimiter = RateLimiter.create(5.0); // 초당 3건 제한
+    private final RateLimiter rateLimiter = RateLimiter.create(5.0); // 초당 5건 제한
 
     // 의존성 주입: API 호출, 파싱, 저장을 담당하는 객체들
     private final HospitalDetailApiCaller apiCaller;
@@ -38,33 +38,33 @@ public class HospitalDetailAsyncRunner {
         this.repository = repository;
     }
 
-    // ✅ 진행 상태 초기화
+    //  진행 상태 초기화
     public void resetCounter() {
         completedCount.set(0);
         failedCount.set(0);
     }
 
-    // ✅ 총 작업 수 설정 및 카운터 초기화
+    //  총 작업 수 설정 및 카운터 초기화
     public void setTotalCount(int totalCount) {
         this.totalCount = totalCount;
         completedCount.set(0);
         failedCount.set(0);
     }
 
-    // ✅ 현재까지 완료된 작업 수
+    //  현재까지 완료된 작업 수
     public int getCompletedCount() {
         return completedCount.get();
     }
 
-    // ✅ 현재까지 실패한 작업 수
+    //  현재까지 실패한 작업 수
     public int getFailedCount() {
         return failedCount.get();
     }
 
-    // ✅ 병원코드 단위 비동기 처리
+    //  병원코드 단위 비동기 처리
     @Async("apiExecutor") // 별도의 실행자 풀 사용
     public void runAsync(String hospitalCode) {
-        rateLimiter.acquire(); // 🔒 이 한 줄로 초당 호출 제한 적용됨
+        rateLimiter.acquire(); //  이 한 줄로 초당 호출 제한 적용됨
 
         try {
             // 1. 병원코드를 쿼리 파라미터로 설정
