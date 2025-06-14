@@ -116,14 +116,14 @@ public class EmergencyApiService {
 				if (!hospitals.isEmpty()) {
 					HospitalMain hospitalData = hospitals.get(0); // 첫 번째 결과 사용
 					response.setCoordinates(hospitalData.getCoordinateX(), hospitalData.getCoordinateY());
-					response.setHospitalAddress(hospitalData.getHospitalAddress());
+					response.setEmergencyAddress(hospitalData.getHospitalAddress());
 					System.out.println(
 							"     좌표: (" + hospitalData.getCoordinateX() + ", " + hospitalData.getCoordinateY() + ")");
 					System.out.println("     주소: " + hospitalData.getHospitalAddress());
 				} else {
 					System.out.println("     좌표 및 주소 정보 없음");
 					response.setCoordinates(null, null);
-					response.setHospitalAddress(null); // 주소도 null 설정
+					response.setEmergencyAddress(null); // 주소도 null 설정
 				}
 			}
 

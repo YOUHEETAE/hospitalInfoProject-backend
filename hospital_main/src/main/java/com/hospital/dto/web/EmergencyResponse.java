@@ -58,7 +58,7 @@ public class EmergencyResponse {
 	private Double coordinateX; // x 좌표 (위도)
 	private Double coordinateY; // y 좌표 (경도)
 
-	private String hospitalAddress;
+	private String emergencyAddress;
 
 	// 좌표 설정 메서드
 	public void setCoordinates(Double coordinateX, Double coordinateY) {
@@ -66,7 +66,7 @@ public class EmergencyResponse {
 		this.coordinateY = coordinateY;
 	}
 
-	public void setHospitalAddress(String hospitalAddress) {
-		this.hospitalAddress = hospitalAddress;
+	public void setEmergencyAddress(String emergencyAddress) {
+		this.emergencyAddress = emergencyAddress;
 	}
 }
