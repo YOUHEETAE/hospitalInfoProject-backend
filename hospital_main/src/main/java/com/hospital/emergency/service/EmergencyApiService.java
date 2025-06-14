@@ -151,4 +151,16 @@ public class EmergencyApiService {
 	public JsonNode getEmergencyRoomData() {
 		return apiCaller.callEmergencyApiAsJsonNode("성남시", 1, 10);
 	}
+	/**
+	 * 완전 서비스 종료 (스케줄러 + WebSocket)
+	 */
+	public void shutdownCompleteService() {
+	    // 1. 스케줄러 중지
+	    stopScheduler();
+	    
+	    // 2. 모든 WebSocket 연결 종료
+	    webSocketHandler.closeAllSessions();
+	    
+	    System.out.println("✅ 응급실 서비스 완전 종료 완료");
+	}
 }

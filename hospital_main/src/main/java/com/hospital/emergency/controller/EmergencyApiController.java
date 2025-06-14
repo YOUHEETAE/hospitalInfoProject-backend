@@ -60,9 +60,16 @@ public class EmergencyApiController {
 	}
 	
 
-    @GetMapping("/stop")
-    public ResponseEntity<String> stopScheduler() {
-        emergencyApiService.stopScheduler();
-        return ResponseEntity.ok("스케줄러 중지됨");
+	/*
+	 * 완전 서비스 종료 (스케줄러 + WebSocket)
+	 */
+	@GetMapping("/shutdown")
+	public ResponseEntity<String> shutdownCompleteService() {
+	    try {
+	        emergencyApiService.shutdownCompleteService();
+	        return ResponseEntity.ok("✅ 응급실 서비스 완전 종료 완료");
+	    } catch (Exception e) {
+	        return ResponseEntity.status(500).body("❌ 서비스 종료 실패: " + e.getMessage());
+	    }
     }
 }
