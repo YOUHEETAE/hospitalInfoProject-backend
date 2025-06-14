@@ -1,5 +1,6 @@
 package com.hospital.converter;
 
+import com.hospital.domainLogic.TodayOperatingTimeCalculator;
 import com.hospital.dto.web.HospitalResponseDTO;
 import com.hospital.entity.HospitalMain;
 import com.hospital.entity.MedicalSubject;
@@ -23,6 +24,10 @@ public class HospitalConverter {
         }
         
         HospitalDetail detail = hospitalMain.getHospitalDetail();
+        
+        TodayOperatingTimeCalculator.TodayOperatingTime todayTime = 
+                TodayOperatingTimeCalculator.getTodayOperatingTime(detail);
+            
        
         
         return HospitalResponseDTO.builder()
@@ -48,20 +53,8 @@ public class HospitalConverter {
             
             
             // 요일별 운영시간
-            .mondayOpen(detail != null ? detail.getTrmtMonStart() : null)
-            .mondayClose(detail != null ? detail.getTrmtMonEnd() : null)
-            .tuesdayOpen(detail != null ? detail.getTrmtTueStart() : null)
-            .tuesdayClose(detail != null ? detail.getTrmtTueEnd() : null)
-            .wednesdayOpen(detail != null ? detail.getTrmtWedStart() : null)
-            .wednesdayClose(detail != null ? detail.getTrmtWedEnd() : null)
-            .thursdayOpen(detail != null ? detail.getTrmtThurStart() : null)
-            .thursdayClose(detail != null ? detail.getTrmtThurEnd() : null)
-            .fridayOpen(detail != null ? detail.getTrmtFriStart() : null)
-            .fridayClose(detail != null ? detail.getTrmtFriEnd() : null)
-            .saturdayOpen(detail != null ? detail.getTrmtSatStart() : null)
-            .saturdayClose(detail != null ? detail.getTrmtSatEnd() : null)
-            .sundayOpen(detail != null ? detail.getTrmtSunStart() : null)
-            .sundayClose(detail != null ? detail.getTrmtSunEnd() : null)
+            .todayOpen(todayTime.getOpenTime())
+            .todayClose(todayTime.getCloseTime())
             
             .medicalSubject(convertMedicalSubjectsToString(hospitalMain.getMedicalSubjects()))
             

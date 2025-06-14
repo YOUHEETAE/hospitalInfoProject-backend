@@ -137,12 +137,6 @@ public class HospitalDetail {
         return isValidTime(this.trmtSunStart) && isValidTime(this.trmtSunEnd);
     }
 
-    /**
-     * 주말 진료 가능 여부 (토요일 또는 일요일)
-     */
-    public boolean isWeekendAvailable() {
-        return isSaturdayAvailable() || isSundayAvailable() || hasEmergencyService();
-    }
 
     /**
      * 유효한 시간 값인지 체크

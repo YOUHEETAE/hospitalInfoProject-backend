@@ -35,21 +35,8 @@ public class HospitalResponseDTO {
     private Integer parkingCapacity;
     private String parkingFee;
    
-    // 요일별 운영시간
-    private String mondayOpen;
-    private String mondayClose;
-    private String tuesdayOpen;
-    private String tuesdayClose;
-    private String wednesdayOpen;
-    private String wednesdayClose;
-    private String thursdayOpen;
-    private String thursdayClose;
-    private String fridayOpen;
-    private String fridayClose;
-    private String saturdayOpen;
-    private String saturdayClose;
-    private String sundayOpen;
-    private String sundayClose;
+    private String todayOpen;
+    private String todayClose;
     
     private String medicalSubject;
     
