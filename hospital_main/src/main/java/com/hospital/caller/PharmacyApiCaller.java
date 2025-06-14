@@ -3,6 +3,8 @@ package com.hospital.caller;
 import com.hospital.dto.api.OpenApiWrapper;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Unmarshaller;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
@@ -14,13 +16,16 @@ import java.nio.charset.StandardCharsets;
 @Component
 public class PharmacyApiCaller {
 
-    private static final String BASE_URL = "https://apis.data.go.kr/B551182/pharmacyInfoService/";
-    private static final String SERVICE_KEY = "iJsu9ygUVo24pnKXWsntyEmfZtNPVq5WoaRHYNoq7JQv0Jhq3LyRzf/P7QXb3I2Kw1i1lcRBEukiJoZfoWX56g==";
+	@Value("${hospital.pharmacy.api.base-url}")
+	private String baseUrl;
 
+	@Value("${hospital.pharmacy.api.key}")
+	private String serviceKey;
+	
     public OpenApiWrapper.Body callApiByDistrict(String sgguCd) {
         try {
-            String fullUrl = BASE_URL + "getParmacyBasisList"
-                    + "?serviceKey=" + SERVICE_KEY
+            String fullUrl = baseUrl + "getParmacyBasisList"
+                    + "?serviceKey=" + serviceKey
                     + "&sidoCd=310000"
                     + "&sgguCd=" + sgguCd
                     + "&numOfRows=1000"

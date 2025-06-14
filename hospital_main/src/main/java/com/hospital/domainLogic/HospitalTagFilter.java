@@ -78,8 +78,7 @@ public class HospitalTagFilter {
         }
         return true; // 모든 태그 조건을 만족하면 true
     }
-    
-    // ========== 운영시간 체크 로직 (평일 + 주말) ==========
+
     
     /**
      * 현재 시간에 운영중인지 체크 (평일 + 주말)

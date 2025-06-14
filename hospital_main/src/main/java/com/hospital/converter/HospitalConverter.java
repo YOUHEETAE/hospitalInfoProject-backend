@@ -106,8 +106,8 @@ public class HospitalConverter {
         }
         
         return proDocs.stream()
-            .filter(proDoc -> proDoc.getSubjectName() != null && proDoc.getProDocCount() != null)
-            .map(proDoc -> proDoc.getSubjectName() + ":" + proDoc.getProDocCount())
-            .collect(Collectors.joining("|"));
-    }
+                .filter(proDoc -> proDoc.getSubjectName() != null && proDoc.getProDocCount() != null)
+                .map(proDoc -> proDoc.getSubjectName() + ": " + proDoc.getProDocCount()) // 콜론 뒤에 공백 추가
+                .collect(Collectors.joining(", ")); // 쉼표 + 공백으로 구분
+        }
 }

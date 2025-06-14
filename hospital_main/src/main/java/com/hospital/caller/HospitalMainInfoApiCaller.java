@@ -21,10 +21,10 @@ public class HospitalMainInfoApiCaller {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
-    @Value("${api.data.go.kr.base-url}")
+    @Value("${hospital.main.api.base-url}")
     private String baseUrl;
 
-    @Value("${api.data.go.kr.service-key}")
+    @Value("${hospital.main.api.key}")
     private String serviceKey;
 
     public HospitalMainInfoApiCaller(RestTemplate restTemplate, ObjectMapper objectMapper) {
