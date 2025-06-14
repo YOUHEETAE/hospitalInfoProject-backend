@@ -95,10 +95,9 @@ public class HospitalDetail {
 
   
     
-    @OneToOne
-    @JoinColumn(name = "hospital_code", referencedColumnName = "hospital_code", insertable = false, updatable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "hospital_code", insertable = false, updatable = false)
     private HospitalMain hospital;
-    
     
    
     

@@ -31,33 +31,24 @@ public class EmergencyApiController {
 	}
 
 	@GetMapping(value = "/start", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Map<String, Object>> getEmergencyInfo() {
-	    
-	    emergencyApiService.startScheduler(); // 스케줄러 시작
-	    
-	    Map<String, Object> response = new HashMap<>();
-	    try {
-	        // updateEmergencyRoomData() 메서드 직접 호출
-	        emergencyApiService.updateEmergencyRoomData();
-	        
-	        // 그리고 DTO 데이터도 반환
-	        List<EmergencyResponse> emergencyList = emergencyApiService.getEmergencyRoomDataAsDto();
-	        
-	        response.put("success", true);
-	        response.put("message", "응급실 정보 조회 및 업데이트 완료");
-	        response.put("data", emergencyList); // DTO 형태로 반환
-	        response.put("timestamp", System.currentTimeMillis());
-	        return ResponseEntity.ok(response);
-	    } catch (Exception e) {
-	        System.err.println("응급실 정보 조회 중 오류 발생: " + e.getMessage());
-	        e.printStackTrace();
-	        response.put("success", false);
-	        response.put("message", "응급실 정보 조회 중 오류가 발생했습니다: " + e.getMessage());
-	        response.put("error", e.getClass().getSimpleName());
-	        response.put("timestamp", System.currentTimeMillis());
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-	    }
-	}
+    public ResponseEntity<List<EmergencyResponse>> getEmergencyList() {
+        try {
+            // 스케줄러 시작
+            emergencyApiService.startScheduler();
+            
+            // 응급실 데이터 업데이트
+            emergencyApiService.updateEmergencyRoomData();
+            
+            // ✅ 순수한 배열만 반환
+            List<EmergencyResponse> emergencyList = emergencyApiService.getEmergencyRoomDataAsDto();
+            
+            return ResponseEntity.ok(emergencyList);
+        } catch (Exception e) {
+            System.err.println("응급실 정보 조회 중 오류 발생: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 	
 
 	/*
