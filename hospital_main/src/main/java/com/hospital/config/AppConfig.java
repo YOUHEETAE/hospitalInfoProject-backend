@@ -58,7 +58,7 @@ import java.nio.charset.StandardCharsets;
 
 @Configuration
 @ComponentScan(basePackages = "com.hospital")
-@PropertySource("classpath:mainApi.properties")
+@PropertySource("classpath:api.properties")
 @PropertySource("classpath:db.properties")
 @EnableTransactionManagement
 @EnableJpaRepositories(basePackages = "com.hospital.repository")

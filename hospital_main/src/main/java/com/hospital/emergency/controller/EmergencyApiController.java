@@ -63,7 +63,7 @@ public class EmergencyApiController {
 	/*
 	 * 완전 서비스 종료 (스케줄러 + WebSocket)
 	 */
-	@GetMapping("/shutdown")
+	@GetMapping("/stop")
 	public ResponseEntity<String> shutdownCompleteService() {
 	    try {
 	        emergencyApiService.shutdownCompleteService();
