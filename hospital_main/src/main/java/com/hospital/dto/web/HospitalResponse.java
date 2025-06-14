@@ -13,7 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class HospitalResponseDTO {
+public class HospitalResponse {
     // 기본 정보
     
     private String hospitalName;

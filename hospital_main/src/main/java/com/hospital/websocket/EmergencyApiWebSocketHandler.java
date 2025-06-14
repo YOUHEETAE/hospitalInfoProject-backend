@@ -15,6 +15,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.hospital.emergency.service.EmergencyApiService;
 
+
 @Component
 public class EmergencyApiWebSocketHandler extends TextWebSocketHandler {
     
@@ -63,14 +64,13 @@ public class EmergencyApiWebSocketHandler extends TextWebSocketHandler {
             // 닫힌 세션 제거
             sessions.removeIf(session -> !session.isOpen());
             
-            for (WebSocketSession session : sessions) {
+            for (WebSocketSession session : new HashSet<>(sessions)) {
                 try {
                     if (session.isOpen()) {
                         session.sendMessage(new TextMessage(data));
                     }
                 } catch (IOException e) {
                     System.err.println("메시지 전송 실패: " + session.getId());
-                    e.printStackTrace();
                     sessions.remove(session);
                 }
             }

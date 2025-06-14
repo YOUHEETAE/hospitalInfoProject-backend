@@ -1,7 +1,7 @@
 package com.hospital.converter;
 
 import com.hospital.domainLogic.TodayOperatingTimeCalculator;
-import com.hospital.dto.web.HospitalResponseDTO;
+import com.hospital.dto.web.HospitalResponse;
 import com.hospital.entity.HospitalMain;
 import com.hospital.entity.MedicalSubject;
 import com.hospital.entity.HospitalDetail;
@@ -18,7 +18,7 @@ public class HospitalConverter {
     /**
      * Hospital 엔티티를 HospitalResponseDto로 변환
      */
-    public HospitalResponseDTO convertToDTO(HospitalMain hospitalMain) {
+    public HospitalResponse convertToDTO(HospitalMain hospitalMain) {
         if (hospitalMain == null) {
             return null;
         }
@@ -30,7 +30,7 @@ public class HospitalConverter {
             
        
         
-        return HospitalResponseDTO.builder()
+        return HospitalResponse.builder()
             // 기본 정보
             .hospitalName(hospitalMain.getHospitalName())
             .hospitalAddress(hospitalMain.getHospitalAddress())
@@ -79,7 +79,7 @@ public class HospitalConverter {
     /**
      * Hospital 엔티티 리스트를 DTO 리스트로 변환
      */
-    public List<HospitalResponseDTO> convertToDtos(List<HospitalMain> hospitals) {
+    public List<HospitalResponse> convertToDtos(List<HospitalMain> hospitals) {
         if (hospitals == null) {
             return List.of();
         }
