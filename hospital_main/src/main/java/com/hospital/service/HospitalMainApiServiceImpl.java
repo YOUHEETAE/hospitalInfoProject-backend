@@ -1,7 +1,7 @@
 
 package com.hospital.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+
 import com.hospital.entity.HospitalMain;
 import com.hospital.repository.HospitalMainApiRepository;
 import com.hospital.caller.HospitalMainInfoApiCaller;
@@ -14,7 +14,7 @@ import com.hospital.parser.HospitalMainApiParser;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;

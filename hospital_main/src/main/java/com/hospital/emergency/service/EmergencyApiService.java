@@ -9,13 +9,16 @@ import com.hospital.entity.HospitalMain;
 import com.hospital.repository.HospitalMainApiRepository;
 import com.hospital.websocket.EmergencyApiWebSocketHandler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
@@ -26,6 +29,11 @@ public class EmergencyApiService {
 	private final EmergencyApiCaller apiCaller;
 	private final HospitalMainApiRepository hospitalMainApiRepository;
 
+	private ScheduledFuture<?> scheduledTask;
+
+	@Autowired
+	private TaskScheduler taskScheduler;
+
 	@Autowired
 	private EmergencyApiWebSocketHandler webSocketHandler;
 
@@ -35,7 +43,7 @@ public class EmergencyApiService {
 		this.hospitalMainApiRepository = hospitalMainApiRepository;
 	}
 
-	@Scheduled(fixedRate = 30000)
+	
 	public void updateEmergencyRoomData() {
 		if (!schedulerRunning.get())
 			return;
@@ -100,19 +108,21 @@ public class EmergencyApiService {
 			// 각 응급실 정보에 좌표 추가
 			List<EmergencyResponse> responseList = Arrays.asList(responses);
 			for (EmergencyResponse response : responseList) {
-			    System.out.println("   - " + response.getDutyName() + " 처리 중...");
+				System.out.println("   - " + response.getDutyName() + " 처리 중...");
 
-			    // 부분 매칭으로 검색
-			    List<HospitalMain> hospitals = hospitalMainApiRepository.findByHospitalNameContaining(response.getDutyName());
-			    
-			    if (!hospitals.isEmpty()) {
-			        HospitalMain hospitalData = hospitals.get(0); // 첫 번째 결과 사용
-			        response.setCoordinates(hospitalData.getCoordinateX(), hospitalData.getCoordinateY());
-			        System.out.println("     좌표: (" + hospitalData.getCoordinateX() + ", " + hospitalData.getCoordinateY() + ")");
-			    } else {
-			        System.out.println("     좌표 정보 없음");
-			        response.setCoordinates(null, null);
-			    }
+				// 부분 매칭으로 검색
+				List<HospitalMain> hospitals = hospitalMainApiRepository
+						.findByHospitalNameContaining(response.getDutyName());
+
+				if (!hospitals.isEmpty()) {
+					HospitalMain hospitalData = hospitals.get(0); // 첫 번째 결과 사용
+					response.setCoordinates(hospitalData.getCoordinateX(), hospitalData.getCoordinateY());
+					System.out.println(
+							"     좌표: (" + hospitalData.getCoordinateX() + ", " + hospitalData.getCoordinateY() + ")");
+				} else {
+					System.out.println("     좌표 정보 없음");
+					response.setCoordinates(null, null);
+				}
 			}
 
 			return responseList;
@@ -125,6 +135,13 @@ public class EmergencyApiService {
 
 	public void startScheduler() {
 		schedulerRunning.set(true);
+
+		// ✅ 여기서 몇 초마다 호출할지 설정!
+		scheduledTask = taskScheduler.scheduleAtFixedRate(() -> {
+			updateEmergencyRoomData();
+		}, Duration.ofSeconds(30)); // ← 30초마다!
+
+		System.out.println("✅ 30초마다 실행하는 스케줄러 시작!");
 	}
 
 	public void stopScheduler() {

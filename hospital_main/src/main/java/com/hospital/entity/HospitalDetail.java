@@ -21,7 +21,7 @@ import lombok.ToString;
 public class HospitalDetail {
 
     @Id
-    @Column(name = "hospital_code", length = 50, nullable = false) // 병원 고유 코드 (ykiho)
+    @Column(name = "hospital_code", length = 255, nullable = false) // 병원 고유 코드 (ykiho)
     private String hospitalCode; // API의 <ykiho>
 
     @Column(name = "em_day_yn", length = 1)
@@ -45,6 +45,13 @@ public class HospitalDetail {
 
     @Column(name = "saturday_reception", length = 50)
     private String rcvSat; // 토요일 접수 시간
+    
+    @Column(name = "no_trmt_holi")
+    private String noTrmtHoli;
+    
+    @Column(name = "no_trmt_sun") 
+    private String noTrmtSun;
+    
 
     // 요일별 진료 시작/종료 시간
     @Column(name = "mon_open", length = 20)

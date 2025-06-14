@@ -113,14 +113,14 @@ public class HospitalApiController {
         
         return ResponseEntity.ok(status);
     }
-    @PostMapping(value = "/medical/save", produces = MediaType.TEXT_PLAIN_VALUE)
+    @PostMapping(value = "/subject/save", produces = MediaType.TEXT_PLAIN_VALUE)
     public String saveSubjects() {
         int total = medicalSubjectApiService.fetchParseAndSaveMedicalSubjects(); // 전체 병원 수 반환
         return String.format("진료과목 저장 시작됨! 전체 병원 수: %d개\n(진행상황은 로그 또는 /status API로 확인)\n", total);
     }
 
    
-    @GetMapping(value = "/medical/status", produces = MediaType.TEXT_PLAIN_VALUE)
+    @GetMapping(value = "/subject/status", produces = MediaType.TEXT_PLAIN_VALUE)
     public String getMedicalStatus() {
         int done = medicalSubjectApiService.getCompletedCount(); // 완료된 병원 수
         int fail = medicalSubjectApiService.getFailedCount();    // 실패한 병원 수

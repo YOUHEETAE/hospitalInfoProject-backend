@@ -3,7 +3,6 @@ package com.hospital.parser;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hospital.dto.api.HospitalMainApiItem;
 import com.hospital.dto.api.HospitalMainApiResponse;
 import com.hospital.entity.HospitalMain;
 import org.springframework.stereotype.Component;
@@ -15,10 +14,10 @@ import java.util.Optional; // Optional 임포트
 @Component
 public class HospitalMainApiParser {
 
-    private final ObjectMapper objectMapper;
+
 
     public HospitalMainApiParser(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
+    
     }
 
     // ★★★ JsonNode에서 HospitalMainApiResponse로 매개변수 타입 변경 ★★★

@@ -40,6 +40,12 @@ public class HospitalDetailApiItem {
     @JsonProperty("rcvSat")
     private String rcvSat; // 토요일 접수 시간
     
+    @JsonProperty("noTrmtHoli")
+    private String noTrmtHoli;  // 공휴일 휴진 여부
+    
+    @JsonProperty("noTrmtSun")
+    private String noTrmtSun;   // 일요일 휴진 여부
+    
     // 평일 진료시간
     @JsonProperty("trmtMonStart")
     private String trmtMonStart; // 월요일 진료 시작 시간
