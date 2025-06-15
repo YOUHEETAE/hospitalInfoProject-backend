@@ -91,12 +91,7 @@ public class HospitalDetail {
     @JoinColumn(name = "hospital_code", insertable = false, updatable = false)
     private HospitalMain hospital;
 
-    // ✅ 응급실 서비스 가능 여부 체크
-    public boolean hasEmergencyService() {
-        boolean dayAvailable = "Y".equals(this.emyDayYn);
-        boolean nightAvailable = "Y".equals(this.emyNightYn);
-        return dayAvailable || nightAvailable;
-    }
+  
 
     // ✅ 주차 가능 여부 체크
     public boolean hasParkingSpace() {
