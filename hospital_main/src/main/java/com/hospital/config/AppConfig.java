@@ -33,7 +33,8 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
     WebConfig.class,          // 웹 및 HTTP 설정
     AsyncConfig.class,        // 비동기 및 스케줄링 설정
     WebSocketConfig.class,    // WebSocket 설정
-    JacksonConfig.class       // JSON/XML 매퍼 설정
+    JacksonConfig.class, 
+    CacheConfig.class
 })
 public class AppConfig {
 

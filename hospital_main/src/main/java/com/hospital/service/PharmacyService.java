@@ -3,6 +3,7 @@ package com.hospital.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.hospital.converter.PharmacyConverter;
@@ -26,13 +27,7 @@ public class PharmacyService  {
         this.distanceCalculator = distanceCalculator;
     }
 
-    /**
-     * 거리 기반 약국 필터링 및 정렬
-     * @param userLat 사용자 위도
-     * @param userLng 사용자 경도  
-     * @param radius 검색 반경 (km)
-     * @return 거리순으로 정렬된 약국 목록
-     */
+    @Cacheable(value = "pharmacies", key = "#userLat + '_' + #userLng + '_' + #radius")
     public List<PharmacyResponse> getPharmaciesByDistance(double userLat, double userLng, double radius) {
         List<Pharmacy> allPharmacies = pharmacyRepository.findAll();
         

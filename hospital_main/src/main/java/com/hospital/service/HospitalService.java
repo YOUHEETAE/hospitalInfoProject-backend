@@ -7,6 +7,7 @@ import com.hospital.converter.HospitalConverter;
 import com.hospital.domainLogic.HospitalTagFilter;
 import com.hospital.dto.web.HospitalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -30,14 +31,14 @@ public class HospitalService  {
     }
     
     // 기존 메서드: 진료과목으로 병원 검색
-    
+    @Cacheable(value = "hospitals", key = "#subs.toString() + '_' + #userLat + '_' + #userLng + '_' + #radius + '_' + (#tags != null ? #tags.toString() : 'null')")
     public List<HospitalResponse> getHospitals(List<String> subs, double userLat, double userLng, double radius, List<String> tags) {
         List<HospitalMain> hospitalEntities = hospitalRepository.findHospitalsBySubjects(subs);
         return applyFiltersAndSort(hospitalEntities, userLat, userLng, radius, tags);
     }
     
     // ✅ 병원명 검색 
-    
+    @Cacheable(value = "hospitalsByName", key = "#hospitalName")
     public List<HospitalResponse> searchHospitalsByName(String hospitalName) {
         // 입력값 전처리
         String cleanInput = hospitalName.replace(" ", "");
