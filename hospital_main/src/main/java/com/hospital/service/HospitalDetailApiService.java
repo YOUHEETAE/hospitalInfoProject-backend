@@ -4,6 +4,7 @@ import com.hospital.async.HospitalDetailAsyncRunner;
 import com.hospital.repository.HospitalDetailApiRepository;
 import com.hospital.repository.HospitalMainApiRepository;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,30 +17,13 @@ import java.util.List;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class HospitalDetailApiService  {
     
 	private final HospitalMainApiRepository hospitalMainApiRepository;
     private final HospitalDetailAsyncRunner asyncRunner;   // 병원 상세정보 API 비동기 실행기
     private final HospitalDetailApiRepository hospitalDetailRepository; // 병원 상세정보 저장소 (JPA)
-    
-    @Autowired
-    public HospitalDetailApiService(HospitalMainApiRepository hospitalMainApiRepository,
-                                      HospitalDetailAsyncRunner asyncRunner,
-                                      HospitalDetailApiRepository hospitalDetailRepository) {
-        this.hospitalMainApiRepository = hospitalMainApiRepository;
-        this.asyncRunner = asyncRunner;
-        this.hospitalDetailRepository = hospitalDetailRepository;
-    }
-    
-    /**
-     * ✅ 병원 전체를 대상으로 API 호출 후 병원 상세 데이터 비동기 저장 실행
-     * 1. 기존 병원 상세 데이터 모두 삭제
-     * 2. 전체 병원코드 가져오기
-     * 3. 비동기 상태 초기화 및 총 작업 수 설정
-     * 4. 각 병원코드마다 runAsync() 호출
-     *
-     * @return 처리 대상 병원 수
-     */
+   
 
     public int updateAllHospitalDetails() {
         // 기존 데이터 전체 삭제

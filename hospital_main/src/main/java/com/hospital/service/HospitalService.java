@@ -3,10 +3,13 @@ package com.hospital.service;
 import com.hospital.entity.HospitalMain;
 import com.hospital.repository.HospitalRepository;
 import com.hospital.util.DistanceCalculator;
+
+import lombok.RequiredArgsConstructor;
+
 import com.hospital.converter.HospitalConverter;
 import com.hospital.domainLogic.HospitalTagFilter;
 import com.hospital.dto.web.HospitalResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,20 +18,12 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class HospitalService  {
     
     private final HospitalRepository hospitalRepository;
     private final HospitalConverter hospitalConverter;
     private final DistanceCalculator distanceCalculator;
-    
-    @Autowired
-    public HospitalService(HospitalRepository hospitalRepository,
-            HospitalConverter hospitalConverter,
-            DistanceCalculator distanceCalculator) {
-        this.hospitalRepository = hospitalRepository;
-        this.hospitalConverter = hospitalConverter;
-        this.distanceCalculator = distanceCalculator;
-    }
     
     // 기존 메서드: 진료과목으로 병원 검색
     @Cacheable(value = "hospitals", key = "#subs.toString() + '_' + #userLat + '_' + #userLng + '_' + #radius + '_' + (#tags != null ? #tags.toString() : 'null')")

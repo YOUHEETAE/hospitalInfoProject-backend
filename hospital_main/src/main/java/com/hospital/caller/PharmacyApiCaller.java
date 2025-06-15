@@ -1,5 +1,6 @@
 package com.hospital.caller;
 
+import com.hospital.config.RegionConfig;
 import com.hospital.dto.api.OpenApiWrapper;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Unmarshaller;
@@ -16,17 +17,23 @@ import java.nio.charset.StandardCharsets;
 @Component
 public class PharmacyApiCaller {
 
-	@Value("${hospital.pharmacy.api.base-url}")
-	private String baseUrl;
+    @Value("${hospital.pharmacy.api.base-url}")
+    private String baseUrl;
 
-	@Value("${hospital.pharmacy.api.key}")
-	private String serviceKey;
-	
+    @Value("${hospital.pharmacy.api.key}")
+    private String serviceKey;
+    
+    private final RegionConfig regionConfig; 
+    
+    public PharmacyApiCaller(RegionConfig regionConfig) { 
+        this.regionConfig = regionConfig;
+    }
+    
     public OpenApiWrapper.Body callApiByDistrict(String sgguCd) {
         try {
             String fullUrl = baseUrl + "getParmacyBasisList"
                     + "?serviceKey=" + serviceKey
-                    + "&sidoCd=310000"
+                    + "&sidoCd=" + regionConfig.getSidoCode() 
                     + "&sgguCd=" + sgguCd
                     + "&numOfRows=1000"
                     + "&_type=xml";

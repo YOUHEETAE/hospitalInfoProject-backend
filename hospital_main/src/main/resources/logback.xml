@@ -1,28 +1,31 @@
 <configuration>
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss} %-5level %logger{20} - %msg%n</pattern>
         </encoder>
     </appender>
 
  
-    <logger name="org.hibernate.resource.transaction" level="WARN"/>
-    <logger name="org.hibernate.internal" level="WARN"/>
+    <logger name="org.hibernate" level="OFF"/>
+    <logger name="org.springframework.data" level="OFF"/>
+    <logger name="org.springframework.orm" level="OFF"/>
+    <logger name="org.springframework.transaction" level="OFF"/>
+    <logger name="org.apache.catalina" level="OFF"/>
+    <logger name="org.apache.jasper" level="OFF"/>
+    <logger name="org.apache.tomcat" level="OFF"/>
+    <logger name="org.quartz" level="OFF"/>
+    <logger name="org.mariadb" level="OFF"/>
     
-  
-    <logger name="org.springframework.data.jpa" level="WARN"/>
-    <logger name="org.springframework.orm.jpa" level="WARN"/>
-    
-  
-    <logger name="org.hibernate" level="WARN"/>
-    
-    
-    <logger name="org.springframework" level="INFO"/>
-    
- 
-    <logger name="com.hospital" level="DEBUG"/>
 
-    <root level="INFO">  
+    <logger name="org.springframework" level="ERROR"/>
+    
+  
+    <logger name="ROOT" level="OFF"/>
+
+  
+    <logger name="com.hospital" level="INFO"/>
+
+    <root level="OFF">
         <appender-ref ref="CONSOLE" />
     </root>
 </configuration>

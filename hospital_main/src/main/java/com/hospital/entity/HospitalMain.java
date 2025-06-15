@@ -2,7 +2,7 @@ package com.hospital.entity;
 
 import java.util.List;
 
-
+import jakarta.persistence.CascadeType;
 // JPA 관련 임포트 추가
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -80,15 +80,25 @@ public class HospitalMain {
     @Column(name = "coordinate_y")
     private Double coordinateY;
     
-    @OneToOne(mappedBy = "hospital", fetch = FetchType.LAZY)
-    private HospitalDetail hospitalDetail;
-    
-    @OneToMany(mappedBy = "hospital", fetch = FetchType.LAZY)
-    private List<MedicalSubject> medicalSubjects;
-    
-    @OneToMany(mappedBy = "hospital", fetch = FetchType.LAZY)
-    private List<ProDoc> proDocs;
-    
+    @OneToOne(mappedBy = "hospital", 
+            fetch = FetchType.LAZY, 
+            cascade = CascadeType.ALL, 
+            orphanRemoval = true)
+  private HospitalDetail hospitalDetail;
 
 
+  @OneToMany(mappedBy = "hospital", 
+             fetch = FetchType.LAZY, 
+             cascade = CascadeType.ALL, 
+             orphanRemoval = true)
+  private List<MedicalSubject> medicalSubjects;
+
+
+  @OneToMany(mappedBy = "hospital", 
+             fetch = FetchType.LAZY, 
+             cascade = CascadeType.ALL, 
+             orphanRemoval = true)
+  private List<ProDoc> proDocs;
 }
+    
+

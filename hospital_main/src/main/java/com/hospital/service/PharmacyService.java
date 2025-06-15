@@ -12,20 +12,15 @@ import com.hospital.entity.Pharmacy;
 import com.hospital.repository.PharmacyRepository;
 import com.hospital.util.DistanceCalculator;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class PharmacyService  {
     
     private final PharmacyRepository pharmacyRepository;
     private final PharmacyConverter pharmacyConverter;
     private final DistanceCalculator distanceCalculator;
-
-    public PharmacyService(PharmacyRepository pharmacyRepository, 
-                              PharmacyConverter pharmacyConverter,
-                              DistanceCalculator distanceCalculator) {
-        this.pharmacyRepository = pharmacyRepository;
-        this.pharmacyConverter = pharmacyConverter;
-        this.distanceCalculator = distanceCalculator;
-    }
 
     @Cacheable(value = "pharmacies", key = "#userLat + '_' + #userLng + '_' + #radius")
     public List<PharmacyResponse> getPharmaciesByDistance(double userLat, double userLng, double radius) {
