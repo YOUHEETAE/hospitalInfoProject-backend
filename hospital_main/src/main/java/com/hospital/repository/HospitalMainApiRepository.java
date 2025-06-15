@@ -16,11 +16,11 @@ public interface HospitalMainApiRepository extends JpaRepository<HospitalMain, S
     List<String> findAllHospitalCodes();
 
  
-    @EntityGraph(attributePaths = {"hospitalDetail", "medicalSubjects", "proDocs"})
+    @EntityGraph("hospital-with-detail")
     Optional<HospitalMain> findByHospitalCode(String hospitalCode);
     
    
-    @EntityGraph(attributePaths = {"hospitalDetail", "medicalSubjects", "proDocs"})
+    @EntityGraph("hospital-with-detail")
     @Query("SELECT h FROM HospitalMain h WHERE REPLACE(h.hospitalName, ' ', '') LIKE CONCAT('%', REPLACE(:hospitalName, ' ', ''), '%')")
     List<HospitalMain> findByHospitalNameContaining(@Param("hospitalName") String hospitalName);
 }

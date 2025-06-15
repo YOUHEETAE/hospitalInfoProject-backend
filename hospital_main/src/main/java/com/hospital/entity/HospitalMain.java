@@ -14,6 +14,12 @@ import jakarta.persistence.Table;
 // import jakarta.persistence.GeneratedValue; // 필요한 경우 (자동 생성되는 ID)
 // import jakarta.persistence.GenerationType; // 필요한 경우
 // Lombok 어노테이션은 유지합니다.
+
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedEntityGraphs;
+import jakarta.persistence.NamedAttributeNode;
+
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,6 +33,20 @@ import lombok.ToString; // toString() 메서드를 자동으로 생성해주는 
 @ToString // 디버깅에 유용
 @Entity // 이 클래스가 JPA 엔티티임을 선언
 @Table(name = "hospital_main") // 매핑할 테이블 이름 지정 (원하는 이름으로 변경 가능)
+@NamedEntityGraphs({
+    @NamedEntityGraph(
+        name = "hospital-with-detail",
+        attributeNodes = @NamedAttributeNode("hospitalDetail")
+    ),
+    @NamedEntityGraph(
+        name = "hospital-with-medical-subjects", 
+        attributeNodes = @NamedAttributeNode("medicalSubjects")
+    ),
+    @NamedEntityGraph(
+        name = "hospital-with-pro-docs",
+        attributeNodes = @NamedAttributeNode("proDocs")
+    )
+})
 public class HospitalMain {
 
     @Id // 이 필드가 테이블의 기본 키(Primary Key)임을 나타냅니다.

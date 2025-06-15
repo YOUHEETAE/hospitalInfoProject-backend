@@ -18,13 +18,7 @@ public class HospitalTagFilter {
         }
 
         for (String tag : tags) {
-            switch (tag) {
-                case "응급실":
-                    if (Objects.isNull(hospital.getHospitalDetail()) || 
-                        !hospital.getHospitalDetail().hasEmergencyService()) {
-                        return false;
-                    }
-                    break;
+            switch (tag) {               
                 case "주차가능":
                     if (Objects.isNull(hospital.getHospitalDetail()) || 
                         !hospital.getHospitalDetail().hasParkingSpace()) {
