@@ -51,19 +51,18 @@ public class EmergencyApiService {
         this.regionConfig = regionConfig; 
     }
 
-    /**
-     * 서비스 시작 시점에 병원 데이터를 미리 로딩해 캐시에 저장
-     */
     @PostConstruct
+    public void initService() {
+        initHospitalDataCache();   // 병원 캐시 먼저 초기화
+        startScheduler();          // 이후 스케줄러 시작
+    }
+
     public void initHospitalDataCache() {
         System.out.println("서비스 시작 - 병원 데이터 초기 로딩 시작");
-        
         List<HospitalMain> hospitals = hospitalMainApiRepository.findAll();
-
         for (HospitalMain hospital : hospitals) {
             hospitalCache.put(hospital.getHospitalName(), hospital);
         }
-
         System.out.println("병원 데이터 초기 로딩 완료, 총 병원 수: " + hospitalCache.size());
     }
 
