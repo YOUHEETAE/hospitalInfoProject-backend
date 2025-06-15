@@ -10,7 +10,7 @@ import com.hospital.entity.HospitalMain;
 import com.hospital.repository.HospitalMainApiRepository;
 import com.hospital.websocket.EmergencyApiWebSocketHandler;
 
-import jakarta.annotation.PostConstruct;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.TaskScheduler;
@@ -18,7 +18,10 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -39,9 +42,6 @@ public class EmergencyApiService {
     @Autowired
     private EmergencyApiWebSocketHandler webSocketHandler;
 
-    // 병원명 키로 병원 데이터 캐시 (간단히 전체 병원명 → 병원 정보)
-    private Map<String, HospitalMain> hospitalCache = new HashMap<>();
-
     public EmergencyApiService(EmergencyApiCaller apiCaller, 
                               HospitalMainApiRepository hospitalMainApiRepository,
                               RegionConfig regionConfig) { 
@@ -49,39 +49,6 @@ public class EmergencyApiService {
         this.objectMapper = new ObjectMapper();
         this.hospitalMainApiRepository = hospitalMainApiRepository;
         this.regionConfig = regionConfig; 
-    }
-
-    @PostConstruct
-    public void initService() {
-        initHospitalDataCache();   // 병원 캐시 먼저 초기화
-        startScheduler();          // 이후 스케줄러 시작
-    }
-
-    public void initHospitalDataCache() {
-        System.out.println("서비스 시작 - 병원 데이터 초기 로딩 시작");
-        List<HospitalMain> hospitals = hospitalMainApiRepository.findAll();
-        for (HospitalMain hospital : hospitals) {
-            hospitalCache.put(hospital.getHospitalName(), hospital);
-        }
-        System.out.println("병원 데이터 초기 로딩 완료, 총 병원 수: " + hospitalCache.size());
-    }
-
-    /**
-     * 병원명 일부 포함 검색 (부분 매칭) 메서드
-     * - 캐시에서 부분 매칭하는 병원 리스트 반환
-     */
-    public List<HospitalMain> findHospitalsByNameContains(String partialName) {
-        if (partialName == null || partialName.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        List<HospitalMain> result = new ArrayList<>();
-        for (String key : hospitalCache.keySet()) {
-            if (key.contains(partialName)) {
-                result.add(hospitalCache.get(key));
-            }
-        }
-        return result;
     }
 
     public void updateEmergencyRoomData() {
@@ -104,43 +71,74 @@ public class EmergencyApiService {
         }
     }
 
-    /**
-     * 응급실 API에서 받은 JSON 데이터를 DTO 리스트로 변환하고,
-     * 미리 로딩한 병원 데이터 캐시에서 좌표와 주소를 붙임
-     */
     public List<EmergencyResponse> getEmergencyRoomDataAsDto() {
+        // regionConfig에서 지역명 가져오기
         JsonNode data = emergencyApiCaller.callEmergencyApiAsJsonNode(
                 regionConfig.getEmergencyCityName(), 1, 10);
 
-        if (data == null || !data.has("body") || !data.get("body").has("items") || !data.get("body").get("items").has("item")) {
-            System.out.println("응급실 API 응답 데이터 구조가 예상과 다름 또는 데이터 없음");
+        System.out.println("=== 디버깅 시작 ===");
+        System.out.println("1. 전체 응답: " + data);
+
+        if (data == null) {
+            System.out.println("❌ data가 null입니다.");
             return Collections.emptyList();
         }
 
-        JsonNode itemArray = data.get("body").get("items").get("item");
+        // data 노드가 아니라 바로 body 노드를 확인
+        System.out.println("2. body 노드 존재: " + data.has("body"));
+        if (!data.has("body")) {
+            System.out.println("❌ 'body' 필드가 없습니다.");
+            return Collections.emptyList();
+        }
+
+        JsonNode bodyNode = data.get("body");
+        System.out.println("3. items 노드 존재: " + bodyNode.has("items"));
+        if (!bodyNode.has("items")) {
+            System.out.println("❌ 'items' 필드가 없습니다.");
+            return Collections.emptyList();
+        }
+
+        JsonNode itemsNode = bodyNode.get("items");
+        System.out.println("4. item 노드 존재: " + itemsNode.has("item"));
+        if (!itemsNode.has("item")) {
+            System.out.println("❌ 'item' 필드가 없습니다.");
+            return Collections.emptyList();
+        }
+
+        JsonNode itemArray = itemsNode.get("item");
+        System.out.println("5. item 배열 타입: " + itemArray.getNodeType());
+        System.out.println("6. item 배열 크기: " + (itemArray.isArray() ? itemArray.size() : "배열이 아님"));
 
         try {
             EmergencyResponse[] responses = objectMapper.treeToValue(itemArray, EmergencyResponse[].class);
-            List<EmergencyResponse> responseList = Arrays.asList(responses);
+            System.out.println("7. ✅ 변환 성공! 개수: " + responses.length);
 
+            // 각 응급실 정보에 좌표 추가
+            List<EmergencyResponse> responseList = Arrays.asList(responses);
             for (EmergencyResponse response : responseList) {
-                // 캐시에서 부분 매칭 병원 검색
-                List<HospitalMain> hospitals = findHospitalsByNameContains(response.getDutyName());
+                System.out.println("   - " + response.getDutyName() + " 처리 중...");
+
+                // 부분 매칭으로 검색
+                List<HospitalMain> hospitals = hospitalMainApiRepository
+                        .findByHospitalNameContaining(response.getDutyName());
 
                 if (!hospitals.isEmpty()) {
                     HospitalMain hospitalData = hospitals.get(0); // 첫 번째 결과 사용
                     response.setCoordinates(hospitalData.getCoordinateX(), hospitalData.getCoordinateY());
                     response.setEmergencyAddress(hospitalData.getHospitalAddress());
+                    System.out.println(
+                            "     좌표: (" + hospitalData.getCoordinateX() + ", " + hospitalData.getCoordinateY() + ")");
+                    System.out.println("     주소: " + hospitalData.getHospitalAddress());
                 } else {
+                    System.out.println("     좌표 및 주소 정보 없음");
                     response.setCoordinates(null, null);
                     response.setEmergencyAddress(null);
                 }
             }
 
             return responseList;
-
         } catch (Exception e) {
-            System.err.println("응급실 DTO 변환 중 오류:");
+            System.err.println("JSON 변환 중 오류:");
             e.printStackTrace();
             return Collections.emptyList();
         }
@@ -148,7 +146,9 @@ public class EmergencyApiService {
 
     public void startScheduler() {
         schedulerRunning.set(true);
-        scheduledTask = taskScheduler.scheduleAtFixedRate(() -> updateEmergencyRoomData(), Duration.ofSeconds(30));
+        scheduledTask = taskScheduler.scheduleAtFixedRate(() -> {
+            updateEmergencyRoomData();
+        }, Duration.ofSeconds(30));
         System.out.println("30초마다 실행하는 스케줄러 시작!");
     }
 
@@ -160,7 +160,8 @@ public class EmergencyApiService {
     }
 
     public JsonNode getEmergencyRoomData() {
-        return emergencyApiCaller.callEmergencyApiAsJsonNode(regionConfig.getEmergencyCityName(), 1, 10);
+        return emergencyApiCaller.callEmergencyApiAsJsonNode(
+                regionConfig.getEmergencyCityName(), 1, 10);
     }
 
     public void shutdownCompleteService() {

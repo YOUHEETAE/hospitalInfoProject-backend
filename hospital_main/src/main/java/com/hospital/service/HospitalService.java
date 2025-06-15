@@ -50,18 +50,16 @@ public class HospitalService  {
     }
     
     // ✅ 병원명 검색 
-    @Cacheable(value = "hospitalsByName", key = "#hospitalName")
-    public List<HospitalResponse> searchHospitalsByName(String hospitalName) {
-        // 입력값 전처리
+    @Cacheable(value = "hospitalsByNameFiltered", key = "#hospitalName + '_' + #userLat + '_' + #userLng + '_' + #radius + '_' + (#tags != null ? #tags.toString() : 'null')")
+    public List<HospitalResponse> searchHospitalsByNameWithFilters(String hospitalName, double userLat, double userLng, double radius, List<String> tags) {
         String cleanInput = hospitalName.replace(" ", "");
         
-        // Repository에서 검색 (hospitalDetail + medicalSubjects EAGER FETCH)
+        // 병원명 유사 검색 (부분 매칭 가능하도록 구현돼 있다고 가정)
         List<HospitalMain> hospitalEntities = hospitalRepository.findHospitalsByName(cleanInput);
         
-        // 단순히 DTO로 변환해서 리턴
-        return hospitalEntities.stream()
-                .map(hospitalConverter::convertToDTO)
-                .collect(Collectors.toList());
+        // 필터 및 거리 정렬 적용
+        return applyFiltersAndSort(hospitalEntities, userLat, userLng, radius, tags);
+    
     }
     
     // ✅ 공통 로직: 필터링 + 정렬 (거리 계산 중복 제거)
