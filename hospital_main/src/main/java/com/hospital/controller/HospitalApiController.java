@@ -92,7 +92,7 @@ public class HospitalApiController {
 	@PostMapping(value = "/proDoc/save", produces = MediaType.TEXT_PLAIN_VALUE)
 	public String syncProDocData() {
 		int total = proDocApiService.fetchParseAndSaveProDocs(); // 전체 병원 수 반환
-		return String.format("전문의 정보 저장 시작됨! 전체 병원 수: %d개.\n(실시간 진행상황은 로그에서 확인 가능)\n", total);
+		return String.format("전문의 정보 저장 와료! 전체 병원 수: %d개", total);
 	}
 
 	// 전문의 정보 저장 진행상황 확인 API
@@ -108,6 +108,6 @@ public class HospitalApiController {
 	public String savePharmacyData() {
 		int totalSaved = pharmacyApiService.fetchAndSaveSeongnamPharmacies();
 
-		return String.format("✅ 약국 데이터 저장 완료! 총 %d건 저장됨 (성남시 전체)", totalSaved);
+		return String.format("약국 데이터 저장 완료! 총 %d건 저장됨 (성남시 전체)", totalSaved);
 	}
 }

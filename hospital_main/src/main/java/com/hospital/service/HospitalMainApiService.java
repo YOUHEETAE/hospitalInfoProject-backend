@@ -2,12 +2,16 @@ package com.hospital.service;
 
 import com.hospital.config.RegionConfig; // 🔥 추가
 import com.hospital.entity.HospitalMain;
+
 import com.hospital.repository.HospitalMainApiRepository;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+
 import com.hospital.caller.HospitalMainApiCaller;
 import com.hospital.dto.api.HospitalMainApiResponse;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.hospital.parser.HospitalMainApiParser;
 
@@ -18,21 +22,32 @@ import java.util.Optional;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
+
 public class HospitalMainApiService {
 
-	private final HospitalMainApiRepository hospitalMainRepository;
+	private final HospitalMainApiRepository hospitalMainApiRepository;
 	private final HospitalMainApiCaller hospitalMainApiCaller;
 	private final HospitalMainApiParser hospitalMainApiParser;
 	private final RegionConfig regionConfig;
+
+	@Autowired
+	public HospitalMainApiService(HospitalMainApiRepository hospitalMainApiRepository,
+			HospitalMainApiCaller hospitalMainApiCaller, HospitalMainApiParser hospitalMainApiParser,
+			RegionConfig regionConfig) {
+		this.hospitalMainApiCaller = hospitalMainApiCaller;
+		this.hospitalMainApiParser = hospitalMainApiParser;
+		this.hospitalMainApiRepository = hospitalMainApiRepository;
+		this.regionConfig = regionConfig;
+		
+	}
 
 	public int fetchParseAndSaveHospitals() {
 		log.info("병원 데이터 수집 시작 - 대상 지역: {}", regionConfig.getCityName());
 
 		// ✅ 1. 기존 데이터 전체 삭제
 		log.info("기존 병원 데이터 삭제 중...");
-		long deletedCount = hospitalMainRepository.count();
-		hospitalMainRepository.deleteAll();
+		long deletedCount = hospitalMainApiRepository.count();
+		hospitalMainApiRepository.deleteAll();
 		log.info("기존 병원 데이터 {}건 삭제 완료", deletedCount);
 
 		int totalSavedOrUpdatedCount = 0;
@@ -78,7 +93,7 @@ public class HospitalMainApiService {
 				}
 
 				// 3. 저장
-				hospitalMainRepository.saveAll(hospitals);
+				hospitalMainApiRepository.saveAll(hospitals);
 				districtTotal += hospitals.size();
 
 				log.info("지역 {} 페이지 {}: {}건 저장 완료", regionConfig.getDistrictName(sgguCd), pageNo, hospitals.size());

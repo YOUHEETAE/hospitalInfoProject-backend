@@ -2,28 +2,35 @@ package com.hospital.service;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
 
 import com.hospital.async.ProDocAsyncRunner;
 import com.hospital.repository.HospitalMainApiRepository;
 import com.hospital.repository.ProDocApiRepository;
 
-import lombok.RequiredArgsConstructor;
+
 
 /**
  * 🧠 ProDocServiceImpl 전문의(ProDoc) 정보 수집 및 저장 기능 구현체
  */
 @Service
-@RequiredArgsConstructor
 public class ProDocApiService {
-	
+
 	private final HospitalMainApiRepository hospitalMainApiRepository;
 	private final ProDocAsyncRunner proDocasyncRunner; // 전문의 API 비동기 실행기
 	private final ProDocApiRepository proDocRepository; // 전문의 정보 저장소 (JPA)
-	
 
-	
+	@Autowired
+	public ProDocApiService(HospitalMainApiRepository hospitalMainApiRepository, ProDocAsyncRunner proDocasyncRunner,
+			ProDocApiRepository proDocRepository) {
+		this.hospitalMainApiRepository = hospitalMainApiRepository;
+		this.proDocasyncRunner = proDocasyncRunner;
+		this.proDocRepository = proDocRepository;
+
+	}
+
 	public int fetchParseAndSaveProDocs() {
 		// 기존 데이터 전체 삭제
 		proDocRepository.deleteAllProDocs();
@@ -48,7 +55,7 @@ public class ProDocApiService {
 	/**
 	 * ✅ 완료된 병원 처리 수 조회
 	 */
-	
+
 	public int getCompletedCount() {
 		return proDocasyncRunner.getCompletedCount();
 	}
@@ -56,7 +63,7 @@ public class ProDocApiService {
 	/**
 	 * ✅ 실패한 병원 처리 수 조회
 	 */
-	
+
 	public int getFailedCount() {
 		return proDocasyncRunner.getFailedCount();
 	}

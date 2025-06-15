@@ -36,15 +36,15 @@ public class QuartzSchedulerService {
 			scheduler.clear();
 
 			// 1. 병원 기본정보: 매일 새벽 2시
-			//scheduleJob(HospitalMainJob.class, "hospitalMainJob", "0 0 2 * * ?");
+			scheduleJob(HospitalMainJob.class, "hospitalMainJob", "0 0 2 * * ?");
 			// 2. 병원 상세정보: 매일 새벽 2시 20분
-			//scheduleJob(HospitalDetailJob.class, "hospitalDetailJob", "0 20 2 * * ?");
+			scheduleJob(HospitalDetailJob.class, "hospitalDetailJob", "0 20 2 * * ?");
 			// 3. 진료과목: 매일 새벽 2시 40분
-			//scheduleJob(MedicalSubjectJob.class, "medicalSubjectJob", "0 40 2 * * ?");
+			scheduleJob(MedicalSubjectJob.class, "medicalSubjectJob", "0 40 2 * * ?");
 			// 4. 전문의 정보: 매일 새벽 3시
-			//scheduleJob(ProDocJob.class, "proDocJob", "0 0 3 * * ?");
+			scheduleJob(ProDocJob.class, "proDocJob", "0 0 3 * * ?");
 			// 5. 약국 정보: 매일 새벽 3시 20분
-			//scheduleJob(PharmacyJob.class, "pharmacyJob", "0 20 3 * * ?");
+			scheduleJob(PharmacyJob.class, "pharmacyJob", "0 20 3 * * ?");
 
 			log.info("✅ Quartz 스케줄러 초기화 완료");
 

@@ -26,6 +26,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @PropertySource("classpath:api.properties")
 @PropertySource("classpath:db.properties")
 @PropertySource("classpath:region.properties")
+@PropertySource("classpath:subject.properties")
 @EnableTransactionManagement
 @EnableJpaRepositories(basePackages = "com.hospital.repository")
 @EnableWebMvc
