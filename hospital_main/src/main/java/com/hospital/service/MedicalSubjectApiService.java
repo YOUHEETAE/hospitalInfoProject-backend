@@ -1,24 +1,72 @@
 package com.hospital.service;
 
-public interface MedicalSubjectApiService {
+import com.hospital.async.MedicalSubjectAsyncRunner;
+import com.hospital.repository.HospitalMainApiRepository;
+import com.hospital.repository.MedicalSubjectApiRepository;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+/**
+ * 🧠 MedicalSubjectServiceImpl
+ * 병원별 진료과목 정보 수집 및 저장 기능 구현체
+ */
+@Service
+public class MedicalSubjectApiService {
+
+	private final HospitalMainApiRepository hospitalMainApiRepository;
+    private final MedicalSubjectAsyncRunner medicalSubjectAsyncRunner;        // 진료과목 비동기 실행기
+    private final MedicalSubjectApiRepository medicalSubjectApiRepository;
+
+    @Autowired
+    public MedicalSubjectApiService(HospitalMainApiRepository hospitalMainApiRepository,
+                                     MedicalSubjectAsyncRunner medicalSubjectAsyncRunner,
+                                     MedicalSubjectApiRepository medicalSubjectApiRepository) {
+        this.hospitalMainApiRepository = hospitalMainApiRepository;
+        this.medicalSubjectAsyncRunner = medicalSubjectAsyncRunner;
+        this.medicalSubjectApiRepository = medicalSubjectApiRepository;
+    }
 
     /**
-     * 병원 코드 리스트를 기반으로 공공 API에서 진료과목 정보를 받아와 DB에 저장합니다.
-     * 비동기 방식으로 각 병원마다 병렬로 처리됩니다.
-     * 
-     * @return 전체 병원 수
+     * ✅ 병원 전체 대상 진료과목 정보 수집 시작
+     * 1. 병원 코드 리스트 조회
+     * 2. AsyncRunner에 전체 수 설정
+     * 3. 병원코드별로 비동기 실행
+     *
+     * @return 전체 병원 수 (작업 수)
      */
-    int fetchParseAndSaveMedicalSubjects();
+
+    public int fetchParseAndSaveMedicalSubjects() {
+    	 medicalSubjectApiRepository.deleteAllSubjects();
+
+         medicalSubjectApiRepository.resetAutoIncrement();
+    	
+        List<String> hospitalCodes = hospitalMainApiRepository.findAllHospitalCodes();
+
+        medicalSubjectAsyncRunner.setTotalCount(hospitalCodes.size()); // 전체 작업 수 등록
+
+        for (String code : hospitalCodes) {
+        	medicalSubjectAsyncRunner.runAsync(code); // ✅ 병렬 실행 (스레드 풀 사용)
+        }
+
+        return hospitalCodes.size(); // 실행한 병원 수 반환
+    }
 
     /**
-     * 비동기 처리된 병원 수 (성공 카운트)
-     * @return 성공 처리 수
+     * 저장 완료 수 조회
      */
-    int getCompletedCount();
+
+    public int getCompletedCount() {
+        return medicalSubjectAsyncRunner.getCompletedCount();
+    }
 
     /**
-     * 비동기 처리 중 실패한 병원 수
-     * @return 실패 처리 수
+     * 실패한 병원 수 조회
      */
-    int getFailedCount();
+
+    public int getFailedCount() {
+        return medicalSubjectAsyncRunner.getFailedCount();
+    }
 }

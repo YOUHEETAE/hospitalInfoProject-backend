@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Service // 서비스 컴포넌트로 등록 (비즈니스 로직)
-public class MedicalSubjectApiAsyncRunner {
+public class MedicalSubjectAsyncRunner {
 	private final RateLimiter rateLimiter = RateLimiter.create(8.0);
 
 
@@ -31,7 +31,7 @@ public class MedicalSubjectApiAsyncRunner {
     private int totalCount = 0; // 전체 병원 수
 
     @Autowired
-    public MedicalSubjectApiAsyncRunner(
+    public MedicalSubjectAsyncRunner(
             MedicalSubjectApiCaller apiCaller,
             MedicalSubjectApiParser parser,
             MedicalSubjectApiRepository repository) {
