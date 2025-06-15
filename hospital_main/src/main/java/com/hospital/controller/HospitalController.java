@@ -51,12 +51,7 @@ public class HospitalController {
 
     @GetMapping(value = "/hospitals/search", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<HospitalResponse> searchHospitalsByName(
-            @RequestParam("hospitalName") String hospitalName,
-            @RequestParam("userLat") double userLat,
-            @RequestParam("userLng") double userLng,
-            @RequestParam("radius") double radius,
-            @RequestParam(value = "tags", required = false) List<String> tags) {
-
-        return hospitalService.searchHospitalsByNameWithFilters(hospitalName, userLat, userLng, radius, tags);
+            @RequestParam String hospitalName) {
+        return hospitalService.searchHospitalsByName(hospitalName);
     }
 }
