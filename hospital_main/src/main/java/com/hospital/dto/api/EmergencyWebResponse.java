@@ -1,4 +1,4 @@
-package com.hospital.dto.web;
+package com.hospital.dto.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class EmergencyResponse {
+public class EmergencyWebResponse {
 
 	// === 필수 기본 정보 ===
 	@JsonProperty("dutyName")

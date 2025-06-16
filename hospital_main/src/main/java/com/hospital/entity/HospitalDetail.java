@@ -91,8 +91,6 @@ public class HospitalDetail {
     @JoinColumn(name = "hospital_code", insertable = false, updatable = false)
     private HospitalMain hospital;
 
-  
-
     // ✅ 주차 가능 여부 체크
     public boolean hasParkingSpace() {
         return this.parkQty != null && this.parkQty > 0;
@@ -121,8 +119,9 @@ public class HospitalDetail {
 
     /**
      * 유효한 시간 값인지 체크
+     * static으로 변경하여 외부에서도 사용 가능하게 함
      */
-    private static boolean isValidTime(String timeStr) {
+    public static boolean isValidTime(String timeStr) {
         if (timeStr == null || 
             timeStr.trim().isEmpty() || 
             "(NULL)".equals(timeStr) || 

@@ -1,4 +1,4 @@
-package com.hospital.emergency.controller;
+package com.hospital.controller;
 
 
 import java.util.List;
@@ -12,10 +12,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
-
-import com.hospital.dto.web.EmergencyResponse;
-import com.hospital.emergency.service.EmergencyApiService;
+import com.hospital.dto.api.EmergencyWebResponse;
+import com.hospital.service.EmergencyApiService;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -32,24 +30,22 @@ public class EmergencyApiController {
 	}
 
 	@GetMapping(value = "/start", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<EmergencyResponse>> getEmergencyList() {
-        try {
-            // 스케줄러 시작
-            emergencyApiService.startScheduler();
-            
-            // 응급실 데이터 업데이트
-            emergencyApiService.updateEmergencyRoomData();
-            
-            // ✅ 순수한 배열만 반환
-            List<EmergencyResponse> emergencyList = emergencyApiService.getEmergencyRoomDataAsDto();
-            
-            return ResponseEntity.ok(emergencyList);
-        } catch (Exception e) {
-            System.err.println("응급실 정보 조회 중 오류 발생: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
+	public ResponseEntity<List<EmergencyWebResponse>> getEmergencyList() {
+	    try {
+	        // 스케줄러 시작 (30초마다 API 호출, 1초마다 WebSocket 전송)
+	        emergencyApiService.startScheduler();
+
+	        // 응급실 데이터 바로 수집 및 DTO로 반환
+	        List<EmergencyWebResponse> emergencyList = emergencyApiService.getEmergencyRoomDataAsDto();
+
+	        return ResponseEntity.ok(emergencyList);
+	    } catch (Exception e) {
+	        System.err.println("응급실 정보 조회 중 오류 발생: " + e.getMessage());
+	        e.printStackTrace();
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+	    }
+	}
+    
 	
 
 	/*

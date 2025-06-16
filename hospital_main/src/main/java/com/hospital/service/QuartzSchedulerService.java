@@ -1,4 +1,4 @@
-package com.hospital.scheduler.service;
+package com.hospital.service;
 
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
@@ -11,11 +11,11 @@ import org.quartz.SchedulerException;
 import org.quartz.TriggerBuilder;
 import org.springframework.stereotype.Service;
 
-import com.hospital.scheduler.job.HospitalDetailJob;
-import com.hospital.scheduler.job.HospitalMainJob;
-import com.hospital.scheduler.job.MedicalSubjectJob;
-import com.hospital.scheduler.job.PharmacyJob;
-import com.hospital.scheduler.job.ProDocJob;
+import com.hospital.job.HospitalDetailJob;
+import com.hospital.job.HospitalMainJob;
+import com.hospital.job.MedicalSubjectJob;
+import com.hospital.job.PharmacyJob;
+import com.hospital.job.ProDocJob;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;

@@ -1,4 +1,4 @@
-package com.hospital.dto.web;
+package com.hospital.dto.api;
 
 
 
@@ -13,7 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class HospitalResponse {
+public class HospitalWebResponse {
     // 기본 정보
     
     private String hospitalName;

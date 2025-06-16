@@ -1,4 +1,4 @@
-package com.hospital.scheduler.job;
+package com.hospital.job;
 
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;

@@ -1,4 +1,4 @@
-package com.hospital.dto.web;
+package com.hospital.dto.api;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PharmacyResponse {
+public class PharmacyWebResponse {
 	
 	private String pharmacyName;
 	private String pharmacyAddress;

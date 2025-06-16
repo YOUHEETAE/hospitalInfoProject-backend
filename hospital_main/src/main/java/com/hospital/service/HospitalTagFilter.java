@@ -1,9 +1,10 @@
-package com.hospital.domainLogic;
+package com.hospital.service;
 
 import com.hospital.entity.HospitalMain;
 import com.hospital.entity.HospitalDetail;
 import com.hospital.entity.ProDoc;
 import com.hospital.util.CurrentTimeUtils;
+import com.hospital.util.TodayOperatingTimeCalculator;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
@@ -68,43 +69,15 @@ public class HospitalTagFilter {
         LocalDateTime now = CurrentTimeUtils.getCurrentDateTime();
         DayOfWeek today = now.getDayOfWeek();
         
-        String openTimeStr = null;
-        String closeTimeStr = null;
+        // TodayOperatingTimeCalculator의 로직 활용
+        TodayOperatingTimeCalculator.TodayOperatingTime todayTime = 
+            TodayOperatingTimeCalculator.getTodayOperatingTime(detail);
         
-        // 요일별 운영시간 가져오기
-        switch (today) {
-            case MONDAY:
-                openTimeStr = detail.getTrmtMonStart();
-                closeTimeStr = detail.getTrmtMonEnd();
-                break;
-            case TUESDAY:
-                openTimeStr = detail.getTrmtTueStart();
-                closeTimeStr = detail.getTrmtTueEnd();
-                break;
-            case WEDNESDAY:
-                openTimeStr = detail.getTrmtWedStart();
-                closeTimeStr = detail.getTrmtWedEnd();
-                break;
-            case THURSDAY:
-                openTimeStr = detail.getTrmtThurStart();
-                closeTimeStr = detail.getTrmtThurEnd();
-                break;
-            case FRIDAY:
-                openTimeStr = detail.getTrmtFriStart();
-                closeTimeStr = detail.getTrmtFriEnd();
-                break;
-            case SATURDAY:
-                openTimeStr = detail.getTrmtSatStart();
-                closeTimeStr = detail.getTrmtSatEnd();
-                break;
-            case SUNDAY:
-                openTimeStr = detail.getTrmtSunStart();
-                closeTimeStr = detail.getTrmtSunEnd();
-                break;
-        }
+        String openTimeStr = todayTime.getOpenTime();
+        String closeTimeStr = todayTime.getCloseTime();
         
         // 운영시간이 유효하지 않으면 운영하지 않음
-        if (!isValidTime(openTimeStr) || !isValidTime(closeTimeStr)) {
+        if (!HospitalDetail.isValidTime(openTimeStr) || !HospitalDetail.isValidTime(closeTimeStr)) {
             return false;
         }
         
@@ -152,32 +125,5 @@ public class HospitalTagFilter {
         }
         
         return LocalTime.of(hour, minute);
-    }
-
-    /**
-     * 유효한 시간 값인지 체크
-     */
-    private static boolean isValidTime(String timeStr) {
-        if (timeStr == null || timeStr.trim().isEmpty() || "(NULL)".equals(timeStr)) {
-            return false;
-        }
-        
-        // 4자리 숫자 형식 체크
-        if (!timeStr.matches("\\d{4}")) {
-            return false;
-        }
-        
-        // 0000은 운영하지 않는 시간으로 처리
-        if ("0000".equals(timeStr)) {
-            return false;
-        }
-        
-        try {
-            // 실제 시간 값 유효성 검증
-            parseTimeString(timeStr);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
     }
 }

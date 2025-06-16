@@ -1,11 +1,11 @@
 package com.hospital.converter;
 
-import com.hospital.domainLogic.TodayOperatingTimeCalculator;
-import com.hospital.dto.web.HospitalResponse;
 import com.hospital.entity.HospitalMain;
 import com.hospital.entity.MedicalSubject;
+import com.hospital.dto.api.HospitalWebResponse;
 import com.hospital.entity.HospitalDetail;
 import com.hospital.entity.ProDoc;
+import com.hospital.util.TodayOperatingTimeCalculator;
 
 import org.springframework.stereotype.Component;
 
@@ -17,7 +17,7 @@ public class HospitalConverter {
     
     
     //Hospital 엔티티를 HospitalResponseDto로 변환
-    public HospitalResponse convertToDTO(HospitalMain hospitalMain) {
+    public HospitalWebResponse convertToDTO(HospitalMain hospitalMain) {
         if (hospitalMain == null) {
             return null;
         }
@@ -29,7 +29,7 @@ public class HospitalConverter {
             
        
         
-        return HospitalResponse.builder()
+        return HospitalWebResponse.builder()
             // 기본 정보
             .hospitalName(hospitalMain.getHospitalName())
             .hospitalAddress(hospitalMain.getHospitalAddress())
@@ -85,7 +85,7 @@ public class HospitalConverter {
     }
     
     //Hospital 엔티티 리스트를 DTO 리스트로 변환
-    public List<HospitalResponse> convertToDtos(List<HospitalMain> hospitals) {
+    public List<HospitalWebResponse> convertToDtos(List<HospitalMain> hospitals) {
         if (hospitals == null) {
             return List.of();
         }

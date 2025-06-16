@@ -1,10 +1,10 @@
 package com.hospital.controller;
 
 
-import com.hospital.dto.web.HospitalResponse;
-import com.hospital.dto.web.PharmacyResponse;
-import com.hospital.service.HospitalService;
-import com.hospital.service.PharmacyService;
+import com.hospital.dto.api.HospitalWebResponse;
+import com.hospital.dto.api.PharmacyWebResponse;
+import com.hospital.service.HospitalWebService;
+import com.hospital.service.PharmacyWebService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -21,26 +21,26 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:5173")
 public class HospitalController {
 
-    private final HospitalService hospitalService;
-	private final PharmacyService pharmacyService;
+    private final HospitalWebService hospitalService;
+	private final PharmacyWebService pharmacyService;
 
     @Autowired
-    public HospitalController(HospitalService hospitalService,
-    		PharmacyService pharmacyService) {
+    public HospitalController(HospitalWebService hospitalService,
+    		PharmacyWebService pharmacyService) {
         this.hospitalService = hospitalService;
         this.pharmacyService = pharmacyService;
     }
     
     
     @GetMapping(value ="/hospitalsData", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<HospitalResponse> getHospitals(@RequestParam List<String> subs, @RequestParam double userLat, 
+    public List<HospitalWebResponse> getHospitals(@RequestParam List<String> subs, @RequestParam double userLat, 
     		                              @RequestParam double userLng ,@RequestParam double radius,      		                              
     		                              @RequestParam(required = false) List<String> tags) {
         return hospitalService.getHospitals(subs, userLat, userLng, radius, tags); // 서비스에서 병원 데이터 가져오기
     }
     
     @GetMapping(value = "/pharmaciesData", produces = MediaType.APPLICATION_JSON_VALUE)
-	public List<PharmacyResponse> getNearbyPharmacies(
+	public List<PharmacyWebResponse> getNearbyPharmacies(
 	        @RequestParam double userLat,
 	        @RequestParam double userLng, 
 	        @RequestParam double radius) {
@@ -50,7 +50,7 @@ public class HospitalController {
     
 
     @GetMapping(value = "/hospitals/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<HospitalResponse> searchHospitalsByName(
+    public List<HospitalWebResponse> searchHospitalsByName(
             @RequestParam String hospitalName) {
         return hospitalService.searchHospitalsByName(hospitalName);
     }

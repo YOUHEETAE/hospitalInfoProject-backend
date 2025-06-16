@@ -1,4 +1,4 @@
-package com.hospital.scheduler.job;
+package com.hospital.job;
 
 import com.hospital.service.*;
 import lombok.extern.slf4j.Slf4j;
