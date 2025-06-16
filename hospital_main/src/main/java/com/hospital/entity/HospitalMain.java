@@ -31,8 +31,8 @@ import lombok.ToString; // toString() 메서드를 자동으로 생성해주는 
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString // 디버깅에 유용
-@Entity // 이 클래스가 JPA 엔티티임을 선언
-@Table(name = "hospital_main") // 매핑할 테이블 이름 지정 (원하는 이름으로 변경 가능)
+@Entity
+@Table(name = "hospital_main")
 @NamedEntityGraphs({
     @NamedEntityGraph(
         name = "hospital-with-detail",
@@ -45,6 +45,15 @@ import lombok.ToString; // toString() 메서드를 자동으로 생성해주는 
     @NamedEntityGraph(
         name = "hospital-with-pro-docs",
         attributeNodes = @NamedAttributeNode("proDocs")
+    ),
+    // ✅ 새로 추가 - 모든 연관관계를 한번에 로딩
+    @NamedEntityGraph(
+        name = "hospital-with-all",
+        attributeNodes = {
+            @NamedAttributeNode("hospitalDetail"),
+            @NamedAttributeNode("medicalSubjects"), 
+            @NamedAttributeNode("proDocs")
+        }
     )
 })
 public class HospitalMain {
