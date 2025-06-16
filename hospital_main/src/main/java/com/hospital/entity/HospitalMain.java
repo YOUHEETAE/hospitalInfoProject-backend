@@ -1,6 +1,6 @@
 package com.hospital.entity;
 
-import java.util.List;
+import java.util.Set;
 
 import jakarta.persistence.CascadeType;
 // JPA 관련 임포트 추가
@@ -8,18 +8,15 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedEntityGraphs;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 // import jakarta.persistence.GeneratedValue; // 필요한 경우 (자동 생성되는 ID)
 // import jakarta.persistence.GenerationType; // 필요한 경우
 // Lombok 어노테이션은 유지합니다.
-
-import jakarta.persistence.NamedEntityGraph;
-import jakarta.persistence.NamedEntityGraphs;
-import jakarta.persistence.NamedAttributeNode;
-
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -100,14 +97,14 @@ public class HospitalMain {
              fetch = FetchType.LAZY, 
              cascade = CascadeType.ALL, 
              orphanRemoval = true)
-  private List<MedicalSubject> medicalSubjects;
+  private Set<MedicalSubject> medicalSubjects;
 
 
   @OneToMany(mappedBy = "hospital", 
              fetch = FetchType.LAZY, 
              cascade = CascadeType.ALL, 
              orphanRemoval = true)
-  private List<ProDoc> proDocs;
+  private Set<ProDoc> proDocs;
 }
     
 

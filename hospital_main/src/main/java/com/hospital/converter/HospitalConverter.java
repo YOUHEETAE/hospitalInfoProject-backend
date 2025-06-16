@@ -10,6 +10,7 @@ import com.hospital.util.TodayOperatingTimeCalculator;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -62,11 +63,11 @@ public class HospitalConverter {
             .build();
     }
     
-    private String convertMedicalSubjectsToString(List<MedicalSubject> medicalSubjects) {
-        if (medicalSubjects == null || medicalSubjects.isEmpty()) {
+    private String convertMedicalSubjectsToString(Set<MedicalSubject> set) {
+        if (set == null || set.isEmpty()) {
             return null;
         }
-        return medicalSubjects.stream()
+        return set.stream()
                 .map(MedicalSubject::getSubjectName)
                 .filter(name -> name != null && !name.trim().isEmpty())
                 .distinct()  // 중복 제거
@@ -97,12 +98,12 @@ public class HospitalConverter {
     
     
      //ProDoc 리스트를 문자열로 변환
-    private String convertProDocsToString(List<ProDoc> proDocs) {
-        if (proDocs == null || proDocs.isEmpty()) {
+    private String convertProDocsToString(Set<ProDoc> set) {
+        if (set == null || set.isEmpty()) {
             return null;
         }
         
-        return proDocs.stream()
+        return set.stream()
                 .filter(proDoc -> proDoc.getSubjectName() != null && proDoc.getProDocCount() != null)
                 .map(proDoc -> proDoc.getSubjectName() + ": " + proDoc.getProDocCount()) // 콜론 뒤에 공백 추가
                 .collect(Collectors.joining(", ")); // 쉼표 + 공백으로 구분
