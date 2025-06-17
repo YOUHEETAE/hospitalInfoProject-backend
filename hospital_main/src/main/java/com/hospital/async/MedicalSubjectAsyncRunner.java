@@ -64,29 +64,27 @@ public class MedicalSubjectAsyncRunner {
     public void runAsync(String hospitalCode) {
     	rateLimiter.acquire();;
         try {
-            // ✅ API 파라미터 구성
+            // API 파라미터 구성
             String queryParams = "ykiho=" + hospitalCode;
 
-            // ✅ API 호출 및 JSON → DTO 매핑
+            // API 호출 및 JSON → DTO 매핑
             MedicalSubjectApiResponse response = apiCaller.callApi("getDgsbjtInfo2.7", queryParams);
 
-            // ✅ 응답 파싱 → 진료과목 리스트 변환
+            // 응답 파싱 → 진료과목 리스트 변환
             List<MedicalSubject> subjects = parser.parse(response, hospitalCode);
 
-            // ✅ 병원코드 기준으로 기존 데이터 삭제
-            repository.deleteByHospitalCode(hospitalCode);
 
-            // ✅ 파싱한 진료과목 데이터 저장
+            // 파싱한 진료과목 데이터 저장
             repository.saveAll(subjects);
 
-            // ✅ 완료 카운터 증가 및 로그 출력
+            // 완료 카운터 증가 및 로그 출력
             int done = completedCount.incrementAndGet();
-            log.info("✅ 진료과목 저장 완료: {} / {} ({}%)", done, totalCount, (done * 100) / totalCount);
+            log.info("진료과목 저장 완료: {} / {} ({}%)", done, totalCount, (done * 100) / totalCount);
 
         } catch (Exception e) {
-            // ✅ 실패 카운터 증가 및 오류 로그
-            //int fail = failedCount.incrementAndGet();
-            log.error("❌ 병원코드 {} 처리 실패: {}", hospitalCode, e.getMessage());
+            // 실패 카운터 증가 및 오류 로그
+            failedCount.incrementAndGet();
+            log.error("병원코드 {} 처리 실패: {}", hospitalCode, e.getMessage());
         }
     }
 }

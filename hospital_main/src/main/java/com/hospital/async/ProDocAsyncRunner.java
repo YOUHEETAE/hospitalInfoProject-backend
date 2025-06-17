@@ -71,7 +71,7 @@ public class ProDocAsyncRunner {
             // 1. 병원코드를 쿼리 파라미터로 설정
             String queryParams = String.format("ykiho=%s", hospitalCode);
             
-            log.info("🔍 API 파라미터: {}", hospitalCode); // ← 여기 추가
+            log.info("API 파라미터: {}", hospitalCode); // ← 여기 추가
 
             // 2. 공공 API 호출 → JSON 파싱 → DTO 매핑
             ProDocApiResponse response = apiCaller.callApi("getSpcSbjtSdrInfo2.7", queryParams);
@@ -87,12 +87,12 @@ public class ProDocAsyncRunner {
 
             // 5. 완료 카운터 증가 + 로그 출력
             int done = completedCount.incrementAndGet();
-            log.info("✅ 처리됨: {} / {} ({}%)", done, totalCount, (done * 100) / totalCount);
+            log.info("처리됨: {} / {} ({}%)", done, totalCount, (done * 100) / totalCount);
 
         } catch (Exception e) {
             // 예외 발생 시 실패 카운터 증가 + 로그 출력
             failedCount.incrementAndGet();
-            log.error("❌ 병원코드 {} 처리 중 오류: {}", hospitalCode, e.getMessage());
+            log.error("병원코드 {} 처리 중 오류: {}", hospitalCode, e.getMessage());
         }
     }
 }

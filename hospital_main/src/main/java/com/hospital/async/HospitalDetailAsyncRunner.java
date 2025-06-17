@@ -76,7 +76,7 @@ public class HospitalDetailAsyncRunner {
 		try {
 			// 1. 병원코드를 쿼리 파라미터로 설정
 			String queryParams = String.format("ykiho=%s", hospitalCode);
-			log.info("🔍 API 파라미터: {}", hospitalCode);
+			log.info("API 파라미터: {}", hospitalCode);
 
 			// 2. 공공 API 호출 → JSON 파싱 → DTO 매핑
 			HospitalDetailApiResponse response = apiCaller.callApi("getDtlInfo2.7", queryParams);
@@ -88,16 +88,16 @@ public class HospitalDetailAsyncRunner {
 			if (!parsed.isEmpty()) {
 				   HospitalMain hospitalMain = hospitalMainApiRepository.findById(hospitalCode)
 
-	                        .orElseThrow(() -> new IllegalArgumentException("❌ 병원 메인 정보 없음: " + hospitalCode));
+	                        .orElseThrow(() -> new IllegalArgumentException("병원 메인 정보 없음: " + hospitalCode));
 
 
 					for (HospitalDetail detail : parsed) {
 
 						detail.setHospitalCode(hospitalCode);
 
-						detail.setHospital(hospitalMain); // ✅ 연관관계 설정
+						detail.setHospital(hospitalMain); //연관관계 설정
 
-						log.info("🔍 실제 저장값: {}, 연결된 병원명: {}", detail.getHospitalCode(),
+						log.info("실제 저장값: {}, 연결된 병원명: {}", detail.getHospitalCode(),
 								hospitalMain.getHospitalName());
 
 					}
@@ -108,7 +108,7 @@ public class HospitalDetailAsyncRunner {
 
 			// 5. 완료 카운터 증가 + 로그 출력
 			int done = completedCount.incrementAndGet();
-			log.info("✅ 처리됨: {} / {} ({}%)", done, totalCount, (done * 100) / totalCount);
+			log.info("처리됨: {} / {} ({}%)", done, totalCount, (done * 100) / totalCount);
 
 		}catch(
 
@@ -116,6 +116,6 @@ public class HospitalDetailAsyncRunner {
 	{
 		// 예외 발생 시 실패 카운터 증가 + 로그 출력
 		failedCount.incrementAndGet();
-		log.error("❌ 병원코드 {} 처리 중 오류: {}", hospitalCode, e.getMessage());
+		log.error("병원코드 {} 처리 중 오류: {}", hospitalCode, e.getMessage());
 	}
 }}
