@@ -1,7 +1,7 @@
 package com.hospital.controller;
 
-import com.hospital.dto.api.HospitalWebResponse;
-import com.hospital.dto.api.PharmacyWebResponse;
+import com.hospital.dto.HospitalWebResponse;
+import com.hospital.dto.PharmacyWebResponse;
 import com.hospital.service.HospitalWebService;
 import com.hospital.service.PharmacyWebService;
 

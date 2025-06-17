@@ -7,7 +7,7 @@ import org.quartz.JobExecutionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-// ✅ 1. 병원 기본정보 수집 Job
+
 @Slf4j
 @Component
 public class HospitalMainJob implements Job {

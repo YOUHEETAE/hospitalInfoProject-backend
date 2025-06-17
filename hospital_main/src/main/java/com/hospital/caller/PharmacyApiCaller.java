@@ -1,7 +1,8 @@
 package com.hospital.caller;
 
 import com.hospital.config.RegionConfig;
-import com.hospital.dto.api.OpenApiWrapper;
+import com.hospital.dto.OpenApiWrapper;
+
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;

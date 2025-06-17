@@ -1,7 +1,5 @@
-// 📁 com.hospital.entity.Pharmacy.java
 package com.hospital.entity;
 
-import com.hospital.dto.api.PharmacyApiItem;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

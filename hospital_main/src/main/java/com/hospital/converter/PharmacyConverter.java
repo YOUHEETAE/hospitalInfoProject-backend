@@ -1,6 +1,6 @@
 package com.hospital.converter;
 
-import com.hospital.dto.api.PharmacyWebResponse;
+import com.hospital.dto.PharmacyWebResponse;
 import com.hospital.entity.Pharmacy;
 import org.springframework.stereotype.Component;
 

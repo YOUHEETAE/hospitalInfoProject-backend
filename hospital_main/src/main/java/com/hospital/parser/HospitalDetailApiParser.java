@@ -2,8 +2,8 @@ package com.hospital.parser;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hospital.dto.api.HospitalDetailApiResponse;
-import com.hospital.dto.api.HospitalDetailApiItem;
+import com.hospital.dto.HospitalDetailApiItem;
+import com.hospital.dto.HospitalDetailApiResponse;
 import com.hospital.entity.HospitalDetail;
 import lombok.extern.slf4j.Slf4j;
 

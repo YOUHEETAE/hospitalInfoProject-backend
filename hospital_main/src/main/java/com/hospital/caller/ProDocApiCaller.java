@@ -1,8 +1,9 @@
 package com.hospital.caller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hospital.dto.ProDocApiResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.hospital.dto.api.ProDocApiResponse;
+
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Value;

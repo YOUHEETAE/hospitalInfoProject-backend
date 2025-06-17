@@ -2,7 +2,7 @@ package com.hospital.converter;
 
 import com.hospital.entity.HospitalMain;
 import com.hospital.entity.MedicalSubject;
-import com.hospital.dto.api.HospitalWebResponse;
+import com.hospital.dto.HospitalWebResponse;
 import com.hospital.entity.HospitalDetail;
 import com.hospital.entity.ProDoc;
 import com.hospital.util.TodayOperatingTimeCalculator;

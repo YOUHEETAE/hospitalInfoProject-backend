@@ -8,7 +8,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.hospital.converter.PharmacyConverter;
-import com.hospital.dto.api.PharmacyWebResponse;
+import com.hospital.dto.PharmacyWebResponse;
 import com.hospital.entity.Pharmacy;
 import com.hospital.repository.PharmacyApiRepository;
 import com.hospital.util.DistanceCalculator;

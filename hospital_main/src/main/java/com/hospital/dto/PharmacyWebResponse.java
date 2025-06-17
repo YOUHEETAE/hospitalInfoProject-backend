@@ -1,4 +1,4 @@
-package com.hospital.dto.api;
+package com.hospital.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.util.concurrent.RateLimiter;
 import com.hospital.caller.HospitalDetailApiCaller;
-import com.hospital.dto.api.HospitalDetailApiResponse;
+import com.hospital.dto.HospitalDetailApiResponse;
 import com.hospital.entity.HospitalDetail;
 import com.hospital.entity.HospitalMain;
 import com.hospital.parser.HospitalDetailApiParser;

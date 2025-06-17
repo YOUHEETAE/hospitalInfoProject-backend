@@ -1,6 +1,7 @@
 package com.hospital.service;
 
 import com.hospital.config.RegionConfig; // 🔥 추가
+import com.hospital.dto.HospitalMainApiResponse;
 import com.hospital.entity.HospitalMain;
 
 import com.hospital.repository.HospitalMainApiRepository;
@@ -9,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 
 
 import com.hospital.caller.HospitalMainApiCaller;
-import com.hospital.dto.api.HospitalMainApiResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

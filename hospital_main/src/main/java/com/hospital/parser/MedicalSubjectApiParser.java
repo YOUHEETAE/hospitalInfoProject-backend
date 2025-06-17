@@ -1,7 +1,7 @@
 package com.hospital.parser;
 
 import com.hospital.config.SubjectMappingConfig;
-import com.hospital.dto.api.MedicalSubjectApiResponse;
+import com.hospital.dto.MedicalSubjectApiResponse;
 import com.hospital.entity.MedicalSubject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

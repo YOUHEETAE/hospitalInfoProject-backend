@@ -1,7 +1,7 @@
 package com.hospital.parser;
 
 
-import com.hospital.dto.api.PharmacyApiItem;
+import com.hospital.dto.PharmacyApiItem;
 import com.hospital.entity.Pharmacy;
 
 import lombok.RequiredArgsConstructor;

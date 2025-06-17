@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hospital.caller.EmergencyApiCaller;
 import com.hospital.config.RegionConfig;
-import com.hospital.dto.api.EmergencyWebResponse;
+import com.hospital.dto.EmergencyWebResponse;
 import com.hospital.entity.HospitalMain;
 import com.hospital.repository.HospitalMainApiRepository;
 import com.hospital.websocket.EmergencyApiWebSocketHandler;
@@ -48,41 +48,46 @@ public class EmergencyApiService {
 	public void startScheduler() {
 		if (schedulerRunning.get())
 			return;
-		schedulerRunning.set(true);
 
 		try {
+			schedulerRunning.set(true);
+
 			List<EmergencyWebResponse> list = getEmergencyRoomDataAsDto();
 			if (!list.isEmpty()) {
 				latestEmergencyJson = objectMapper.writeValueAsString(list);
-				System.out.println("✅ 응급실 초기 데이터 업데이트 성공");
+				System.out.println("응급실 초기 데이터 업데이트 성공");
 			}
-		} catch (Exception e) {
-			System.err.println("❌ 초기 데이터 업데이트 중 오류:");
-			e.printStackTrace();
-		}
 
-		// ✅ 1. API 호출은 30초마다
-		apiUpdateTask = taskScheduler.scheduleAtFixedRate(() -> {
-			try {
-				List<EmergencyWebResponse> list = getEmergencyRoomDataAsDto();
-				if (!list.isEmpty()) {
-					latestEmergencyJson = objectMapper.writeValueAsString(list);
-					System.out.println("✅ 응급실 데이터 업데이트 성공");
+			// ✅ 1. API 호출은 30초마다
+			apiUpdateTask = taskScheduler.scheduleAtFixedRate(() -> {
+				try {
+					List<EmergencyWebResponse> updateList = getEmergencyRoomDataAsDto();
+					if (!updateList.isEmpty()) {
+						latestEmergencyJson = objectMapper.writeValueAsString(updateList);
+						System.out.println("응급실 데이터 업데이트 성공");
+					}
+				} catch (Exception e) {
+					System.err.println("응급실 데이터 업데이트 중 오류:");
+					e.printStackTrace();
 				}
-			} catch (Exception e) {
-				System.err.println("❌ 응급실 데이터 업데이트 중 오류:");
-				e.printStackTrace();
-			}
-		}, Duration.ofSeconds(30));
+			}, Duration.ofSeconds(30));
 
-		// ✅ 2. WebSocket 브로드캐스트는 1초마다
-		broadcastTask = taskScheduler.scheduleAtFixedRate(() -> {
-			if (latestEmergencyJson != null) {
-				webSocketHandler.broadcastEmergencyRoomData(latestEmergencyJson);
-			}
-		}, Duration.ofSeconds(1));
+			// ✅ 2. WebSocket 브로드캐스트는 1초마다
+			broadcastTask = taskScheduler.scheduleAtFixedRate(() -> {
+				if (latestEmergencyJson != null) {
+					webSocketHandler.broadcastEmergencyRoomData(latestEmergencyJson);
+				}
+			}, Duration.ofSeconds(1));
 
-		System.out.println("✅ 스케줄러 시작: API 30초, 브로드캐스트 1초");
+			System.out.println("스케줄러 시작: API 30초, 브로드캐스트 1초");
+			
+		} catch (Exception e) {
+			// 실패 시 상태 복구
+			schedulerRunning.set(false);
+			System.err.println("초기 데이터 업데이트 중 오류:");
+			e.printStackTrace();
+			throw new RuntimeException("응급실 스케줄러 시작 실패: " + e.getMessage(), e);
+		}
 	}
 
 	public void stopScheduler() {
@@ -93,13 +98,13 @@ public class EmergencyApiService {
 		if (broadcastTask != null && !broadcastTask.isCancelled()) {
 			broadcastTask.cancel(true);
 		}
-		System.out.println("🛑 스케줄러 정지 완료");
+		System.out.println("스케줄러 정지 완료");
 	}
 
 	public void shutdownCompleteService() {
 		stopScheduler();
 		webSocketHandler.closeAllSessions();
-		System.out.println("🚫 응급실 서비스 완전 종료 완료");
+		System.out.println("응급실 서비스 완전 종료 완료");
 	}
 
 	public List<EmergencyWebResponse> getEmergencyRoomDataAsDto() {
@@ -133,7 +138,7 @@ public class EmergencyApiService {
 
 			return responseList;
 		} catch (Exception e) {
-			System.err.println("❌ JSON 변환 중 오류:");
+			System.err.println("JSON 변환 중 오류:");
 			e.printStackTrace();
 			return Collections.emptyList();
 		}

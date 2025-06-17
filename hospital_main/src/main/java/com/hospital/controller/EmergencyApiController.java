@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hospital.dto.api.EmergencyWebResponse;
+import com.hospital.dto.EmergencyWebResponse;
 import com.hospital.service.EmergencyApiService;
 
 import lombok.extern.slf4j.Slf4j;

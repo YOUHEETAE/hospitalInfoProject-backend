@@ -9,58 +9,58 @@ import com.hospital.async.MedicalSubjectAsyncRunner;
 import com.hospital.repository.HospitalMainApiRepository;
 import com.hospital.repository.MedicalSubjectApiRepository;
 
+import lombok.extern.slf4j.Slf4j;
 
 
-/**
- * 
- * 병원별 진료과목 정보 수집 및 저장 기능 구현체
- */
+
+
+
+//병원별 진료과목 정보 수집 및 저장 기능 구현체
+
 @Service
-
+@Slf4j
 public class MedicalSubjectApiService {
 
 	private final HospitalMainApiRepository hospitalMainApiRepository;
-	private final MedicalSubjectAsyncRunner medicalSubjectAsyncRunner; // 진료과목 비동기 실행기
+	private final MedicalSubjectAsyncRunner medicalSubjectAsyncRunner;
 	private final MedicalSubjectApiRepository medicalSubjectApiRepository;
 
 	@Autowired
-	public  MedicalSubjectApiService(HospitalMainApiRepository hospitalMainApiRepository,
+	public MedicalSubjectApiService(HospitalMainApiRepository hospitalMainApiRepository,
 			MedicalSubjectAsyncRunner medicalSubjectAsyncRunner,
 			MedicalSubjectApiRepository medicalSubjectApiRepository) {
-		
 		this.medicalSubjectApiRepository = medicalSubjectApiRepository;
 		this.hospitalMainApiRepository = hospitalMainApiRepository;
 		this.medicalSubjectAsyncRunner = medicalSubjectAsyncRunner;
-
 	}
 
 	public int fetchParseAndSaveMedicalSubjects() {
-		medicalSubjectApiRepository.deleteAllSubjects();
+		try {
+			medicalSubjectApiRepository.deleteAllSubjects();
+			medicalSubjectApiRepository.resetAutoIncrement();
 
-		medicalSubjectApiRepository.resetAutoIncrement();
+			List<String> hospitalCodes = hospitalMainApiRepository.findAllHospitalCodes();
+			if (hospitalCodes.isEmpty()) {
+				throw new IllegalStateException("병원 기본정보가 없어 진료과목을 수집할 수 없습니다");
+			}
 
-		List<String> hospitalCodes = hospitalMainApiRepository.findAllHospitalCodes();
+			medicalSubjectAsyncRunner.setTotalCount(hospitalCodes.size());
 
-		medicalSubjectAsyncRunner.setTotalCount(hospitalCodes.size()); // 전체 작업 수 등록
+			for (String code : hospitalCodes) {
+				medicalSubjectAsyncRunner.runAsync(code);
+			}
 
-		for (String code : hospitalCodes) {
-			medicalSubjectAsyncRunner.runAsync(code); // 병렬 실행 (스레드 풀 사용)
+			return hospitalCodes.size();
+			
+		} catch (Exception e) {
+			log.error("진료과목 수집 실패", e);
+			throw new RuntimeException("진료과목 수집 중 오류 발생: " + e.getMessage(), e);
 		}
-
-		return hospitalCodes.size(); // 실행한 병원 수 반환
 	}
-
-	/**
-	 * 저장 완료 수 조회
-	 */
 
 	public int getCompletedCount() {
 		return medicalSubjectAsyncRunner.getCompletedCount();
 	}
-
-	/**
-	 * 실패한 병원 수 조회
-	 */
 
 	public int getFailedCount() {
 		return medicalSubjectAsyncRunner.getFailedCount();

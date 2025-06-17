@@ -1,8 +1,8 @@
 package com.hospital.parser;
 
 import com.hospital.config.SubjectMappingConfig;
-import com.hospital.dto.api.ProDocApiItem;
-import com.hospital.dto.api.ProDocApiResponse;
+import com.hospital.dto.ProDocApiItem;
+import com.hospital.dto.ProDocApiResponse;
 import com.hospital.entity.ProDoc;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

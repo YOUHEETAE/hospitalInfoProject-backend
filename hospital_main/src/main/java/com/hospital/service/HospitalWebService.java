@@ -6,7 +6,7 @@ import com.hospital.util.DistanceCalculator;
 
 import com.hospital.config.RegionConfig;
 import com.hospital.converter.HospitalConverter;
-import com.hospital.dto.api.HospitalWebResponse;
+import com.hospital.dto.HospitalWebResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;

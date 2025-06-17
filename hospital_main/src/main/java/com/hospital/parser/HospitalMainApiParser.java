@@ -3,8 +3,8 @@ package com.hospital.parser;
 
 
 
-import com.hospital.dto.api.HospitalMainApiItem;
-import com.hospital.dto.api.HospitalMainApiResponse;
+import com.hospital.dto.HospitalMainApiItem;
+import com.hospital.dto.HospitalMainApiResponse;
 import com.hospital.entity.HospitalMain;
 
 import lombok.extern.slf4j.Slf4j;
