@@ -35,7 +35,7 @@ public class HospitalMainApiCaller {
         this.objectMapper = objectMapper;
     }
 
-    public HospitalMainApiResponse callApi(String apiPath, String queryParams) {
+    public HospitalMainApiResponse callApi(String queryParams) {
         String encodedServiceKey;
         try {
             encodedServiceKey = URLEncoder.encode(serviceKey, StandardCharsets.UTF_8.toString());
@@ -44,7 +44,7 @@ public class HospitalMainApiCaller {
             throw new RuntimeException("서비스 키 인코딩 실패: " + e.getMessage(), e);
         }
 
-        URI uri = UriComponentsBuilder.fromUriString(baseUrl + apiPath)
+        URI uri = UriComponentsBuilder.fromUriString(baseUrl)
                                      .query(queryParams)
                                      .queryParam("serviceKey", encodedServiceKey)
                                      .queryParam("_type", "json")

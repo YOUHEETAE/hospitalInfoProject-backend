@@ -31,10 +31,10 @@ public class MedicalSubjectApiCaller {
 	}
 
 	// 병원코드 기반 진료과목 정보 요청
-	public MedicalSubjectApiResponse callApi(String apiPath, String queryParams) {
+	public MedicalSubjectApiResponse callApi(String queryParams) {
 		try {
 			// 전체 API URL 구성
-			String fullUrl = baseUrl + apiPath + "?serviceKey=" + serviceKey + "&_type=json&" + queryParams;
+			String fullUrl = baseUrl + "?serviceKey=" + serviceKey + "&_type=json&" + queryParams;
 
 			// API 호출
 			String response = restTemplate.getForObject(fullUrl, String.class);

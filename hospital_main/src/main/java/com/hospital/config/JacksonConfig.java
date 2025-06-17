@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.cfg.CoercionAction;
 import com.fasterxml.jackson.databind.cfg.CoercionInputShape;
 import com.fasterxml.jackson.databind.type.LogicalType;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 /**
  * Jackson JSON/XML 매퍼 설정
@@ -55,6 +56,9 @@ public class JacksonConfig {
      * 공통 매퍼 설정
      */
     private void configureCommonSettings(ObjectMapper mapper) {
+        // LocalDateTime 지원을 위한 JavaTimeModule 등록
+        mapper.registerModule(new JavaTimeModule());
+        
         // 알려지지 않은 속성 무시
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         

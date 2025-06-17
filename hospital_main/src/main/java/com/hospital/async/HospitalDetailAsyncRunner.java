@@ -79,7 +79,7 @@ public class HospitalDetailAsyncRunner {
 			log.info("API 파라미터: {}", hospitalCode);
 
 			// 2. 공공 API 호출 → JSON 파싱 → DTO 매핑
-			HospitalDetailApiResponse response = apiCaller.callApi("getDtlInfo2.7", queryParams);
+			HospitalDetailApiResponse response = apiCaller.callApi(queryParams);
 
 			// 3. DTO → Entity 리스트 변환
 			List<HospitalDetail> parsed = parser.parse(response, hospitalCode);

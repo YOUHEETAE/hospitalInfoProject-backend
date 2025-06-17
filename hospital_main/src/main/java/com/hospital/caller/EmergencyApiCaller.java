@@ -38,7 +38,6 @@ public class EmergencyApiCaller {
             String encodedStage1 = URLEncoder.encode(stage1, StandardCharsets.UTF_8.toString());
 
             URI uri = UriComponentsBuilder.fromUriString(baseUrl)
-                    .path("/getEmrrmRltmUsefulSckbdInfoInqire")
                     .queryParam("serviceKey", encodedServiceKey)
                     .queryParam("STAGE1", encodedStage1)
                     .queryParam("pageNo", pageNo)

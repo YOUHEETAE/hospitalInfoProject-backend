@@ -30,10 +30,10 @@ public class ProDocApiCaller {
         this.objectMapper = objectMapper;
     }
 
-    public ProDocApiResponse callApi(String apiPath, String queryParams) {
+    public ProDocApiResponse callApi(String queryParams) {
         try {
             // 최종 호출할 전체 URL 생성
-            String fullUrl = baseUrl + apiPath + "?serviceKey=" + serviceKey + "&_type=json&" + queryParams;
+            String fullUrl = baseUrl + "?serviceKey=" + serviceKey + "&_type=json&" + queryParams;
 
             // 외부 API 호출 (GET 방식)
             String response = restTemplate.getForObject(fullUrl, String.class);

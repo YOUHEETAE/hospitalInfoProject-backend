@@ -39,7 +39,7 @@ public class PharmacyApiCaller {
         String fullUrl = null;
         
         try {
-            fullUrl = baseUrl + "getParmacyBasisList"
+            fullUrl = baseUrl 
                     + "?serviceKey=" + serviceKey
                     + "&sidoCd=" + regionConfig.getSidoCode() 
                     + "&sgguCd=" + sgguCd

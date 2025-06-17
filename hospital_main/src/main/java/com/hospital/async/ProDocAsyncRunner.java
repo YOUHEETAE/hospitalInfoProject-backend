@@ -74,7 +74,7 @@ public class ProDocAsyncRunner {
             log.info("API 파라미터: {}", hospitalCode); // ← 여기 추가
 
             // 2. 공공 API 호출 → JSON 파싱 → DTO 매핑
-            ProDocApiResponse response = apiCaller.callApi("getSpcSbjtSdrInfo2.7", queryParams);
+            ProDocApiResponse response = apiCaller.callApi(queryParams);
 
             // 3. DTO → Entity 리스트 변환
             List<ProDoc> parsed = parser.parse(response, hospitalCode);

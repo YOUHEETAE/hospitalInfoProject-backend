@@ -30,10 +30,10 @@ public class HospitalDetailApiCaller {
 		this.objectMapper = objectMapper; // JSON → 객체 변환용
 	}
 
-	public HospitalDetailApiResponse callApi(String apiPath, String queryParams) {
+	public HospitalDetailApiResponse callApi(String queryParams) {
 		try {
 			// 최종 호출할 전체 URL 생성
-			String fullUrl = baseUrl + apiPath + "?serviceKey=" + serviceKey + "&_type=json&" + queryParams;
+			String fullUrl = baseUrl + "?serviceKey=" + serviceKey + "&_type=json&" + queryParams;
 
 			log.debug("API 호출 URL: {}", fullUrl);
 

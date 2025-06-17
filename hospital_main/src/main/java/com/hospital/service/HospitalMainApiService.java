@@ -1,7 +1,6 @@
 package com.hospital.service;
 
 import com.hospital.config.RegionConfig; // 🔥 추가
-import com.hospital.dto.HospitalMainApiResponse;
 import com.hospital.entity.HospitalMain;
 
 import com.hospital.repository.HospitalMainApiRepository;
@@ -10,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 
 
 import com.hospital.caller.HospitalMainApiCaller;
+import com.hospital.dto.HospitalMainApiResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -123,10 +123,10 @@ public class HospitalMainApiService {
 			throw new RuntimeException("시군구 코드 인코딩 실패: " + e.getMessage(), e);
 		}
 
-		String apiPath = "hospInfoServicev2/getHospBasisList";
+		
 		String queryParams = String.format("pageNo=%d&numOfRows=%d&sgguCd=%s", pageNo, numOfRows, encodedSgguCd);
 
-		return hospitalMainApiCaller.callApi(apiPath, queryParams);
+		return hospitalMainApiCaller.callApi(queryParams);
 	}
 
 	private boolean determineNextPage(HospitalMainApiResponse response, int currentBatchSize, int numOfRows) {

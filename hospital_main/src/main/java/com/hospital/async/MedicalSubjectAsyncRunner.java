@@ -68,7 +68,7 @@ public class MedicalSubjectAsyncRunner {
             String queryParams = "ykiho=" + hospitalCode;
 
             // API 호출 및 JSON → DTO 매핑
-            MedicalSubjectApiResponse response = apiCaller.callApi("getDgsbjtInfo2.7", queryParams);
+            MedicalSubjectApiResponse response = apiCaller.callApi(queryParams);
 
             // 응답 파싱 → 진료과목 리스트 변환
             List<MedicalSubject> subjects = parser.parse(response, hospitalCode);
