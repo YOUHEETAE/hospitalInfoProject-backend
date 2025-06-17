@@ -4,7 +4,6 @@ import com.hospital.async.HospitalDetailAsyncRunner;
 import com.hospital.repository.HospitalDetailApiRepository;
 import com.hospital.repository.HospitalMainApiRepository;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

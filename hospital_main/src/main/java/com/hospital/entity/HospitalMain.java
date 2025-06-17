@@ -2,7 +2,6 @@ package com.hospital.entity;
 
 import java.util.Set;
 
-import jakarta.persistence.CascadeType;
 // JPA 관련 임포트 추가
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
