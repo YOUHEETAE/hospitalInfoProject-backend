@@ -87,23 +87,17 @@ public class HospitalMain {
     private Double coordinateY;
     
     @OneToOne(mappedBy = "hospital", 
-            fetch = FetchType.LAZY, 
-            cascade = CascadeType.ALL, 
-            orphanRemoval = true)
+            fetch = FetchType.LAZY)
   private HospitalDetail hospitalDetail;
 
 
   @OneToMany(mappedBy = "hospital", 
-             fetch = FetchType.LAZY, 
-             cascade = CascadeType.ALL, 
-             orphanRemoval = true)
+             fetch = FetchType.LAZY)
   private Set<MedicalSubject> medicalSubjects;
 
 
   @OneToMany(mappedBy = "hospital", 
-             fetch = FetchType.LAZY, 
-             cascade = CascadeType.ALL, 
-             orphanRemoval = true)
+             fetch = FetchType.LAZY)
   private Set<ProDoc> proDocs;
 }
     

@@ -9,12 +9,7 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-/**
- * ⚡ 비동기 처리 및 스케줄링 관련 설정
- * - API 호출용 스레드 풀 설정
- * - 응급실 스케줄링용 스레드 풀 설정
- * - Graceful Shutdown 설정
- */
+
 @Configuration
 public class AsyncConfig {
 
@@ -33,7 +28,7 @@ public class AsyncConfig {
         executor.setAwaitTerminationSeconds(30);
         executor.initialize();
         
-        System.out.println("✅ API Executor 설정 완료 (코어: 5, 최대: 10)");
+        System.out.println("API Executor 설정 완료 (코어: 5, 최대: 10)");
         return executor;
     }
 
@@ -51,7 +46,7 @@ public class AsyncConfig {
         executor.setAwaitTerminationSeconds(30);
         executor.initialize();
         
-        System.out.println("✅ Task Executor 설정 완료 (코어: 2, 최대: 5)");
+        System.out.println("Task Executor 설정 완료 (코어: 2, 최대: 5)");
         return executor;
     }
 
@@ -67,7 +62,7 @@ public class AsyncConfig {
         scheduler.setAwaitTerminationSeconds(30);
         scheduler.initialize();
         
-        System.out.println("✅ Task Scheduler 설정 완료 (풀 크기: 3)");
+        System.out.println("Task Scheduler 설정 완료 (풀 크기: 3)");
         return scheduler;
     }
 }

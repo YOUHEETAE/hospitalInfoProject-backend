@@ -1,9 +1,16 @@
 package com.hospital.controller;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -15,14 +22,13 @@ import com.hospital.service.ProDocApiService;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-
 @Slf4j
 @RestController
 @RequestMapping("/api")
 public class HospitalApiController {
+	
+	@Value("${api.admin.key}")
+	private String adminApiKey;
 
 	private final HospitalMainApiService hospitalMainService;
 	private final HospitalDetailApiService hospitalDetailApiService;
@@ -39,12 +45,41 @@ public class HospitalApiController {
 		this.proDocApiService = proDocApiService;
 		this.pharmacyApiService = pharmacyApiService;
 	}
+	
+	private boolean isValidApiKey(String apiKey) {
+		if (apiKey == null || apiKey.trim().isEmpty()) {
+			return false;
+		}
+		return adminApiKey.equals(apiKey);
+	}
+	
+	private ResponseEntity<Map<String, Object>> unauthorizedResponse() {
+		Map<String, Object> response = new HashMap<>();
+		response.put("success", false);
+		response.put("error", "UNAUTHORIZED");
+		response.put("message", "유효하지 않은 API 키입니다");
+		response.put("timestamp", LocalDateTime.now());
+		
+		log.warn("API 키 인증 실패 - IP: {}", getClientIp());
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+	}
+	
+	private String getClientIp() {
+	
+		return "unknown";
+	}
 
 	//병원 기본 정보를 DB에 저장 - JSON 응답으로 변경
 	@PostMapping(value = "/main/save", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Map<String, Object>> saveHospitalsToDb() {
-		log.info("병원 기본 정보 저장 시작...");
+	public ResponseEntity<Map<String, Object>> saveHospitalsToDb(
+			@RequestHeader(value = "X-API-Key", required = false) String apiKey) {
 		
+		// API 키 검증
+		if (!isValidApiKey(apiKey)) {
+			return unauthorizedResponse();
+		}
+
+		log.info("병원 기본 정보 저장 시작... (인증된 요청)");
 		
 		int savedCount = hospitalMainService.fetchParseAndSaveHospitals();
 		
@@ -58,10 +93,18 @@ public class HospitalApiController {
 		return ResponseEntity.ok(response);
 	}
 
+
 	//병원 상세 정보 수집 시작 - JSON 응답으로 변경
 	@PostMapping(value = "/details/save", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Map<String, Object>> updateHospitalDetails() {
-		log.info("병원 상세정보 저장 시작...");
+	public ResponseEntity<Map<String, Object>> updateHospitalDetails(
+			@RequestHeader(value = "X-API-Key", required = false) String apiKey) {
+		
+		// API 키 검증
+		if (!isValidApiKey(apiKey)) {
+			return unauthorizedResponse();
+		}
+
+		log.info("병원 상세정보 저장 시작... (인증된 요청)");
 		
 		int total = hospitalDetailApiService.updateAllHospitalDetails();
 		
@@ -94,8 +137,15 @@ public class HospitalApiController {
 
 	//진료과목 저장 - JSON 응답으로 변경
 	@PostMapping(value = "/subject/save", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Map<String, Object>> saveSubjects() {
-		log.info("진료과목 저장 시작...");
+	public ResponseEntity<Map<String, Object>> saveSubjects(
+			@RequestHeader(value = "X-API-Key", required = false) String apiKey) {
+		
+		// API 키 검증
+		if (!isValidApiKey(apiKey)) {
+			return unauthorizedResponse();
+		}
+
+		log.info("진료과목 저장 시작... (인증된 요청)");
 		
 		int total = medicalSubjectApiService.fetchParseAndSaveMedicalSubjects();
 		
@@ -127,8 +177,15 @@ public class HospitalApiController {
 
 	//전문의 정보 저장 - JSON 응답으로 변경
 	@PostMapping(value = "/proDoc/save", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Map<String, Object>> syncProDocData() {
-		log.info("전문의 정보 저장 시작...");
+	public ResponseEntity<Map<String, Object>> syncProDocData(
+			@RequestHeader(value = "X-API-Key", required = false) String apiKey) {
+		
+		// API 키 검증
+		if (!isValidApiKey(apiKey)) {
+			return unauthorizedResponse();
+		}
+
+		log.info("전문의 정보 저장 시작... (인증된 요청)");
 		
 		int total = proDocApiService.fetchParseAndSaveProDocs();
 		
@@ -159,8 +216,15 @@ public class HospitalApiController {
 
 	//약국 데이터 저장 - JSON 응답으로 변경
 	@PostMapping(value = "/pharmacy/save", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Map<String, Object>> savePharmacyData() {
-		log.info("약국 데이터 저장 시작...");
+	public ResponseEntity<Map<String, Object>> savePharmacyData(
+			@RequestHeader(value = "X-API-Key", required = false) String apiKey) {
+		
+		// API 키 검증
+		if (!isValidApiKey(apiKey)) {
+			return unauthorizedResponse();
+		}
+
+		log.info("약국 데이터 저장 시작... (인증된 요청)");
 		
 		int totalSaved = pharmacyApiService.fetchAndSaveSeongnamPharmacies();
 		
@@ -174,4 +238,5 @@ public class HospitalApiController {
 		log.info("약국 데이터 저장 완료! 총 {}건 저장됨", totalSaved);
 		return ResponseEntity.ok(response);
 	}
+
 }

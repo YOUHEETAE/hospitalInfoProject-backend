@@ -5,27 +5,19 @@
         </encoder>
     </appender>
 
- 
-    <logger name="org.hibernate" level="OFF"/>
-    <logger name="org.springframework.data" level="OFF"/>
-    <logger name="org.springframework.orm" level="OFF"/>
-    <logger name="org.springframework.transaction" level="OFF"/>
-    <logger name="org.apache.catalina" level="OFF"/>
-    <logger name="org.apache.jasper" level="OFF"/>
-    <logger name="org.apache.tomcat" level="OFF"/>
-    <logger name="org.quartz" level="OFF"/>
-    <logger name="org.mariadb" level="OFF"/>
-    
+    <logger name="org.hibernate" level="WARN"/> <logger name="org.springframework.data" level="WARN"/>
+    <logger name="org.springframework.orm" level="WARN"/>
+    <logger name="org.springframework.transaction" level="WARN"/>
+    <logger name="org.apache.catalina" level="WARN"/>
+    <logger name="org.apache.jasper" level="WARN"/>
+    <logger name="org.apache.tomcat" level="WARN"/>
+    <logger name="org.quartz" level="WARN"/>
+    <logger name="org.mariadb" level="WARN"/>
 
-    <logger name="org.springframework" level="ERROR"/>
-    
-  
-    <logger name="ROOT" level="OFF"/>
 
-  
-    <logger name="com.hospital" level="INFO"/>
+    <logger name="org.springframework" level="INFO"/> <logger name="com.hospital" level="INFO"/>
 
-    <root level="OFF">
+    <root level="INFO">
         <appender-ref ref="CONSOLE" />
     </root>
 </configuration>
