@@ -19,11 +19,11 @@ public class PharmacyJob implements Job {
     @Override
     public void execute(JobExecutionContext context) {
         try {
-            log.info("🏥 약국 정보 수집 시작");
+            log.info("약국 정보 수집 시작");
             int count = pharmacyApiService.fetchAndSaveSeongnamPharmacies();
-            log.info("✅ 약국 정보 수집 완료: {}건", count);
+            log.info("약국 정보 수집 완료: {}건", count);
         } catch (Exception e) {
-            log.error("❌ 약국 정보 수집 실패", e);
+            log.error("약국 정보 수집 실패", e);
         }
     }
 }

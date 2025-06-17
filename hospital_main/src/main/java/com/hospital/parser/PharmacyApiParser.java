@@ -18,9 +18,8 @@ public class PharmacyApiParser {
 
     
 
-	  /**
-     * API 응답 아이템들을 Entity로 변환
-     */
+	 
+    //API 응답 아이템들을 Entity로 변환
     public List<Pharmacy> parseToEntities(List<PharmacyApiItem> apiItems) {
         if (apiItems == null || apiItems.isEmpty()) {
             return List.of();
@@ -32,9 +31,8 @@ public class PharmacyApiParser {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * 단일 API 아이템을 Entity로 변환
-     */
+    
+    //단일 API 아이템을 Entity로 변환
     private Pharmacy parseToEntity(PharmacyApiItem apiItem) {
         if (apiItem == null) {
             return null;

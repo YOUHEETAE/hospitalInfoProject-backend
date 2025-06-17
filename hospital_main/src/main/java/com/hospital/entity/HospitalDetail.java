@@ -91,36 +91,29 @@ public class HospitalDetail {
     @JoinColumn(name = "hospital_code", insertable = false, updatable = false)
     private HospitalMain hospital;
 
-    // ✅ 주차 가능 여부 체크
+    //주차 가능 여부 체크
     public boolean hasParkingSpace() {
         return this.parkQty != null && this.parkQty > 0;
     }
 
-    /**
-     * 무료주차 가능 여부
-     */
+    //무료주차 가능 여부
     public boolean isFreeParking() {
         return "N".equals(this.parkXpnsYn);
     }
 
-    /**
-     * 토요일 진료 가능 여부
-     */
+    
+    //토요일 진료 가능 여부 
     public boolean isSaturdayAvailable() {
         return isValidTime(this.trmtSatStart) && isValidTime(this.trmtSatEnd);
     }
 
-    /**
-     * 일요일 진료 가능 여부
-     */
+    //일요일 진료 가능 여부
     public boolean isSundayAvailable() {
         return isValidTime(this.trmtSunStart) && isValidTime(this.trmtSunEnd);
     }
 
-    /**
-     * 유효한 시간 값인지 체크
-     * static으로 변경하여 외부에서도 사용 가능하게 함
-     */
+    
+    //유효한 시간 값인지 체크
     public static boolean isValidTime(String timeStr) {
         if (timeStr == null || 
             timeStr.trim().isEmpty() || 

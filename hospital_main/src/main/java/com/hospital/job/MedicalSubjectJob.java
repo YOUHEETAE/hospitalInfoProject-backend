@@ -19,11 +19,11 @@ public class MedicalSubjectJob implements Job {
     @Override
     public void execute(JobExecutionContext context) {
         try {
-            log.info("🏥 진료과목 정보 수집 시작");
+            log.info("진료과목 정보 수집 시작");
             int count = medicalSubjectApiService.fetchParseAndSaveMedicalSubjects();
-            log.info("✅ 진료과목 정보 수집 시작: {}건 처리 예정", count);
+            log.info("진료과목 정보 수집 시작: {}건 처리 예정", count);
         } catch (Exception e) {
-            log.error("❌ 진료과목 정보 수집 실패", e);
+            log.error("진료과목 정보 수집 실패", e);
         }
     }
 }

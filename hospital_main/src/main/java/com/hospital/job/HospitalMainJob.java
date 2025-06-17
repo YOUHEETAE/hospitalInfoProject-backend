@@ -18,11 +18,11 @@ public class HospitalMainJob implements Job {
     @Override
     public void execute(JobExecutionContext context) {
         try {
-            log.info("🏥 병원 기본정보 수집 시작");
+            log.info("병원 기본정보 수집 시작");
             int count = hospitalMainApiService.fetchParseAndSaveHospitals();
-            log.info("✅ 병원 기본정보 수집 완료: {}건", count);
+            log.info("병원 기본정보 수집 완료: {}건", count);
         } catch (Exception e) {
-            log.error("❌ 병원 기본정보 수집 실패", e);
+            log.error("병원 기본정보 수집 실패", e);
         }
     }
 }

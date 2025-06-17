@@ -66,18 +66,17 @@ public class HospitalMainApiParser {
             return null;
         }
         
-        HospitalMain hospital = new HospitalMain();
-        hospital.setHospitalCode(itemDto.getYkiho());
-        hospital.setHospitalName(itemDto.getYadmNm());
-        hospital.setProvinceName(itemDto.getSidoCdNm());
-        hospital.setDistrictName(itemDto.getSgguCdNm());
-        hospital.setHospitalAddress(itemDto.getAddr());
-        hospital.setHospitalTel(itemDto.getTelno());
-        hospital.setHospitalHomepage(itemDto.getHospUrl());
-        hospital.setDoctorNum(itemDto.getDrTotCnt());
-        hospital.setCoordinateX(itemDto.getXPos());
-        hospital.setCoordinateY(itemDto.getYPos());
-        
-        return hospital;
+        return HospitalMain.builder()
+                .hospitalCode(itemDto.getYkiho())
+                .hospitalName(itemDto.getYadmNm())
+                .provinceName(itemDto.getSidoCdNm())
+                .districtName(itemDto.getSgguCdNm())
+                .hospitalAddress(itemDto.getAddr())
+                .hospitalTel(itemDto.getTelno())
+                .hospitalHomepage(itemDto.getHospUrl())
+                .doctorNum(itemDto.getDrTotCnt())
+                .coordinateX(itemDto.getXPos())
+                .coordinateY(itemDto.getYPos())
+                .build();
     }
 }

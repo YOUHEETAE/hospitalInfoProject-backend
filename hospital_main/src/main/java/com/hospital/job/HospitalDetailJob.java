@@ -19,11 +19,11 @@ public class HospitalDetailJob implements Job {
     @Override
     public void execute(JobExecutionContext context) {
         try {
-            log.info("🏥 병원 상세정보 수집 시작");
+            log.info("병원 상세정보 수집 시작");
             int count = hospitalDetailApiService.updateAllHospitalDetails();
-            log.info("✅ 병원 상세정보 수집 시작: {}건 처리 예정", count);
+            log.info("병원 상세정보 수집 시작: {}건 처리 예정", count);
         } catch (Exception e) {
-            log.error("❌ 병원 상세정보 수집 실패", e);
+            log.error("병원 상세정보 수집 실패", e);
         }
     }
 }

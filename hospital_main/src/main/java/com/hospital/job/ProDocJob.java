@@ -19,11 +19,11 @@ public class ProDocJob implements Job {
     @Override
     public void execute(JobExecutionContext context) {
         try {
-            log.info("🏥 전문의 정보 수집 시작");
+            log.info("전문의 정보 수집 시작");
             int count = proDocApiService.fetchParseAndSaveProDocs();
-            log.info("✅ 전문의 정보 수집 시작: {}건 처리 예정", count);
+            log.info("전문의 정보 수집 시작: {}건 처리 예정", count);
         } catch (Exception e) {
-            log.error("❌ 전문의 정보 수집 실패", e);
+            log.error("전문의 정보 수집 실패", e);
         }
     }
 }
