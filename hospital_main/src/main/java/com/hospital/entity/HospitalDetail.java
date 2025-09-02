@@ -15,7 +15,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString
+@ToString(exclude = "hospital")
 public class HospitalDetail {
 
     @Id
@@ -115,7 +115,10 @@ public class HospitalDetail {
     
     //유효한 시간 값인지 체크
     public static boolean isValidTime(String timeStr) {
-        if (timeStr == null || 
+        if (timeStr == null) {
+        	return false;
+        }
+        if(
             timeStr.trim().isEmpty() || 
             "(NULL)".equals(timeStr) || 
             !timeStr.matches("\\d{4}")) {
