@@ -26,7 +26,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString // 디버깅에 유용
+@ToString(exclude = {"hospitalDetail", "medicalSubjects", "proDocs"})
 @Entity
 @Table(name = "hospital_main")
 @NamedEntityGraphs({
@@ -77,7 +77,7 @@ public class HospitalMain {
     private String hospitalHomepage;
 
     @Column(name = "doctor_num") 
-    private int doctorNum;
+    private Integer doctorNum;
 
     @Column(name = "coordinate_x") 
     private Double coordinateX;
