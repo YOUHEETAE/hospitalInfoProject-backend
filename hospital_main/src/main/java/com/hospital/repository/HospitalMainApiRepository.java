@@ -6,8 +6,10 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
 
 
 public interface HospitalMainApiRepository extends JpaRepository<HospitalMain, String> {
@@ -34,4 +36,6 @@ public interface HospitalMainApiRepository extends JpaRepository<HospitalMain, S
 	@EntityGraph("hospital-with-detail")
     @Query("SELECT h FROM HospitalMain h WHERE REPLACE(h.hospitalName, ' ', '') LIKE %:hospitalName%")
     List<HospitalMain> findHospitalsByName(@Param("hospitalName") String hospitalName);
+	
+	
 }
