@@ -25,4 +25,4 @@ replay_pid*
 
 # src/main/resources 디렉터리 안의 설정 파일 제외
 src/main/resources/db.properties
-src/main/resources/application.properties
+src/main/resources/api.properties
