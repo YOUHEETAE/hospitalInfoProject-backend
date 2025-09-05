@@ -37,5 +37,7 @@ public interface HospitalMainApiRepository extends JpaRepository<HospitalMain, S
     @Query("SELECT h FROM HospitalMain h WHERE REPLACE(h.hospitalName, ' ', '') LIKE %:hospitalName%")
     List<HospitalMain> findHospitalsByName(@Param("hospitalName") String hospitalName);
 	
-	
+	 @EntityGraph("hospital-with-all")
+	    @Override
+	    List<HospitalMain> findAll();
 }
