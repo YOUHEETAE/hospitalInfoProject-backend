@@ -45,4 +45,7 @@ public interface HospitalMainApiRepository extends JpaRepository<HospitalMain, S
 	@Query("SELECT DISTINCT h FROM HospitalMain h")
 	@Override
 	List<HospitalMain> findAll();
+	
+	//@QueryHints({ @QueryHint(name = "org.hibernate.readOnly", value = "true") })
+	
 }
