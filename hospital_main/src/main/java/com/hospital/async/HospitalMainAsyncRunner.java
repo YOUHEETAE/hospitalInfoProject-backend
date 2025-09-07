@@ -7,8 +7,12 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import com.google.common.util.concurrent.RateLimiter;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -122,29 +126,37 @@ public class HospitalMainAsyncRunner {
 
 	@Transactional
 	public UpsertResult upsertHospital(List<HospitalMain> hospitals) {
-		int updated = 0;
-		int inserted = 0;
+	    int updated = 0;
+	    int inserted = 0;
 
-		for (HospitalMain newHospital : hospitals) {
-			try {
-				Optional<HospitalMain> existingOpt = hospitalMainApiRepository
-						.findByHospitalCode(newHospital.getHospitalCode());
+	    // 배치 조회: 모든 병원 코드를 한 번에 조회
+	    List<String> hospitalCodes = hospitals.stream()
+	        .map(HospitalMain::getHospitalCode)
+	        .collect(Collectors.toList());
+	        
+	    Map<String, HospitalMain> existingMap = hospitalMainApiRepository
+	        .findByHospitalCodeIn(hospitalCodes)
+	        .stream()
+	        .collect(Collectors.toMap(HospitalMain::getHospitalCode, Function.identity()));
 
-				if (existingOpt.isPresent()) {
-					HospitalMain existing = existingOpt.get();
-					updateHospital(existing, newHospital);
-					hospitalMainApiRepository.save(existing);
-					updated++;
-
-				} else {
-					hospitalMainApiRepository.save(newHospital);
-					inserted++;
-				}
-			} catch (Exception e) {
-				log.warn("병원 {} UPSERT 실패", newHospital.getHospitalCode(), e.getMessage());
-			}
-		}
-		return new UpsertResult(inserted, updated);
+	    // 개별 처리 (이제 DB 조회 없이 Map에서 조회)
+	    for (HospitalMain newHospital : hospitals) {
+	        try {
+	            HospitalMain existing = existingMap.get(newHospital.getHospitalCode());
+	            
+	            if (existing != null) {
+	                updateHospital(existing, newHospital);
+	                hospitalMainApiRepository.save(existing);
+	                updated++;
+	            } else {
+	                hospitalMainApiRepository.save(newHospital);
+	                inserted++;
+	            }
+	        } catch (Exception e) {
+	            log.warn("병원 {} UPSERT 실패", newHospital.getHospitalCode(), e.getMessage());
+	        }
+	    }
+	    return new UpsertResult(inserted, updated);
 	}
 
 	private void updateHospital(HospitalMain existing, HospitalMain newData) {
