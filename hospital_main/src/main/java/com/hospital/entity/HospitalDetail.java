@@ -32,7 +32,7 @@ public class HospitalDetail {
     private Integer parkQty;
 
     @Column(name = "park_xpns_yn")
-    private String parkXpnsYn;
+    private Boolean parkXpnsYn;
 
     @Column(name = "weekday_lunch", length = 50)
     private String lunchWeek;
@@ -97,9 +97,9 @@ public class HospitalDetail {
     }
 
     //무료주차 가능 여부
-    public boolean isFreeParking() {
-        return "N".equals(this.parkXpnsYn);
-    }
+    //public boolean isFreeParking() {
+        //return "N".equals(this.parkXpnsYn);
+    //}
 
     
     //토요일 진료 가능 여부 
