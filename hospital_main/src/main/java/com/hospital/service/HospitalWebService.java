@@ -34,10 +34,18 @@ public class HospitalWebService {
 	}
 
 	// 기존 메서드: 진료과목으로 병원 검색
-	@Cacheable(value = "hospitals", key = "#subs.toString() + '_' + #userLat + '_' + #userLng + '_' + #radius + '_' + (#tags != null ? #tags.toString() : 'null')")
+	@Cacheable(value = "hospitals", key = "(#subs != null ? #subs.toString() : 'all') + '_' + #userLat + '_' + #userLng + '_' + #radius + '_' + (#tags != null ? #tags.toString() : 'null')")
 	public List<HospitalWebResponse> getHospitals(List<String> subs, double userLat, double userLng, double radius,
 			List<String> tags) {
-		List<HospitalMain> hospitalEntities = hospitalMainApiRepository.findHospitalsBySubjects(subs);
+		List<HospitalMain> hospitalEntities;
+		
+		// 진료과목이 null이거나 비어있으면 전체 병원 조회
+		if (subs == null || subs.isEmpty()) {
+			hospitalEntities = hospitalMainApiRepository.findAll();
+		} else {
+			hospitalEntities = hospitalMainApiRepository.findHospitalsBySubjects(subs);
+		}
+		
 		return applyFiltersAndSort(hospitalEntities, userLat, userLng, radius, tags);
 	}
 
