@@ -30,11 +30,8 @@ public class HospitalDetailApiService {
 		
 	}
 
-	 public int updateAllHospitalDetails() {
+	 public int updateHospitalDetails() {
 	        try {
-	            // 기존 데이터 전체 삭제
-	            hospitalDetailRepository.deleteAllDetails();
-	            log.info("기존 병원 상세정보 전체 삭제 완료");
 
 	            // 병원 코드 리스트 불러오기
 	            List<String> hospitalCodes = hospitalMainApiRepository.findAllHospitalCodes();

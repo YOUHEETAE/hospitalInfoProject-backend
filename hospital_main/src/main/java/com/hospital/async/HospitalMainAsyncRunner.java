@@ -4,8 +4,11 @@ import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -28,6 +31,7 @@ public class HospitalMainAsyncRunner {
     private final AtomicInteger failedCount = new AtomicInteger(0);
     private final AtomicInteger updatedCount = new AtomicInteger(0);
     private final AtomicInteger insertedCount = new AtomicInteger(0);
+    private final AtomicInteger deletedCount = new AtomicInteger(0); // ✅ 삭제 카운터 추가
     private int totalCount = 0;
 
     private final HospitalMainApiCaller apiCaller;
@@ -56,12 +60,19 @@ public class HospitalMainAsyncRunner {
                 throw new IllegalArgumentException("지역코드가 비어있습니다");
             }
 
+            // ✅ 1. 해당 지역의 기존 데이터 전체 조회 (삭제 로직용)
+            String districtName = regionConfig.getDistrictName(sgguCd);
+            List<HospitalMain> existingHospitals = hospitalMainApiRepository.findByDistrictName(districtName);
+            Map<String, HospitalMain> existingMap = existingHospitals.stream()
+                .collect(Collectors.toMap(HospitalMain::getHospitalCode, Function.identity()));
+            
+            Set<String> apiSuccessCodes = new HashSet<>(); // ✅ API에서 성공적으로 받아온 코드들
+
             int totalSaved = 0;
             int pageNo = 1;
             int numOfRows = 1000;
             boolean hasMorePages = true;
 
-          
             List<HospitalMain> toInsert = new ArrayList<>();
             List<HospitalMain> toUpdate = new ArrayList<>();
             int insertedTotal = 0;
@@ -78,17 +89,11 @@ public class HospitalMainAsyncRunner {
                     break;
                 }
 
-                // ✅ 배치 조회: API에서 가져온 병원들의 기존 데이터 조회
-                List<String> hospitalCodes = hospitals.stream()
-                    .map(HospitalMain::getHospitalCode)
-                    .collect(Collectors.toList());
-                    
-                Map<String, HospitalMain> existingMap = hospitalMainApiRepository
-                    .findByHospitalCodeIn(hospitalCodes)
-                    .stream()
-                    .collect(Collectors.toMap(HospitalMain::getHospitalCode, Function.identity()));
+                // ✅ API에서 받아온 병원 코드들을 성공 목록에 추가
+                hospitals.forEach(hospital -> 
+                    apiSuccessCodes.add(hospital.getHospitalCode())
+                );
 
-               
                 for (HospitalMain newHospital : hospitals) {
                     HospitalMain existing = existingMap.get(newHospital.getHospitalCode());
                     
@@ -104,9 +109,14 @@ public class HospitalMainAsyncRunner {
 
                 log.info("지역 {} 페이지 {}: {}건 수집 (신규: {}, 수정: {})", 
                         regionConfig.getDistrictName(sgguCd), pageNo, hospitals.size(),
-                        hospitals.size() - existingMap.size(), existingMap.size());
+                        hospitals.size() - (int)hospitals.stream()
+                            .filter(h -> existingMap.containsKey(h.getHospitalCode()))
+                            .count(),
+                        (int)hospitals.stream()
+                            .filter(h -> existingMap.containsKey(h.getHospitalCode()))
+                            .count());
 
-               
+                // 배치 저장
                 if (toInsert.size() + toUpdate.size() >= BATCH_SIZE) {
                     int[] results = saveBatchAndClear(toInsert, toUpdate);
                     insertedTotal += results[0];
@@ -124,7 +134,7 @@ public class HospitalMainAsyncRunner {
                 Thread.sleep(1000);
             }
 
-      
+            // ✅ 2. 마지막 남은 데이터 저장
             if (!toInsert.isEmpty() || !toUpdate.isEmpty()) {
                 int[] results = saveBatchAndClear(toInsert, toUpdate);
                 insertedTotal += results[0];
@@ -135,13 +145,27 @@ public class HospitalMainAsyncRunner {
                         regionConfig.getDistrictName(sgguCd), results[0], results[1]);
             }
 
-        
+            // ✅ 3. 삭제 로직: 해당 지역에서 API에 없는 병원들 삭제
+            List<String> toDelete = existingMap.keySet().stream()
+                .filter(code -> !apiSuccessCodes.contains(code))
+                .collect(Collectors.toList());
+                
+            int deletedTotal = 0;
+            if (!toDelete.isEmpty()) {
+                hospitalMainApiRepository.deleteByHospitalCodeIn(toDelete);
+                deletedTotal = toDelete.size();
+                log.info("지역 {} 폐업/제외된 병원 삭제: {}건", 
+                        regionConfig.getDistrictName(sgguCd), deletedTotal);
+            }
+
+            // ✅ 4. 카운터 업데이트
             completedCount.incrementAndGet();
             insertedCount.addAndGet(insertedTotal);
             updatedCount.addAndGet(updatedTotal);
+            deletedCount.addAndGet(deletedTotal); // 삭제 카운터 업데이트
 
-            log.info("지역 {} 처리 완료: 총 {}건 저장 (신규: {}, 수정: {})", 
-                    regionConfig.getDistrictName(sgguCd), totalSaved, insertedTotal, updatedTotal);
+            log.info("지역 {} 처리 완료: 총 {}건 저장 (신규: {}, 수정: {}, 삭제: {})", 
+                    regionConfig.getDistrictName(sgguCd), totalSaved, insertedTotal, updatedTotal, deletedTotal);
 
         } catch (Exception e) {
             failedCount.incrementAndGet();
@@ -149,7 +173,7 @@ public class HospitalMainAsyncRunner {
         }
     }
 
- 
+    // ✅ 배치 저장 및 리스트 초기화 헬퍼 메서드
     private int[] saveBatchAndClear(List<HospitalMain> toInsert, List<HospitalMain> toUpdate) {
         int inserted = 0;
         int updated = 0;
@@ -169,34 +193,44 @@ public class HospitalMainAsyncRunner {
         return new int[]{inserted, updated};
     }
 
-   
+    // ✅ 필드별 업데이트
     private void updateHospital(HospitalMain existing, HospitalMain newData) {
-        existing.setHospitalName(newData.getHospitalName());
-        existing.setProvinceName(newData.getProvinceName());
-        existing.setDistrictName(newData.getDistrictName());
-        existing.setHospitalAddress(newData.getHospitalAddress());
-        existing.setHospitalTel(newData.getHospitalTel());
-        existing.setHospitalHomepage(newData.getHospitalHomepage());
-        existing.setDoctorNum(newData.getDoctorNum());
-        existing.setCoordinateX(newData.getCoordinateX());
-        existing.setCoordinateY(newData.getCoordinateY());
+        if (!Objects.equals(existing.getHospitalName(), newData.getHospitalName())) {
+            existing.setHospitalName(newData.getHospitalName());
+        }
+        if (!Objects.equals(existing.getProvinceName(), newData.getProvinceName())) {
+            existing.setProvinceName(newData.getProvinceName());
+        }
+        if (!Objects.equals(existing.getDistrictName(), newData.getDistrictName())) {
+            existing.setDistrictName(newData.getDistrictName());
+        }
+        if (!Objects.equals(existing.getHospitalAddress(), newData.getHospitalAddress())) {
+            existing.setHospitalAddress(newData.getHospitalAddress());
+        }
+        if (!Objects.equals(existing.getHospitalTel(), newData.getHospitalTel())) {
+            existing.setHospitalTel(newData.getHospitalTel());
+        }
+        if (!Objects.equals(existing.getHospitalHomepage(), newData.getHospitalHomepage())) {
+            existing.setHospitalHomepage(newData.getHospitalHomepage());
+        }
+        if (!Objects.equals(existing.getDoctorNum(), newData.getDoctorNum())) {
+            existing.setDoctorNum(newData.getDoctorNum());
+        }
+        if (!Objects.equals(existing.getCoordinateX(), newData.getCoordinateX())) {
+            existing.setCoordinateX(newData.getCoordinateX());
+        }
+        if (!Objects.equals(existing.getCoordinateY(), newData.getCoordinateY())) {
+            existing.setCoordinateY(newData.getCoordinateY());
+        }
     }
 
-    
-
+    // ✅ 상태 관리 메서드들
     public int getCompletedCount() {
         return completedCount.get();
     }
 
     public int getFailedCount() {
         return failedCount.get();
-    }
-
-    public void resetCounter() {
-        completedCount.set(0);
-        failedCount.set(0);
-        insertedCount.set(0);
-        updatedCount.set(0);
     }
 
     public int getInsertedCount() {
@@ -207,11 +241,24 @@ public class HospitalMainAsyncRunner {
         return updatedCount.get();
     }
 
+    public int getDeletedCount() { // ✅ 삭제 카운터 getter 추가
+        return deletedCount.get();
+    }
+
+    public void resetCounter() {
+        completedCount.set(0);
+        failedCount.set(0);
+        insertedCount.set(0);
+        updatedCount.set(0);
+        deletedCount.set(0); // ✅ 삭제 카운터 리셋 추가
+    }
+
     public void setTotalCount(int totalCount) {
         this.totalCount = totalCount;
         completedCount.set(0);
         failedCount.set(0);
         insertedCount.set(0);
         updatedCount.set(0);
+        deletedCount.set(0); // ✅ 삭제 카운터 리셋 추가
     }
 }

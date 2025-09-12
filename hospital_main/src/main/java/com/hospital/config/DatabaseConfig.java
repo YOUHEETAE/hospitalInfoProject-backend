@@ -54,7 +54,7 @@ public class DatabaseConfig {
         jpaProperties.setProperty("hibernate.default_batch_fetch_size", "16");
         
         // 성능 최적화 설정
-        jpaProperties.setProperty("hibernate.jdbc.batch_size", "20");
+        jpaProperties.setProperty("hibernate.jdbc.batch_size", "100");
         jpaProperties.setProperty("hibernate.order_inserts", "true");
         jpaProperties.setProperty("hibernate.order_updates", "true");
         
