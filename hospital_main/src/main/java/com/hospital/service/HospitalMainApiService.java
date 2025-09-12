@@ -31,7 +31,7 @@ public class HospitalMainApiService {
 
 	}
 
-	public int fetchParseAndSaveHospitals() {
+	public int updateHospitalMain() {
 		log.info("병원 데이터 수집 시작 - 대상 지역: {}", regionConfig.getCityName());
 
 		// regionConfig에서 시군구 코드 가져오기

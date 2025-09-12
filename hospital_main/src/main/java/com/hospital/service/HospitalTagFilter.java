@@ -56,7 +56,7 @@ public class HospitalTagFilter {
                 break;
             default:
                 if (Objects.isNull(hospital.getMedicalSubjects()) || hospital.getMedicalSubjects().isEmpty()
-                        || hospital.getMedicalSubjects().stream().noneMatch(ms -> ms.getSubjectName().equals(tag))) {
+                        || hospital.getMedicalSubjects().stream().noneMatch(ms -> ms.getSubjects().equals(tag))) {
                     return false;
                 }
                 break;

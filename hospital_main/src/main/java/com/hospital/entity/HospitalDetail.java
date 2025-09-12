@@ -1,5 +1,7 @@
 package com.hospital.entity;
 
+import org.hibernate.annotations.DynamicUpdate;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,6 +17,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@DynamicUpdate
 @ToString(exclude = "hospital")
 public class HospitalDetail {
 
