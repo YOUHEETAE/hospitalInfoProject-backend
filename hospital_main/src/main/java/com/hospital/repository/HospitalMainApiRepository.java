@@ -60,5 +60,18 @@ public interface HospitalMainApiRepository extends JpaRepository<HospitalMain, S
 	@Modifying
 	@Transactional
 	List<HospitalMain> deleteByHospitalCodeIn(List<String> hospitalcodes);
+	
+	 @Query(value = """
+		        SELECT h.*
+		        FROM hospital_main h
+		        WHERE ST_Distance_Sphere(
+		                  point(h.coordinate_x, h.coordinate_y),
+		                  point(:lon, :lat)
+		              ) <= :radius * 1000
+		        """, nativeQuery = true)
+		    List<HospitalMain> findHospitalsWithinRadius(
+		            @Param("lat") double lat,
+		            @Param("lon") double lon,
+		            @Param("radius") double radius);
 
 }
