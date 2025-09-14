@@ -23,9 +23,6 @@ public interface MedicalSubjectApiRepository extends JpaRepository<MedicalSubjec
 	List<MedicalSubject> findByHospitalCodeIn(List<String> hospitalCodes);
 
 
-    @QueryHints({ @QueryHint(name = "org.hibernate.readOnly", value = "true") })
-    boolean existsByHospitalCodeAndSubjects(String hospitalCode, String subjects);
-
 	// 병원코드 기준 기존 진료과목 전체 삭제
 	void deleteByHospitalCode(String hospitalCode);
 	

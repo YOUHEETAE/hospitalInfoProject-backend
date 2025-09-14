@@ -8,7 +8,7 @@ import java.util.List;
 
 @Getter
 @Setter
-@XmlRootElement(name = "OpenAPI_ServiceResponse")
+@XmlRootElement(name = "Response")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class OpenApiWrapper {
 

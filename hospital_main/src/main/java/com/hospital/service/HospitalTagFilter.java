@@ -37,12 +37,12 @@ public class HospitalTagFilter {
                     return false;
                 }
                 break;
-            //case "무료주차":
-                //if (Objects.isNull(hospital.getHospitalDetail()) || !hospital.getHospitalDetail().hasParkingSpace()
-                        //|| !hospital.getHospitalDetail().isFreeParking()) {
-                    //return false;
-                //}
-                //break;
+            case "무료주차":
+                if (Objects.isNull(hospital.getHospitalDetail()) || !hospital.getHospitalDetail().hasParkingSpace()
+                        || !hospital.getHospitalDetail().isFreeParking()) {
+                    return false;
+                }
+                break;
             case "토요일진료":
                 if (Objects.isNull(hospital.getHospitalDetail())
                         || !hospital.getHospitalDetail().isSaturdayAvailable()) {
@@ -55,11 +55,13 @@ public class HospitalTagFilter {
                 }
                 break;
             default:
-                if (Objects.isNull(hospital.getMedicalSubjects()) || hospital.getMedicalSubjects().isEmpty()
-                        || hospital.getMedicalSubjects().stream().noneMatch(ms -> ms.getSubjects().equals(tag))) {
-                    return false;
-                }
-                break;
+            	if (Objects.isNull(hospital.getMedicalSubjects()) || 
+                        hospital.getMedicalSubjects().isEmpty() ||
+                        hospital.getMedicalSubjects().stream()
+                            .noneMatch(ms -> ms.getSubjectName().equals(tag))) {
+                        return false;
+                    }
+                    break;
             }
         }
         return true;

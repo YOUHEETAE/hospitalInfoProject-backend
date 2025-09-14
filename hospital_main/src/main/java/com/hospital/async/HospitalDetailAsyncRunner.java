@@ -205,12 +205,12 @@ public class HospitalDetailAsyncRunner {
 			existing.setRcvSat(newData.getRcvSat());
 		}
 
-		if (!Objects.equals(existing.getNoTrmtHoli(), newData.getNoTrmtHoli())) {
-			existing.setNoTrmtHoli(newData.getNoTrmtHoli());
-		}
-		if (!Objects.equals(existing.getNoTrmtSun(), newData.getNoTrmtSun())) {
-			existing.setNoTrmtSun(newData.getNoTrmtSun());
-		}
+		//if (!Objects.equals(existing.getNoTrmtHoli(), newData.getNoTrmtHoli())) {
+			//existing.setNoTrmtHoli(newData.getNoTrmtHoli());
+		//}
+		//if (!Objects.equals(existing.getNoTrmtSun(), newData.getNoTrmtSun())) {
+			//existing.setNoTrmtSun(newData.getNoTrmtSun());
+		//}
 
 		if (!Objects.equals(existing.getTrmtMonStart(), newData.getTrmtMonStart())) {
 			existing.setTrmtMonStart(newData.getTrmtMonStart());

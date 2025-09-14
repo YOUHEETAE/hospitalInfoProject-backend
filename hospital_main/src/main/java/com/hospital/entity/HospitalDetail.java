@@ -35,7 +35,7 @@ public class HospitalDetail {
     private Integer parkQty;
 
     @Column(name = "park_xpns_yn")
-    private Boolean parkXpnsYn;
+    private String parkXpnsYn;
 
     @Column(name = "weekday_lunch", length = 50)
     private String lunchWeek;
@@ -46,11 +46,11 @@ public class HospitalDetail {
     @Column(name = "saturday_reception", length = 50)
     private String rcvSat;
 
-    @Column(name = "no_trmt_holi")
-    private String noTrmtHoli;
+    //@Column(name = "no_trmt_holi")
+    //private String noTrmtHoli;
 
-    @Column(name = "no_trmt_sun")
-    private String noTrmtSun;
+    //@Column(name = "no_trmt_sun")
+    //private String noTrmtSun;
 
     // 요일별 진료 시작/종료 시간
     @Column(name = "mon_open", length = 20)
@@ -100,9 +100,9 @@ public class HospitalDetail {
     }
 
     //무료주차 가능 여부
-    //public boolean isFreeParking() {
-        //return "N".equals(this.parkXpnsYn);
-    //}
+    public boolean isFreeParking() {
+        return "N".equals(this.parkXpnsYn);
+    }
 
     
     //토요일 진료 가능 여부 

@@ -26,7 +26,7 @@ import com.hospital.config.RegionConfig;
 @Service
 @Slf4j
 public class HospitalMainAsyncRunner {
-    private final RateLimiter rateLimiter = RateLimiter.create(2.0);
+    private final RateLimiter rateLimiter = RateLimiter.create(5.0);
     private final AtomicInteger completedCount = new AtomicInteger(0);
     private final AtomicInteger failedCount = new AtomicInteger(0);
     private final AtomicInteger updatedCount = new AtomicInteger(0);
@@ -50,19 +50,19 @@ public class HospitalMainAsyncRunner {
     }
 
     @Async("apiExecutor")
-    public void runAsync(String sgguCd) {
+    public void runAsync(String sidoCd) {
         rateLimiter.acquire();
         try {
-            log.info("지역코드 {} 처리 시작", regionConfig.getDistrictName(sgguCd));
+            log.info("지역코드 {} 처리 시작", regionConfig.getSidoName(sidoCd));
 
             // 유효성 검사
-            if (sgguCd == null || sgguCd.trim().isEmpty()) {
+            if (sidoCd == null || sidoCd.trim().isEmpty()) {
                 throw new IllegalArgumentException("지역코드가 비어있습니다");
             }
 
             // ✅ 1. 해당 지역의 기존 데이터 전체 조회 (삭제 로직용)
-            String districtName = regionConfig.getDistrictName(sgguCd);
-            List<HospitalMain> existingHospitals = hospitalMainApiRepository.findByDistrictName(districtName);
+            String sidoName = regionConfig.getSidoName(sidoCd);
+            List<HospitalMain> existingHospitals = hospitalMainApiRepository.findByProvinceName(sidoName);
             Map<String, HospitalMain> existingMap = existingHospitals.stream()
                 .collect(Collectors.toMap(HospitalMain::getHospitalCode, Function.identity()));
             
@@ -79,13 +79,13 @@ public class HospitalMainAsyncRunner {
             int updatedTotal = 0;
 
             while (hasMorePages) {
-                String queryParams = String.format("sgguCd=%s&pageNo=%s&numOfRows=%s", sgguCd, pageNo, numOfRows);
+                String queryParams = String.format("sidoCd=%s&pageNo=%s&numOfRows=%s", sidoCd, pageNo, numOfRows);
                 HospitalMainApiResponse response = apiCaller.callApi(queryParams);
 
                 List<HospitalMain> hospitals = parser.parseHospitals(response);
 
                 if (hospitals.isEmpty()) {
-                    log.info("지역{} 페이지{} : 더이상 데이터 없음", regionConfig.getDistrictName(sgguCd), pageNo);
+                    log.info("지역{} 페이지{} : 더이상 데이터 없음", regionConfig.getSidoName(sidoCd), pageNo);
                     break;
                 }
 
@@ -108,7 +108,7 @@ public class HospitalMainAsyncRunner {
                 }
 
                 log.info("지역 {} 페이지 {}: {}건 수집 (신규: {}, 수정: {})", 
-                        regionConfig.getDistrictName(sgguCd), pageNo, hospitals.size(),
+                        regionConfig.getSidoName(sidoCd), pageNo, hospitals.size(),
                         hospitals.size() - (int)hospitals.stream()
                             .filter(h -> existingMap.containsKey(h.getHospitalCode()))
                             .count(),
@@ -124,7 +124,7 @@ public class HospitalMainAsyncRunner {
                     totalSaved += results[0] + results[1];
 
                     log.info("지역 {} 중간 배치 저장: 신규 {}건, 수정 {}건", 
-                            regionConfig.getDistrictName(sgguCd), results[0], results[1]);
+                            regionConfig.getSidoName(sidoCd), results[0], results[1]);
                 }
 
                 hasMorePages = hospitals.size() >= numOfRows;
@@ -142,7 +142,7 @@ public class HospitalMainAsyncRunner {
                 totalSaved += results[0] + results[1];
 
                 log.info("지역 {} 최종 배치 저장: 신규 {}건, 수정 {}건", 
-                        regionConfig.getDistrictName(sgguCd), results[0], results[1]);
+                        regionConfig.getSidoName(sidoCd), results[0], results[1]);
             }
 
             // ✅ 3. 삭제 로직: 해당 지역에서 API에 없는 병원들 삭제
@@ -155,7 +155,7 @@ public class HospitalMainAsyncRunner {
                 hospitalMainApiRepository.deleteByHospitalCodeIn(toDelete);
                 deletedTotal = toDelete.size();
                 log.info("지역 {} 폐업/제외된 병원 삭제: {}건", 
-                        regionConfig.getDistrictName(sgguCd), deletedTotal);
+                        regionConfig.getSidoName(sidoCd), deletedTotal);
             }
 
             // ✅ 4. 카운터 업데이트
@@ -165,11 +165,11 @@ public class HospitalMainAsyncRunner {
             deletedCount.addAndGet(deletedTotal); // 삭제 카운터 업데이트
 
             log.info("지역 {} 처리 완료: 총 {}건 저장 (신규: {}, 수정: {}, 삭제: {})", 
-                    regionConfig.getDistrictName(sgguCd), totalSaved, insertedTotal, updatedTotal, deletedTotal);
+                    regionConfig.getDistrictName(sidoCd), totalSaved, insertedTotal, updatedTotal, deletedTotal);
 
         } catch (Exception e) {
             failedCount.incrementAndGet();
-            log.error("지역 코드 {} 처리 실패: {}", regionConfig.getDistrictName(sgguCd), e.getMessage());
+            log.error("지역 코드 {} 처리 실패: {}", regionConfig.getSidoName(sidoCd), e.getMessage());
         }
     }
 
