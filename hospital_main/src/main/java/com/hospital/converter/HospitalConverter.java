@@ -46,7 +46,7 @@ public class HospitalConverter {
 				.emergencyNightAvailable(detail != null ? convertYnToBoolean(detail.getEmyNightYn()) : null)
 				.weekdayLunch(detail != null ? detail.getLunchWeek() : null)
 				.parkingCapacity(detail != null ? detail.getParkQty() : null)
-				.parkingFee(detail != null ? detail.getParkXpnsYn() : null)
+				.parkingFee(detail != null ? convertYnToBoolean(detail.getParkXpnsYn()) : null)
 
 				// 운영 시간
 				.todayOpen(formatTime(todayTime.getOpenTime())).todayClose(formatTime(todayTime.getCloseTime()))
@@ -57,7 +57,7 @@ public class HospitalConverter {
 				.professionalDoctors(convertProDocsToMap(hospitalMain.getProDocs())).build();
 	}
 	
-	 private List<String> convertMedicalSubjectsToList(Set<MedicalSubject> subjects) {
+	 /*private List<String> convertMedicalSubjectsToList(Set<MedicalSubject> subjects) {
 	        if (subjects == null || subjects.isEmpty()) {
 	            return List.of();
 	        }
@@ -71,7 +71,7 @@ public class HospitalConverter {
 	                .distinct()
 	                .sorted()
 	                .collect(Collectors.toList());
-	    }
+	    }*/
 
 
 	private String formatTime(String timeStr) {
@@ -94,8 +94,31 @@ public class HospitalConverter {
 		return hospitals.stream().map(this::convertToDTO).collect(Collectors.toList());
 	}
 	
+	 private Map<String, Integer> convertProDocsToMap(Set<ProDoc> set) {
+	        if (set == null || set.isEmpty()) {
+	            return new HashMap<>();
+	        }
+	        return set.stream()
+	                .collect(Collectors.toMap(
+	                    ProDoc::getSubjectName,
+	                    ProDoc::getProDocCount,
+	                    Integer::sum  // 중복 시 합산
+	                ));
+	    }
+	  private List<String> convertMedicalSubjectsToList(Set<MedicalSubject> set) {
+	        if (set == null || set.isEmpty()) {
+	            return List.of();
+	        }
+	        return set.stream()
+	                .map(MedicalSubject::getSubjectName)
+	                .filter(name -> name != null && !name.trim().isEmpty())
+	                .distinct()
+	                .sorted()
+	                .collect(Collectors.toList());
+	    }
+	
 	//ProDoc의 subjectDetails 문자열을 Map으로 변환
-	private Map<String, Integer> convertProDocsToMap(Set<ProDoc> set) {
+	/*private Map<String, Integer> convertProDocsToMap(Set<ProDoc> set) {
 		if (set == null || set.isEmpty()) {
 			return new HashMap<>();
 		}
@@ -132,13 +155,20 @@ public class HospitalConverter {
 			}
 		}
 		return result;
-	}
-	
+	}*/
 	private Boolean convertYnToBoolean(String ynValue) {
-		if (ynValue == null) {
-			return null;
-		}
-		return "Y".equalsIgnoreCase(ynValue.trim());
-	}
+        if (ynValue == null) {
+            return null;
+        }
+        return "Y".equalsIgnoreCase(ynValue.trim());
+    }
+	
+	
+	//private Boolean convertYnToBoolean(String ynValue) {
+		//if (ynValue == null) {
+			//return null;
+		//}
+		//return "Y".equalsIgnoreCase(ynValue.trim());
+	//}
 
 }

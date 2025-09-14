@@ -41,8 +41,8 @@ public class MedicalSubject {
     private String hospitalCode;
 
     // 진료과목명 (ex. 내과, 치과, 한의과 등)
-    @Column(name = "subjects")
-    private String subjects;
+    @Column(name = "subject_name")
+    private String subjectName;
 
    
     @ManyToOne(fetch = FetchType.LAZY)

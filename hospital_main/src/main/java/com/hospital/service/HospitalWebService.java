@@ -43,8 +43,12 @@ public class HospitalWebService {
 		if (subs == null || subs.isEmpty()) {
 			hospitalEntities = hospitalMainApiRepository.findAll();
 		} else {
-			hospitalEntities = hospitalMainApiRepository.findHospitalsBySubjectsAny(subs);
+			hospitalEntities = hospitalMainApiRepository.findHospitalsBySubjects(subs);
 		}
+		
+		hospitalEntities = hospitalEntities.stream()
+	            .filter(h -> h.getCoordinateX() != null && h.getCoordinateY() != null)
+	            .toList();
 		
 		return applyFiltersAndSort(hospitalEntities, userLat, userLng, radius, tags);
 	}
