@@ -34,8 +34,8 @@ public class HospitalWebService {
 	}
 
 	// 기존 메서드: 진료과목으로 병원 검색
-	@Cacheable(value = "hospitals", key = "(#subs != null ? #subs.toString() : 'all') + '_' + #userLat + '_' + #userLng + '_' + #radius + '_' + (#tags != null ? #tags.toString() : 'null')")
-	public List<HospitalWebResponse> getHospitals(double userLat, double userLng, double radius, List<String> tags) {
+	//@Cacheable(value = "hospitals", key = "#radius + '_' + (#tags != null ? #tags.toString() : 'null')")
+	public List<HospitalWebResponse> getHospitals(double userLat, double userLng, double radius, List<String> tags){
 		List<HospitalMain> hospitalEntities;
 
 		hospitalEntities = hospitalMainApiRepository.findHospitalsWithinRadius(userLat, userLng, radius);

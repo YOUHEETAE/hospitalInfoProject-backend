@@ -16,71 +16,58 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-
-
 //병원,약국 조회
 @RestController
-@CrossOrigin(origins = "http://localhost:5173") 
+@CrossOrigin(origins = "http://localhost:5173")
 public class HospitalController {
-	
+
 	private static final Logger log = LoggerFactory.getLogger(HospitalController.class);
 
-    private final HospitalWebService hospitalService;
-    private final PharmacyWebService pharmacyService;
+	private final HospitalWebService hospitalService;
+	private final PharmacyWebService pharmacyService;
 
-    @Autowired
-    public HospitalController(HospitalWebService hospitalService, PharmacyWebService pharmacyService) {
-        this.hospitalService = hospitalService;
-        this.pharmacyService = pharmacyService;
-    }
-    
-    
-    //병원 검색 
-    @GetMapping(value = "/hospitalsData", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<HospitalWebResponse> getHospitals(
-        @RequestParam double userLat,
-        @RequestParam double userLng, 
-        @RequestParam double radius,
-        @RequestParam(required = false) List<String> tags
-    ) {
-        log.info("병원 검색 API 호출 - 위도: {}, 경도: {}, 반경: {}km, 태그: {}", 
-                userLat, userLng, radius, tags);
-        
-        List<HospitalWebResponse> result = hospitalService.getHospitals(userLat, userLng, radius, tags);
-        
-        log.info("병원 검색 완료 - 조회된 병원 수: {}개", result.size());
-        
-        return result;
-    }
+	@Autowired
+	public HospitalController(HospitalWebService hospitalService, PharmacyWebService pharmacyService) {
+		this.hospitalService = hospitalService;
+		this.pharmacyService = pharmacyService;
+	}
 
-    // 약국 검색 API
-    @GetMapping(value = "/pharmaciesData", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<PharmacyWebResponse> getNearbyPharmacies(
-        @RequestParam double userLat,
-        @RequestParam double userLng,
-        @RequestParam double radius
-    ) {
-        log.info("약국 검색 API 호출 - 위도: {}, 경도: {}, 반경: {}km", 
-                userLat, userLng, radius);
-        
-        List<PharmacyWebResponse> result = pharmacyService.getPharmaciesByDistance(userLat, userLng, radius);
-        
-        log.info("약국 검색 완료 - 조회된 약국 수: {}개", result.size());
-        
-        return result;
-    }
+	// 병원 검색
+	@GetMapping(value = "/hospitalsData", produces = MediaType.APPLICATION_JSON_VALUE)
+	public List<HospitalWebResponse> getHospitals(@RequestParam("userLat") double userLat,
+			@RequestParam("userLng") double userLng, @RequestParam("radius") double radius,
+			 @RequestParam(value = "tags", required = false) List<String> tags) {
+		log.info("병원 검색 API 호출 - 위도: {}, 경도: {}, 반경: {}km, 태그: {}", userLat, userLng, radius, tags);
 
-    
-    
-    //병원명 검색 
-    @GetMapping(value = "/hospitals/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<HospitalWebResponse> searchHospitalsByName(
-            @RequestParam String hospitalName     // 검색할 병원명
-    ) {
-        return hospitalService.searchHospitalsByName(hospitalName);
-    }
-    @GetMapping(value = "/hospitals/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<HospitalWebResponse> getAllHospitals() {
-        return hospitalService.getAllHospitals();
-    }
+		List<HospitalWebResponse> result = hospitalService.getHospitals(userLat, userLng, radius, tags);
+
+		log.info("병원 검색 완료 - 조회된 병원 수: {}개", result.size());
+
+		return result;
+	}
+
+	// 약국 검색 API
+	@GetMapping(value = "/pharmaciesData", produces = MediaType.APPLICATION_JSON_VALUE)
+	public List<PharmacyWebResponse> getNearbyPharmacies(@RequestParam("userLat") double userLat,
+			@RequestParam("userLng") double userLng, @RequestParam("radius") double radius) {
+		log.info("약국 검색 API 호출 - 위도: {}, 경도: {}, 반경: {}km", userLat, userLng, radius);
+
+		List<PharmacyWebResponse> result = pharmacyService.getPharmaciesByDistance(userLat, userLng, radius);
+
+		log.info("약국 검색 완료 - 조회된 약국 수: {}개", result.size());
+
+		return result;
+	}
+
+	// 병원명 검색
+	@GetMapping(value = "/hospitals/search", produces = MediaType.APPLICATION_JSON_VALUE)
+	public List<HospitalWebResponse> searchHospitalsByName(@RequestParam String hospitalName // 검색할 병원명
+	) {
+		return hospitalService.searchHospitalsByName(hospitalName);
+	}
+
+	@GetMapping(value = "/hospitals/all", produces = MediaType.APPLICATION_JSON_VALUE)
+	public List<HospitalWebResponse> getAllHospitals() {
+		return hospitalService.getAllHospitals();
+	}
 }
