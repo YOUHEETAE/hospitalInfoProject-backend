@@ -76,48 +76,6 @@ public class HospitalMain {
 	@Column(name = "coordinate_y")
 	private Double coordinateY;
 	
-	@Column(name = "med_general_cnt")
-    private String medGeneralCnt;  // mdeptGdrCnt
-    
-    @Column(name = "med_intern_cnt")
-    private String medInternCnt;  // mdeptIntnCnt
-    
-    @Column(name = "med_resident_cnt")
-    private String medResidentCnt;  // mdeptResdntCnt
-    
-    @Column(name = "med_specialist_cnt")
-    private String medSpecialistCnt;  // mdeptSdrCnt
-    
-    // 치과
-    @Column(name = "dent_general_cnt")
-    private String dentGeneralCnt;  // detyGdrCnt
-    
-    @Column(name = "dent_intern_cnt")
-    private String dentInternCnt;  // detyIntnCnt
-    
-    @Column(name = "dent_resident_cnt")
-    private String dentResidentCnt;  // detyResdntCnt
-    
-    @Column(name = "dent_specialist_cnt")
-    private String dentSpecialistCnt;  // detySdrCnt
-    
-    // 한방
-    @Column(name = "oriental_general_cnt")
-    private String orientalGeneralCnt;  // cmdcGdrCnt
-    
-    @Column(name = "oriental_intern_cnt")
-    private String orientalInternCnt;  // cmdcIntnCnt
-    
-    @Column(name = "oriental_resident_cnt")
-    private String orientalResidentCnt;  // cmdcResdntCnt
-    
-    @Column(name = "oriental_specialist_cnt")
-    private String orientalSpecialistCnt;  // cmdcSdrCnt
-    
-    // 기타
-    @Column(name = "midwife_cnt")
-    private String midwifeCnt;  // pnursCnt
-    
     @Lob
     @Column(name = "subject_names", length = 1000)
     private String subjectNames; // ["내과", "외과", "정형외과"]
