@@ -1,5 +1,10 @@
 package com.hospital.dto;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -7,8 +12,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -59,6 +66,10 @@ public class EmergencyWebResponse {
 	private Double coordinateY; // y 좌표 (경도)
 
 	private String emergencyAddress;
+	
+	public List<String> getAvailableEquipment() {
+        return convertToList();
+    }
 
 	// 좌표 설정 메서드
 	public void setCoordinates(Double coordinateX, Double coordinateY) {
@@ -66,7 +77,18 @@ public class EmergencyWebResponse {
 		this.coordinateY = coordinateY;
 	}
 
-	public void setEmergencyAddress(String emergencyAddress) {
-		this.emergencyAddress = emergencyAddress;
+	public List<String> convertToList() {
+	    Map<String, Boolean> equipmentMap = new LinkedHashMap<>();
+	    equipmentMap.put("구급차", ambulanceAvailability);
+	    equipmentMap.put("인공호흡기", ventilatorAvailability);
+	    equipmentMap.put("CT", ctAvailability);
+	    equipmentMap.put("MRI", mriAvailability);
+	    equipmentMap.put("CRRT", crrtAvailability);
+	    
+	    return equipmentMap.entrySet().stream()
+	        .filter(entry -> Boolean.TRUE.equals(entry.getValue()))
+	        .map(Map.Entry::getKey)
+	        .collect(Collectors.toList());
 	}
+	
 }
