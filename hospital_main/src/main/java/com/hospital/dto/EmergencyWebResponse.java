@@ -44,22 +44,9 @@ public class EmergencyWebResponse {
 
 	@JsonProperty("hvgc")
 	private Integer generalWardBeds; // 일반 입원실 병상
-
-	// === 장비/서비스 가용성 ===
+	
 	@JsonProperty("hvamyn")
 	private Boolean ambulanceAvailability; // 구급차 가용 여부
-
-	@JsonProperty("hvventiayn")
-	private Boolean ventilatorAvailability; // 인공호흡기 가용
-
-	@JsonProperty("hvctayn")
-	private Boolean ctAvailability; // CT 가용
-
-	@JsonProperty("hvmriayn")
-	private Boolean mriAvailability; // MRI 가용
-
-	@JsonProperty("hvcrrtayn")
-	private Boolean crrtAvailability; // CRRT(투석) 가용
 
 	// === 좌표 정보 (DB에서 추가) ===
 	private Double coordinateX; // x 좌표 (위도)
@@ -67,28 +54,37 @@ public class EmergencyWebResponse {
 
 	private String emergencyAddress;
 	
-	public List<String> getAvailableEquipment() {
-        return convertToList();
-    }
-
-	// 좌표 설정 메서드
-	public void setCoordinates(Double coordinateX, Double coordinateY) {
-		this.coordinateX = coordinateX;
-		this.coordinateY = coordinateY;
-	}
-
-	public List<String> convertToList() {
-	    Map<String, Boolean> equipmentMap = new LinkedHashMap<>();
-	    equipmentMap.put("구급차", ambulanceAvailability);
-	    equipmentMap.put("인공호흡기", ventilatorAvailability);
-	    equipmentMap.put("CT", ctAvailability);
-	    equipmentMap.put("MRI", mriAvailability);
-	    equipmentMap.put("CRRT", crrtAvailability);
-	    
-	    return equipmentMap.entrySet().stream()
-	        .filter(entry -> Boolean.TRUE.equals(entry.getValue()))
-	        .map(Map.Entry::getKey)
-	        .collect(Collectors.toList());
+	// === 장비 가용 정보 리스트 ===
+	public List<String> availableEquipment;
+	
+	
+	//apiResponse -> webResponse
+	public static EmergencyWebResponse from(EmergencyApiResponse api) {
+		Map<String, Boolean> equipmentMap = new LinkedHashMap<>();
+		equipmentMap.put("인공호흡기", api.getVentilatorAvailability());
+		equipmentMap.put("CT", api.getCtAvailability());
+		equipmentMap.put("MRI", api.getMriAvailability());
+		equipmentMap.put("CRRT", api.getCrrtAvailability());
+		
+		List<String> availableList = equipmentMap.entrySet().stream()
+				.filter(entry -> Boolean.TRUE.equals(entry.getValue()))
+				.map(Map.Entry::getKey)
+				.collect(Collectors.toList());
+		
+		 return EmergencyWebResponse.builder()
+		            .dutyName(api.getDutyName())
+		            .dutyTel3(api.getDutyTel3())
+		            .hpid(api.getHpid())
+		            .lastUpdatedDate(api.getLastUpdatedDate())
+		            .emergencyBeds(api.getEmergencyBeds())
+		            .operatingBeds(api.getOperatingBeds())
+		            .generalWardBeds(api.getGeneralWardBeds())
+		            .availableEquipment(availableList)
+		            .ambulanceAvailability(api.getAmbulanceAvailability())
+		            .coordinateX(api.getCoordinateX())
+		            .coordinateY(api.getCoordinateY())
+		            .emergencyAddress(api.getEmergencyAddress())
+		            .build();
 	}
 	
 }
