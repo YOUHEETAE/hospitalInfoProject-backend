@@ -53,16 +53,16 @@ public class EmergencyWebResponse {
 	public Map<String, Integer> availableBeds;
 	
 	public static EmergencyWebResponse from(EmergencyApiResponse api) {
-	   List<String> availableEquipment = availableEquipment(api);
-	   Map<String, Integer> availableBeds = availableBeds(api);
+	   List<String> equipmentData = availableEquipment(api);
+	   Map<String, Integer> BedsData = availableBeds(api);
 	    
 	    return EmergencyWebResponse.builder()
 	        .dutyName(api.getDutyName())
 	        .dutyTel3(api.getDutyTel3())
 	        .hpid(api.getHpid())
 	        .lastUpdatedDate(api.getLastUpdatedDate())
-	        .availableBeds(availableBeds)
-	        .availableEquipment(availableEquipment)
+	        .availableBeds(BedsData)
+	        .availableEquipment(equipmentData)
 	        .ambulanceAvailability(api.getAmbulanceAvailability())
 	        .coordinateX(api.getCoordinateX())
 	        .coordinateY(api.getCoordinateY())
@@ -85,12 +85,12 @@ public class EmergencyWebResponse {
 	}
 	
 	private static Map<String, Integer> availableBeds(EmergencyApiResponse api){
-		Map <String, Integer> BedsMap = new LinkedHashMap<>();
-		BedsMap.put("응급실 일반 병상", api.getEmergencyBeds());
-		BedsMap.put("수술실 병상", api.getOperatingBeds());
-		BedsMap.put("일반 입원실 병상", api.getGeneralWardBeds());
+		Map <String, Integer> bedsMap = new LinkedHashMap<>();
+		bedsMap.put("응급실 일반 병상", api.getEmergencyBeds());
+		bedsMap.put("수술실 병상", api.getOperatingBeds());
+		bedsMap.put("일반 입원실 병상", api.getGeneralWardBeds());
 		
-		return BedsMap;
+		return bedsMap;
 	}
 	
 }
