@@ -1,5 +1,9 @@
 package com.hospital.dto;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +64,7 @@ public class EmergencyWebResponse {
 	        .dutyName(api.getDutyName())
 	        .dutyTel3(api.getDutyTel3())
 	        .hpid(api.getHpid())
-	        .lastUpdatedDate(api.getLastUpdatedDate())
+	        .lastUpdatedDate(convertToIsoUtc(api.getLastUpdatedDate()))
 	        .availableBeds(BedsData)
 	        .availableEquipment(equipmentData)
 	        .ambulanceAvailability(api.getAmbulanceAvailability())
@@ -68,6 +72,27 @@ public class EmergencyWebResponse {
 	        .coordinateY(api.getCoordinateY())
 	        .emergencyAddress(api.getEmergencyAddress())
 	        .build();
+	}
+	
+	private static String convertToIsoUtc(String dateString) {
+		if (dateString == null || dateString.length() != 14) {
+			return null;
+		}
+		
+		try {
+			// "yyyyMMddHHmmss" 파싱
+			DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+			LocalDateTime localDateTime = LocalDateTime.parse(dateString, inputFormatter);
+			
+			// 한국 시간(KST)으로 간주하고 UTC로 변환
+			ZonedDateTime kstTime = localDateTime.atZone(ZoneId.of("Asia/Seoul"));
+			ZonedDateTime utcTime = kstTime.withZoneSameInstant(ZoneId.of("UTC"));
+			
+			// ISO 8601 형식으로 반환
+			return utcTime.format(DateTimeFormatter.ISO_INSTANT);
+		} catch (Exception e) {
+			return dateString; // 변환 실패 시 원본 반환
+		}
 	}
 
 	// 장비 추출 로직 분리
