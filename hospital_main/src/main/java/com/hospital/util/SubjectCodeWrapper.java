@@ -1,4 +1,4 @@
-package com.hospital.dto;
+package com.hospital.util;
 
 import java.util.HashMap;
 import java.util.Map;
