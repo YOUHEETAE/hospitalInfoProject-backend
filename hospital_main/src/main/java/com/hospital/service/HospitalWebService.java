@@ -36,11 +36,24 @@ public class HospitalWebService {
 	}
 
 	public List<HospitalWebResponse> getHospitals(double userLat, double userLng, double radius) {
-		List<HospitalMain> hospitalEntities = hospitalMainApiRepository.findHospitalsWithinRadius(userLat, userLng,
-				radius);
+	    double radiusMeters = radius * 1000;
+	    
+	    double latDegree = radiusMeters / 111320.0;
+	    double lonDegree = radiusMeters / (111320.0 * Math.cos(Math.toRadians(userLat)));
 
-		return hospitalEntities.stream() // stream() → parallelStream()
-				.map(hospitalConverter::convertToDTO).collect(Collectors.toList());
+	    List<HospitalMain> hospitalEntities = hospitalMainApiRepository.findHospitalsWithinBoundingBox(
+	        userLat,                    // lat
+	        userLng,                    // lon
+	        radiusMeters,               // radius
+	        userLat - latDegree,        // minLat
+	        userLat + latDegree,        // maxLat
+	        userLng - lonDegree,        // minLon
+	        userLng + lonDegree         // maxLon
+	    );
+
+	    return hospitalEntities.stream()
+	        .map(hospitalConverter::convertToDTO)
+	        .collect(Collectors.toList());
 	}
 
 	// ✅ 병원명 검색
