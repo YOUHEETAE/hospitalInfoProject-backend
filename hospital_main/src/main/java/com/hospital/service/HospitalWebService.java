@@ -37,14 +37,11 @@ public class HospitalWebService {
 
 	public List<HospitalWebResponse> getHospitals(double userLat, double userLng, double radius) {
 	    double radiusMeters = radius * 1000;
-	    
+
 	    double latDegree = radiusMeters / 111320.0;
 	    double lonDegree = radiusMeters / (111320.0 * Math.cos(Math.toRadians(userLat)));
 
 	    List<HospitalMain> hospitalEntities = hospitalMainApiRepository.findHospitalsWithinBoundingBox(
-	        userLat,                    // lat
-	        userLng,                    // lon
-	        radiusMeters,               // radius
 	        userLat - latDegree,        // minLat
 	        userLat + latDegree,        // maxLat
 	        userLng - lonDegree,        // minLon
@@ -52,21 +49,28 @@ public class HospitalWebService {
 	    );
 
 	    return hospitalEntities.stream()
+	        .filter(hospital -> {
+	            double distance = distanceCalculator.calculateDistance(
+	                userLat, userLng,
+	                hospital.getCoordinateY(), hospital.getCoordinateX()
+	            );
+	            return distance <= radiusMeters;
+	        })
 	        .map(hospitalConverter::convertToDTO)
 	        .collect(Collectors.toList());
 	}
 
-	// ✅ 병원명 검색
-	@Cacheable(value = "hospitalsByName", key = "#hospitalName")
-	public List<HospitalWebResponse> searchHospitalsByName(String hospitalName) {
-		// 입력값 전처리
-		String cleanInput = hospitalName.replace(" ", "");
+	// 성능 비교용 - ST_Distance_Sphere만 사용 (인덱스 미사용)
+	public List<HospitalWebResponse> getHospitalsWithDistanceOnly(double userLat, double userLng, double radius) {
+	    List<HospitalMain> hospitalEntities = hospitalMainApiRepository.findHospitalsWithinRadius(
+	        userLat,
+	        userLng,
+	        radius
+	    );
 
-		// Repository에서 검색 (hospitalDetail + medicalSubjects EAGER FETCH)
-		List<HospitalMain> hospitalEntities = hospitalMainApiRepository.findHospitalsByName(cleanInput);
-
-		// 단순히 DTO로 변환해서 리턴
-		return hospitalEntities.stream().map(hospitalConverter::convertToDTO).collect(Collectors.toList());
+	    return hospitalEntities.stream()
+	        .map(hospitalConverter::convertToDTO)
+	        .collect(Collectors.toList());
 	}
 
 }
