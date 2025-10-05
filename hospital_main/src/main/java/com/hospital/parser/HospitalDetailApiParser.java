@@ -1,10 +1,9 @@
 package com.hospital.parser;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hospital.dto.HospitalDetailApiItem;
 import com.hospital.dto.HospitalDetailApiResponse;
 import com.hospital.entity.HospitalDetail;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -29,32 +28,20 @@ public class HospitalDetailApiParser {
         List<HospitalDetail> entities = new ArrayList<>();
 
         try {
-            if (response != null && response.getResponse() != null && response.getResponse().getBody() != null) {
-                JsonNode itemsNode = response.getResponse().getBody().getItems();
-
-                if (itemsNode != null) {
-                    // items가 배열인 경우
-                    if (itemsNode.isArray()) {
-                        for (JsonNode itemNode : itemsNode) {
-                            processItem(itemNode, hospitalCode, entities);
-                        }
-                    } else {
-                        // items 안에 item 배열이 있는 경우
-                        JsonNode itemArrayNode = itemsNode.get("item");
-                        if (itemArrayNode != null) {
-                            if (itemArrayNode.isArray()) {
-                                for (JsonNode itemNode : itemArrayNode) {
-                                    processItem(itemNode, hospitalCode, entities);
-                                }
-                            } else {
-                                processItem(itemArrayNode, hospitalCode, entities);
-                            }
-                        } else {
-                            createEmptyEntity(hospitalCode, entities);
-                        }
-                    }
-                } else {
-                    createEmptyEntity(hospitalCode, entities);
+            if (response != null 
+                && response.getResponse() != null 
+                && response.getResponse().getBody() != null
+                && response.getResponse().getBody().getItems() != null
+                && response.getResponse().getBody().getItems().getItem() != null) {
+                
+                List<HospitalDetailApiItem> items = response.getResponse()
+                                                           .getBody()
+                                                           .getItems()
+                                                           .getItem();
+                
+                for (HospitalDetailApiItem item : items) {
+                    HospitalDetail entity = convertDtoToEntity(item, hospitalCode);
+                    entities.add(entity);
                 }
             } else {
                 createEmptyEntity(hospitalCode, entities);
@@ -65,12 +52,6 @@ public class HospitalDetailApiParser {
         }
 
         return entities;
-    }
-
-    private void processItem(JsonNode itemNode, String hospitalCode, List<HospitalDetail> entities) throws Exception {
-        HospitalDetailApiItem item = objectMapper.treeToValue(itemNode, HospitalDetailApiItem.class);
-        HospitalDetail entity = convertDtoToEntity(item, hospitalCode);
-        entities.add(entity);
     }
 
     private void createEmptyEntity(String hospitalCode, List<HospitalDetail> entities) {
@@ -122,10 +103,5 @@ public class HospitalDetailApiParser {
     private String safeGetString(String value) {
         if (value == null || value.trim().isEmpty()) return null;
         return value.trim();
-    }
-
-    private Boolean convertParkingFeeToBoolean(String parkXpnsYn) {
-        if (parkXpnsYn == null) return null;
-        return "Y".equalsIgnoreCase(parkXpnsYn.trim());
     }
 }
