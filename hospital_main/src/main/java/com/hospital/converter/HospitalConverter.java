@@ -37,6 +37,7 @@ public class HospitalConverter {
 
 		return HospitalWebResponse.builder()
 				// 기본 정보
+				.hospitalCode(hospitalMain.getHospitalCode())
 				.hospitalName(hospitalMain.getHospitalName()).hospitalAddress(hospitalMain.getHospitalAddress())
 				.provinceName(hospitalMain.getProvinceName()).districtName(hospitalMain.getDistrictName())
 				.hospitalTel(hospitalMain.getHospitalTel()).hospitalHomepage(hospitalMain.getHospitalHomepage())
@@ -52,6 +53,7 @@ public class HospitalConverter {
 				.parkingCapacity(detail != null ? detail.getParkQty() : null)
 				.parkingFee(detail != null ? convertYnToBoolean(detail.getParkXpnsYn()) : null)
 				.noTrmtHoli(detail != null ? detail.getNoTrmtHoli() : null)
+				.noTrmtSun(detail != null ? detail.getNoTrmtSun() : null)
 
 				// 운영 시간
 				.todayOpen(formatTime(todayTime.getOpenTime())).todayClose(formatTime(todayTime.getCloseTime()))

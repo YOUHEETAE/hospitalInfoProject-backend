@@ -94,7 +94,7 @@ public class DatabaseConfig {
         jpaProperties.setProperty("hibernate.hbm2ddl.auto", "update");
         jpaProperties.setProperty("hibernate.dialect", "org.hibernate.dialect.MariaDBDialect");
         jpaProperties.setProperty("hibernate.show_sql", "false");
-        jpaProperties.setProperty("hibernate.format_sql", "true");
+        jpaProperties.setProperty("hibernate.format_sql", "false");
         
         // 🔹 대량 데이터 처리 최적화 설정
         jpaProperties.setProperty("hibernate.jdbc.batch_size", "100");        // 배치 크기 100개
@@ -103,7 +103,7 @@ public class DatabaseConfig {
         jpaProperties.setProperty("hibernate.jdbc.batch_versioned_data", "true");
         
         // 🔹 성능 최적화
-        jpaProperties.setProperty("hibernate.default_batch_fetch_size", "16");
+        jpaProperties.setProperty("hibernate.default_batch_fetch_size", "100");
         jpaProperties.setProperty("hibernate.jdbc.fetch_size", "100");
         jpaProperties.setProperty("hibernate.cache.use_second_level_cache", "false");
         jpaProperties.setProperty("hibernate.cache.use_query_cache", "false");
