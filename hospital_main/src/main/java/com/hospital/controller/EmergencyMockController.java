@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-//@RequestMapping("/api/emergency/mock")
+@RequestMapping("/api/emergency/mock")
 public class EmergencyMockController {
 
     private final EmergencyMockService mockService;

@@ -1,24 +1,24 @@
 package com.hospital.controller;
 
-import com.hospital.dto.HospitalWebResponse;
-import com.hospital.dto.PharmacyWebResponse;
-import com.hospital.service.HospitalWebService;
-import com.hospital.service.PharmacyWebService;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import com.hospital.dto.HospitalWebResponse;
+import com.hospital.dto.PharmacyWebResponse;
+import com.hospital.service.HospitalWebService;
+import com.hospital.service.PharmacyWebService;
 
 //병원,약국 조회
 @RestController
+@RequestMapping("/web")
 public class HospitalController {
 
 	private static final Logger log = LoggerFactory.getLogger(HospitalController.class);
@@ -43,7 +43,7 @@ public class HospitalController {
 	        long startTime = System.currentTimeMillis();
 	        log.info("[NEW 방식] 병원 검색 API 호출 - 위도: {}, 경도: {}, 반경: {}km", userLat, userLng, radius);
 
-	        List<HospitalWebResponse> result = hospitalService.getHospitals(userLat, userLng, radius);
+	        List<HospitalWebResponse> result = hospitalService.getOptimizedHospitals(userLat, userLng, radius);
 
 	        long endTime = System.currentTimeMillis();
 	        log.info("[NEW 방식] 병원 검색 완료 - 조회된 병원 수: {}개, 응답 시간: {}ms", result.size(), (endTime - startTime));

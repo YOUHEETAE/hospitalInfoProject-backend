@@ -20,6 +20,7 @@ import lombok.Setter;
 public class HospitalWebResponse {
     // 기본 정보
     
+	private String hospitalCode;
     private String hospitalName;
     private String hospitalAddress;
     private String provinceName;
@@ -43,6 +44,7 @@ public class HospitalWebResponse {
     private String todayClose;
     
     private String noTrmtHoli;
+    private String noTrmtSun;
     
     private List<String> medicalSubjects;
     

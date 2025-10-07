@@ -20,7 +20,9 @@ public class PharmacyConverter {
 		return PharmacyWebResponse.builder().pharmacyName(pharmacy.getName()).pharmacyAddress(pharmacy.getAddress())
 				.coordinateX(pharmacy.getLongitude()) // 경도 = X좌표
 				.coordinateY(pharmacy.getLatitude()) // 위도 = Y좌표
-				.PharmacyTel(pharmacy.getPhone()).build();
+				.pharmacyTel(pharmacy.getPhone()).pharmacyCode(pharmacy.getYkiho())
+				.build();
+
 	}
 
 	//Entity List -> DTO List 변환

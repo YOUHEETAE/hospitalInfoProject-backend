@@ -3,15 +3,15 @@ package com.hospital.entity;
 import java.util.Set;
 
 import org.hibernate.annotations.DynamicUpdate;
+import org.locationtech.jts.geom.Point;
 
 // JPA 관련 임포트 추가
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
+
 import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.NamedEntityGraphs;
@@ -51,10 +51,10 @@ public class HospitalMain {
 	private String hospitalName;
 
 	@Column(name = "province_name", length = 100)
-	private String provinceName;
+	private String provinceName;//필요없음
 
 	@Column(name = "district_name", length = 100)
-	private String districtName;
+	private String districtName;//필요없음
 
 	@Column(name = "hospital_address", length = 500)
 	private String hospitalAddress;
@@ -63,7 +63,7 @@ public class HospitalMain {
 	private String hospitalTel;
 
 	@Column(name = "hospital_homepage", length = 255)
-	private String hospitalHomepage;
+	private String hospitalHomepage; //필요없음
 
 	@Column(name = "doctor_num")
 	private String totalDoctors;
@@ -74,7 +74,9 @@ public class HospitalMain {
 	@Column(name = "coordinate_y")
 	private Double coordinateY;
 
-	
+	@Column(name = "location", columnDefinition = "POINT")
+	private Point location;
+
 	@OneToOne(mappedBy = "hospital",
 
 			fetch = FetchType.LAZY)

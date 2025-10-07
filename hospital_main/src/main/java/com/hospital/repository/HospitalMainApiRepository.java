@@ -1,5 +1,6 @@
 package com.hospital.repository;
 
+import com.hospital.dto.HospitalWebResponse;
 import com.hospital.entity.HospitalMain;
 
 import jakarta.persistence.QueryHint;
@@ -26,7 +27,6 @@ public interface HospitalMainApiRepository extends JpaRepository<HospitalMain, S
 	@EntityGraph("hospital-with-all")
 	Optional<HospitalMain> findByHospitalCode(String hospitalCode);
 
-
 	/*
 	 * @QueryHints({ @QueryHint(name = "org.hibernate.readOnly", value = "true") })
 	 * 
@@ -41,12 +41,9 @@ public interface HospitalMainApiRepository extends JpaRepository<HospitalMain, S
 
 	@QueryHints({ @QueryHint(name = "org.hibernate.readOnly", value = "true") })
 	@EntityGraph("hospital-with-all")
-	@Query("SELECT DISTINCT h FROM HospitalMain h " +
-	       "WHERE LENGTH(REPLACE(:searchName, ' ', '')) >= 3 " +
-		   "AND REPLACE(h.hospitalName, ' ', '')" +
-	       "LIKE CONCAT('%', replace(:searchName, ' ', ''), '%')")
+	@Query("SELECT DISTINCT h FROM HospitalMain h " + "WHERE LENGTH(REPLACE(:searchName, ' ', '')) >= 3 "
+			+ "AND REPLACE(h.hospitalName, ' ', '')" + "LIKE CONCAT('%', replace(:searchName, ' ', ''), '%')")
 	List<HospitalMain> findHospitalsByName(@Param("searchName") String searchName);
-	
 
 	@QueryHints({ @QueryHint(name = "org.hibernate.readOnly", value = "true") })
 	@EntityGraph("hospital-with-all")
@@ -58,41 +55,69 @@ public interface HospitalMainApiRepository extends JpaRepository<HospitalMain, S
 	List<HospitalMain> findByDistrictName(String districtName);
 
 	@QueryHints({ @QueryHint(name = "org.hibernate.readOnly", value = "true") })
-	List<HospitalMain> findByHospitalCodeIn(List<String> hospitalCodes);
-
-	@QueryHints({ @QueryHint(name = "org.hibernate.readOnly", value = "true") })
 	List<HospitalMain> findByProvinceName(String provinceName);
 
 	@Modifying
 	@Transactional
 	List<HospitalMain> deleteByHospitalCodeIn(List<String> hospitalcodes);
 
+	@Query(value = """
+						   SELECT h.hospital_code
+			FROM hospital_main h
+			WHERE MBRContains(
+
+			    ST_GeomFromText(
+			        CONCAT(
+			            'POLYGON((',
+			            :lon - :delta_degree_x, ' ', :lat - :delta_degree_y, ',',
+			            :lon + :delta_degree_x, ' ', :lat - :delta_degree_y, ',',
+			            :lon + :delta_degree_x, ' ', :lat + :delta_degree_y, ',',
+			            :lon - :delta_degree_x, ' ', :lat + :delta_degree_y, ',',
+			            :lon - :delta_degree_x, ' ', :lat - :delta_degree_y,
+			            '))'
+			        ),
+			        4326
+			    ),
+			    h.location
+			)
+
+			AND ST_Distance_Sphere(
+			    point(h.coordinate_x, h.coordinate_y),
+			    point(:lon, :lat)
+			) <= :radius * 1000
+						          AND h.coordinate_x IS NOT NULL
+						 AND h.coordinate_y IS NOT NULL
+						 AND h.location IS NOT NULL
+						""", nativeQuery = true)
 	@QueryHints({ @QueryHint(name = "org.hibernate.readOnly", value = "true") })
-	@EntityGraph("hospital-with-all")
-	@Query("SELECT h FROM HospitalMain h " +
-	       "WHERE h.coordinateX BETWEEN :minLon AND :maxLon " +
-	       "AND h.coordinateY BETWEEN :minLat AND :maxLat")
-	List<HospitalMain> findHospitalsWithinBoundingBox(
-	        @Param("minLat") double minLat,
-	        @Param("maxLat") double maxLat,
-	        @Param("minLon") double minLon,
-	        @Param("maxLon") double maxLon
-	);
+	List<String> findHospitalCodesBySpatialQuery(
+		    @Param("lat") double lat,
+		    @Param("lon") double lon,
+		    @Param("delta_degree_x") double deltaDegreeX, // 새로 추가
+		    @Param("delta_degree_y") double deltaDegreeY, // 새로 추가
+		    @Param("radius") double radius
+		);
+
+	// @EntityGraph("hospital-with-all")
+	@QueryHints({ @QueryHint(name = "org.hibernate.readOnly", value = "true") })
+	List<HospitalMain> findByHospitalCodeIn(List<String> hospitalCodes);
 
 	// 성능 비교용 - ST_Distance_Sphere만 사용 (인덱스 미사용)
+	// Step1: 거리 조건만으로 병원코드(PK) 리스트 조회
 	@QueryHints({ @QueryHint(name = "org.hibernate.readOnly", value = "true") })
 	@Query(value = """
-	        SELECT h.*
-	        FROM hospital_main h
-	        WHERE ST_Distance_Sphere(
-	                  point(h.coordinate_x, h.coordinate_y),
-	                  point(:lon, :lat)
-	              ) <= :radius * 1000
-	        AND h.coordinate_x IS NOT NULL
-	        AND h.coordinate_y IS NOT NULL
-	        """, nativeQuery = true)
-	List<HospitalMain> findHospitalsWithinRadius(
-	        @Param("lat") double lat,
-	        @Param("lon") double lon,
-	        @Param("radius") double radius);
+			SELECT h.hospital_code
+			FROM hospital_main h
+			WHERE ST_Distance_Sphere(
+			          point(h.coordinate_x, h.coordinate_y),
+			          point(:lon, :lat)
+			      ) <= :radius * 1000
+			  AND h.coordinate_x IS NOT NULL
+			  AND h.coordinate_y IS NOT NULL
+			""", nativeQuery = true)
+	List<String> findHospitalCodesByDistanceOnly(@Param("lat") double lat, @Param("lon") double lon,
+			@Param("radius") double radius);
+	
+	
+
 }
