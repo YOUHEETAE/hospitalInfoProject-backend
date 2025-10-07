@@ -46,6 +46,8 @@ public class HospitalWebResponse {
     private String noTrmtHoli;
     private String noTrmtSun;
     
+    private Map<String, Map<String, String>> weeklySchedule;
+    
     private List<String> medicalSubjects;
     
   
