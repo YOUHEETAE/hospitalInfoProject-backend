@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.hospital.serializer.UnifiedSearchResponseSerializer;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
