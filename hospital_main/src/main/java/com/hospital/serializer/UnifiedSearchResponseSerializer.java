@@ -1,10 +1,11 @@
-package com.hospital.dto;
+package com.hospital.serializer;
 
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.hospital.dto.UnifiedSearchResponse;
 
 public class UnifiedSearchResponseSerializer extends StdSerializer<UnifiedSearchResponse> {
 
