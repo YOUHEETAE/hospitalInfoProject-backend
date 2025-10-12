@@ -34,11 +34,6 @@ public class YouTubeVideo {
     @Column(columnDefinition = "TEXT")
     private String description;
     
-    @Column(name = "thumbnail_default_url", length = 500)
-    private String thumbnailDefaultUrl;
-    
-    @Column(name = "thumbnail_medium_url", length = 500)
-    private String thumbnailMediumUrl;
     
     @Column(name = "thumbnail_high_url", length = 500)
     private String thumbnailHighUrl;
@@ -52,9 +47,9 @@ public class YouTubeVideo {
     @Column(name = "published_at")
     private LocalDateTime publishedAt;
     
-    @Column(nullable = false, length = 50)
-    private String category;
+    @Column(name = "main_category", nullable = false)
+    private String mainCategory;
     
-    @Column(name = "search_query", length = 200)
-    private String searchQuery;
+    @Column(name = "detail_category")
+    private String detailCategory;
 }

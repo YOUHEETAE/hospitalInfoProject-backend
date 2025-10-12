@@ -50,6 +50,8 @@ public class YouTubeApiCaller {
                     .queryParam("q", query)
                     .queryParam("maxResults", maxResults)
                     .queryParam("type", "video")
+                    .queryParam("videoDuration", "medium") 
+                    .queryParam("relevanceLanguage", "ko")
                     .queryParam("order", "relevance")  // 관련도순 정렬
                     .queryParam("key", serviceKey);
 
