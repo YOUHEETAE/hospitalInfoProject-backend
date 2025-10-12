@@ -43,7 +43,7 @@ public class HospitalController {
 	        long startTime = System.currentTimeMillis();
 	        log.info("[NEW 방식] 병원 검색 API 호출 - 위도: {}, 경도: {}, 반경: {}km", userLat, userLng, radius);
 
-	        List<HospitalWebResponse> result = hospitalService.getOptimizedHospitals(userLat, userLng, radius);
+	        List<HospitalWebResponse> result = hospitalService.getOptimizedHospitalsV2(userLat, userLng, radius);
 
 	        long endTime = System.currentTimeMillis();
 	        log.info("[NEW 방식] 병원 검색 완료 - 조회된 병원 수: {}개, 응답 시간: {}ms", result.size(), (endTime - startTime));
@@ -60,24 +60,6 @@ public class HospitalController {
 		List<PharmacyWebResponse> result = pharmacyService.getPharmacies(userLat, userLng, radius);
 
 		log.info("약국 검색 완료 - 조회된 약국 수: {}개", result.size());
-
-		return result;
-	}
-
-	// 성능 비교용 - ST_Distance_Sphere만 사용 (인덱스 미사용)
-	@GetMapping(value = "/hospitalsData/old", produces = MediaType.APPLICATION_JSON_VALUE)
-	public List<HospitalWebResponse> getHospitalsOld(
-			@RequestParam double userLat,
-			@RequestParam double userLng,
-			@RequestParam double radius
-	) {
-		long startTime = System.currentTimeMillis();
-		log.info("[OLD 방식] 병원 검색 API 호출 - 위도: {}, 경도: {}, 반경: {}km", userLat, userLng, radius);
-
-		List<HospitalWebResponse> result = hospitalService.getHospitalsWithoutSpatialIndex(userLat, userLng, radius);
-
-		long endTime = System.currentTimeMillis();
-		log.info("[OLD 방식] 병원 검색 완료 - 조회된 병원 수: {}개, 응답 시간: {}ms", result.size(), (endTime - startTime));
 
 		return result;
 	}

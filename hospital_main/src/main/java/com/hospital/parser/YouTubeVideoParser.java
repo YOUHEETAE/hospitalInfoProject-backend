@@ -28,7 +28,7 @@ public class YouTubeVideoParser {
      * @param searchQuery 검색에 사용된 쿼리
      * @return YouTubeVideo 엔티티 리스트
      */
-    public List<YouTubeVideo> parseToEntities(String jsonResponse, String category, String searchQuery) {
+    public List<YouTubeVideo> parseToEntities(String jsonResponse, String mainCategory, String detailCategory) {
         List<YouTubeVideo> videos = new ArrayList<>();
         
         try {
@@ -43,7 +43,7 @@ public class YouTubeVideoParser {
             // 각 아이템을 엔티티로 변환
             for (YouTubeApiItem item : response.getItems()) {
                 try {
-                    YouTubeVideo video = parseToEntity(item, category, searchQuery);
+                    YouTubeVideo video = parseToEntity(item, mainCategory, detailCategory);
                     if (video != null) {
                         videos.add(video);
                     }
@@ -64,7 +64,7 @@ public class YouTubeVideoParser {
     /**
      * YouTubeApiItem DTO를 YouTubeVideo 엔티티로 변환
      */
-    private YouTubeVideo parseToEntity(YouTubeApiItem item, String category, String searchQuery) {
+    private YouTubeVideo parseToEntity(YouTubeApiItem item, String mainCategory, String detailCategory) {
         // videoId 추출
         if (item.getId() == null || item.getId().getVideoId() == null || item.getId().getVideoId().isEmpty()) {
             log.warn("videoId 없음");
@@ -83,14 +83,12 @@ public class YouTubeVideoParser {
                 .videoId(videoId)
                 .title(snippet.getTitle() != null ? snippet.getTitle() : "")
                 .description(snippet.getDescription() != null ? snippet.getDescription() : "")
-                .thumbnailDefaultUrl(getThumbnailUrl(snippet, "default"))
-                .thumbnailMediumUrl(getThumbnailUrl(snippet, "medium"))
                 .thumbnailHighUrl(getThumbnailUrl(snippet, "high"))
                 .channelId(snippet.getChannelId())
                 .channelTitle(snippet.getChannelTitle())
                 .publishedAt(parsePublishedAt(snippet.getPublishedAt()))
-                .category(category)
-                .searchQuery(searchQuery)
+                .mainCategory(mainCategory)        
+                .detailCategory(detailCategory)    
                 .build();
     }
     
