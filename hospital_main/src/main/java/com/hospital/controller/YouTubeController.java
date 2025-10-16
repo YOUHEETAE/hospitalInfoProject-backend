@@ -11,12 +11,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hospital.entity.YouTubeCategory;
+import com.hospital.caller.YouTubeApiCaller;
+import com.hospital.dto.YouTubeApiItem;
 import com.hospital.entity.YouTubeVideo;
 import com.hospital.service.YouTubeVideoService;
 
@@ -28,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 public class YouTubeController {
 
 	private final YouTubeVideoService youTubeVideoService;
+	private final YouTubeApiCaller youTubeApiCaller;
 
 
 	@GetMapping(value="/categoryData",produces=MediaType.APPLICATION_JSON_VALUE)
@@ -58,6 +59,12 @@ public class YouTubeController {
 		response.put("hasPrevious", videoPage.hasPrevious()); // 이전 페이지 있는지
 
 		return ResponseEntity.ok(response);
+	}
+	
+	@GetMapping(value = "/api/search", produces = MediaType.APPLICATION_JSON_VALUE)
+	public String searchVideos(
+			@RequestParam(value = "query", required = true) String query){
+		return youTubeApiCaller.searchMedicalVideos(query, 15);
 	}
 
 }

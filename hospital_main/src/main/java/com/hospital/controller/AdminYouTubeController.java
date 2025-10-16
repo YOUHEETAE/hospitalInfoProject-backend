@@ -15,18 +15,20 @@ import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/admin/youtube")
-@RequiredArgsConstructor
 public class AdminYouTubeController {
     
-    private final YouTubeDataInitializer initializer;
+    private final YouTubeDataInitializer youTubeDataInitializer;
     
+    public AdminYouTubeController (YouTubeDataInitializer youTubeDataInitializer) {
+    	this.youTubeDataInitializer = youTubeDataInitializer;
+    }
     /**
      * 초기 데이터 적재
      * POST /admin/youtube/init
      */
     @PostMapping("/init")
     public ResponseEntity<Map<String, String>> initVideos() {
-        CompletableFuture.runAsync(() -> initializer.initializeVideoData());
+        CompletableFuture.runAsync(() -> youTubeDataInitializer.initializeVideoData());
         
         Map<String, String> response = new HashMap<>();
         response.put("message", "YouTube 영상 데이터 초기화가 시작되었습니다.");
@@ -41,7 +43,7 @@ public class AdminYouTubeController {
      */
     @PostMapping("/reinit")
     public ResponseEntity<Map<String, String>> reinitVideos() {
-        CompletableFuture.runAsync(() -> initializer.reinitializeVideoData());
+        CompletableFuture.runAsync(() -> youTubeDataInitializer.reinitializeVideoData());
         
         Map<String, String> response = new HashMap<>();
         response.put("message", "YouTube 영상 데이터 재초기화가 시작되었습니다.");
