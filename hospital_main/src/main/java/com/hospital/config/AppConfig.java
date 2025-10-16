@@ -39,7 +39,8 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
     AsyncConfig.class,        // 비동기 및 스케줄링 설정
     WebSocketConfig.class,    // WebSocket 설정
     JacksonConfig.class, 
-    CacheConfig.class
+    CacheConfig.class,
+    RestTemplateConfig.class
 })
 public class AppConfig {
 
