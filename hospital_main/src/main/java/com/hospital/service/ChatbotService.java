@@ -1,36 +1,41 @@
 package com.hospital.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hospital.caller.AIApiCaller;
-import com.hospital.dto.ChatbotResponse;
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hospital.caller.AIApiCaller;
+import com.hospital.dto.ChatbotResponse;
+import com.hospital.validator.ChatbotValidator;
+
 import jakarta.annotation.PostConstruct;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 챗봇 비즈니스 로직 서비스
  */
 @Slf4j
 @Service
-
 public class ChatbotService {
 
 	private final AIApiCaller aiApiCaller;
 	private final ObjectMapper objectMapper;
+	private final ChatbotValidator validator;
 
 	@Value("${chatbot.system-prompt-file}")
 	private Resource systemPromptFile;
 
 	private String systemPrompt;
 
-	public ChatbotService(AIApiCaller aiApiCaller, ObjectMapper objectMapper) {
+	public ChatbotService(AIApiCaller aiApiCaller, ObjectMapper objectMapper, ChatbotValidator validator) {
 		this.aiApiCaller = aiApiCaller;
 		this.objectMapper = objectMapper;
+		this.validator = validator;
 	}
 
 	/**
@@ -53,11 +58,17 @@ public class ChatbotService {
 	public ChatbotResponse chat(String userMessage) {
 		log.info("💬 챗봇 요청: {}", userMessage);
 
+		// 입력 검증
+		String validationError = validator.validateUserMessage(userMessage);
+		if (validationError != null) {
+			return createErrorResponse(validationError);
+		}
+
 		try {
 			// 1. 시스템 프롬프트 + 사용자 메시지 결합
 			String fullMessage = buildFullMessage(userMessage);
 
-			// 2. Gemini API 호출 (Caller 사용)
+			// 2. Gemini API 호출
 			String aiResponseText = aiApiCaller.generateContent(fullMessage);
 
 			if (aiResponseText == null || aiResponseText.isEmpty()) {
@@ -65,8 +76,8 @@ public class ChatbotService {
 				return createErrorResponse("응답을 생성할 수 없습니다.");
 			}
 
-			// 3. JSON 파싱
-			ChatbotResponse chatbotResponse = parseAiResponse(aiResponseText);
+			// 3. JSON 파싱 및 검증
+			ChatbotResponse chatbotResponse = parseAndValidate(aiResponseText);
 
 			log.info("✅ 챗봇 응답 완료: type={}", chatbotResponse.getType());
 			return chatbotResponse;
@@ -83,18 +94,21 @@ public class ChatbotService {
 	public ChatbotResponse chatWithHistory(String userMessage, String conversationHistory) {
 		log.info("💬 챗봇 요청 (히스토리 포함): {}", userMessage);
 
-		try {
-			// 시스템 프롬프트 + 대화 히스토리 + 새 메시지
-			String fullMessage = buildFullMessageWithHistory(userMessage, conversationHistory);
+		// 입력 검증
+		String validationError = validator.validateUserMessage(userMessage);
+		if (validationError != null) {
+			return createErrorResponse(validationError);
+		}
 
-			// Gemini API 호출 (Caller 사용)
+		try {
+			String fullMessage = buildFullMessageWithHistory(userMessage, conversationHistory);
 			String aiResponseText = aiApiCaller.generateContent(fullMessage);
 
 			if (aiResponseText == null || aiResponseText.isEmpty()) {
 				return createErrorResponse("응답을 생성할 수 없습니다.");
 			}
 
-			ChatbotResponse chatbotResponse = parseAiResponse(aiResponseText);
+			ChatbotResponse chatbotResponse = parseAndValidate(aiResponseText);
 			log.info("✅ 챗봇 응답 완료 (히스토리 포함): type={}", chatbotResponse.getType());
 			return chatbotResponse;
 
@@ -105,62 +119,50 @@ public class ChatbotService {
 	}
 
 	/**
-	 * 시스템 프롬프트 + 사용자 메시지 결합
+	 * AI 응답 파싱 및 검증
 	 */
+	private ChatbotResponse parseAndValidate(String responseText) {
+		try {
+			String jsonText = extractJson(responseText);
+			log.info("📝 파싱할 JSON: {}", jsonText);
+			
+			ChatbotResponse response = objectMapper.readValue(jsonText, ChatbotResponse.class);
+			
+			// 검증
+			String validationError = validator.validateResponse(response);
+			if (validationError != null) {
+				return createErrorResponse(validationError);
+			}
+			
+			return response;
+
+		} catch (JsonProcessingException e) {
+			log.error("❌ JSON 파싱 실패: {}", responseText, e);
+			return createErrorResponse("응답 처리 중 오류가 발생했습니다.");
+		}
+	}
+
 	private String buildFullMessage(String userMessage) {
 		return systemPrompt + "\n\n===사용자 메시지===\n" + userMessage;
 	}
 
-	/**
-	 * 대화 히스토리 포함 메시지 구성
-	 */
 	private String buildFullMessageWithHistory(String userMessage, String history) {
 		return systemPrompt + "\n\n===이전 대화===\n" + history + "\n\n===사용자 메시지===\n" + userMessage;
 	}
 
-	/**
-	 * AI 응답 텍스트를 ChatbotResponse로 파싱
-	 */
-	private ChatbotResponse parseAiResponse(String responseText) {
-		try {
-			// JSON 부분만 추출 (``` 코드 블록 제거)
-			String jsonText = extractJson(responseText);
-
-			// JSON 파싱
-			return objectMapper.readValue(jsonText, ChatbotResponse.class);
-
-		} catch (Exception e) {
-			log.error("❌ JSON 파싱 실패: {}", responseText, e);
-
-			// 파싱 실패 시 일반 메시지로 처리
-			return ChatbotResponse.builder().type("recommendation").message(responseText).department("내과")
-					.confidence("low").build();
-		}
-	}
-
-	/**
-	 * 응답에서 JSON 부분만 추출
-	 */
 	private String extractJson(String text) {
-		// ```json ... ``` 형태 제거
 		text = text.trim();
-
 		if (text.startsWith("```json")) {
 			text = text.substring(7);
 		} else if (text.startsWith("```")) {
 			text = text.substring(3);
 		}
-
 		if (text.endsWith("```")) {
 			text = text.substring(0, text.length() - 3);
 		}
-
 		return text.trim();
 	}
 
-	/**
-	 * 에러 응답 생성
-	 */
 	private ChatbotResponse createErrorResponse(String errorMessage) {
 		return ChatbotResponse.builder().type("error").message(errorMessage).build();
 	}
