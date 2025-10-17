@@ -38,5 +38,4 @@ logs/
 pom.xml
 # Properties files
 *.properties
-# Spring configuration
-WebConfig.java
+
