@@ -147,6 +147,10 @@ public class ChatbotService {
 	}
 
 	private String buildFullMessageWithHistory(String userMessage, String history) {
+		if (history == null || history.trim().isEmpty()) {
+			// 히스토리가 없으면 일반 메시지와 동일하게 처리
+			return buildFullMessage(userMessage);
+		}
 		return systemPrompt + "\n\n===이전 대화===\n" + history + "\n\n===사용자 메시지===\n" + userMessage;
 	}
 
