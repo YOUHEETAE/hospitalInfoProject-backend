@@ -22,7 +22,7 @@ public class ChatbotValidator {
 
 	// 유효한 응답 타입
 	private static final Set<String> VALID_TYPES = Set.of(
-		"suggest", "question", "inappropriate", "error"
+		"suggest", "question", "inappropriate", "emergency", "error"
 	);
 
 	// properties에서 주입
@@ -75,7 +75,7 @@ public class ChatbotValidator {
 			return "응답 형식이 올바르지 않습니다.";
 		}
 
-		// 3. recommendation 타입일 때 departments 검증
+		// 3. suggest 타입일 때 departments 검증
 		if ("suggest".equals(response.getType())) {
 			String departmentError = validateDepartments(response);
 			if (departmentError != null) {
@@ -83,39 +83,35 @@ public class ChatbotValidator {
 			}
 		}
 
+		// 4. emergency 타입일 때는 departments 불필요 (응급실 안내)
+		if ("emergency".equals(response.getType())) {
+			// emergency 타입은 message만 있으면 됨
+			return null;
+		}
+
 		return null; // 검증 통과
 	}
 
 	/**
-	 * departments 검증
+	 * departments 검증 (suggest 타입 전용)
 	 */
 	private String validateDepartments(ChatbotResponse response) {
 		List<String> departments = response.getDepartments();
-		String message = response.getMessage();
 
-		// 응급 상황이 아닌데 departments 없으면 에러
-		if (!isEmergency(message) && (departments == null || departments.isEmpty())) {
+		// suggest 타입인데 departments 없으면 에러
+		if (departments == null || departments.isEmpty()) {
 			log.warn("⚠️ suggest이지만 departments 없음");
 			return "진료과 정보가 누락되었습니다.";
 		}
 
 		// departments가 있으면 유효한 진료과인지 검증
-		if (departments != null && !departments.isEmpty()) {
-			for (String dept : departments) {
-				if (!validDepartments.contains(dept)) {
-					log.warn("⚠️ 잘못된 진료과: {}", dept);
-					return "올바르지 않은 진료과입니다.";
-				}
+		for (String dept : departments) {
+			if (!validDepartments.contains(dept)) {
+				log.warn("⚠️ 잘못된 진료과: {}", dept);
+				return "올바르지 않은 진료과입니다.";
 			}
 		}
 
 		return null; // 검증 통과
-	}
-
-	/**
-	 * 응급 메시지인지 판별
-	 */
-	private boolean isEmergency(String message) {
-		return message != null && (message.contains("119") || message.contains("응급실"));
 	}
 }
