@@ -44,7 +44,7 @@ public class ChatbotResponse {
     }
 
     public boolean isRecommendation() {
-        return "recommendation".equals(type);
+        return "suggest".equals(type);
     }
 
     public boolean isInappropriate() {  
