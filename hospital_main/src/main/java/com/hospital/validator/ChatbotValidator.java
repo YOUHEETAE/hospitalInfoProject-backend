@@ -22,7 +22,7 @@ public class ChatbotValidator {
 
 	// 유효한 응답 타입
 	private static final Set<String> VALID_TYPES = Set.of(
-		"recommendation", "question", "inappropriate", "error"
+		"suggest", "question", "inappropriate", "error"
 	);
 
 	// properties에서 주입
@@ -76,7 +76,7 @@ public class ChatbotValidator {
 		}
 
 		// 3. recommendation 타입일 때 departments 검증
-		if ("recommendation".equals(response.getType())) {
+		if ("suggest".equals(response.getType())) {
 			String departmentError = validateDepartments(response);
 			if (departmentError != null) {
 				return departmentError;
@@ -95,7 +95,7 @@ public class ChatbotValidator {
 
 		// 응급 상황이 아닌데 departments 없으면 에러
 		if (!isEmergency(message) && (departments == null || departments.isEmpty())) {
-			log.warn("⚠️ recommendation이지만 departments 없음");
+			log.warn("⚠️ suggest이지만 departments 없음");
 			return "진료과 정보가 누락되었습니다.";
 		}
 
