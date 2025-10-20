@@ -89,7 +89,7 @@ public class EmergencyWebResponse {
 		
 			
 			// ISO 8601 형식으로 반환
-			return utcTime.kstTime(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+			return kstTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 		} catch (Exception e) {
 			return dateString; // 변환 실패 시 원본 반환
 		}
