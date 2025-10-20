@@ -85,10 +85,11 @@ public class EmergencyWebResponse {
 			LocalDateTime localDateTime = LocalDateTime.parse(dateString, inputFormatter);
 			
 		
-			DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("MM월 dd일 HH시 mm분 ss초");
+		    ZonedDateTime koreanTime = localDateTime.atZone(ZoneId.of("Asia/Seoul"));
+
 			
 			// ISO 8601 형식으로 반환
-			return localDateTime.format(outputFormatter);
+			return koreanTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 		} catch (Exception e) {
 			return dateString; // 변환 실패 시 원본 반환
 		}
