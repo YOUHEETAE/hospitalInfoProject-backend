@@ -84,12 +84,11 @@ public class EmergencyWebResponse {
 			DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 			LocalDateTime localDateTime = LocalDateTime.parse(dateString, inputFormatter);
 			
-			// 한국 시간(KST)으로 간주하고 UTC로 변환
-			ZonedDateTime kstTime = localDateTime.atZone(ZoneId.of("Asia/Seoul"));
 		
+			DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("MM월 dd일 HH시 mm분 ss초");
 			
 			// ISO 8601 형식으로 반환
-			return kstTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+			return localDateTime.format(outputFormatter);
 		} catch (Exception e) {
 			return dateString; // 변환 실패 시 원본 반환
 		}
