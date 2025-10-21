@@ -85,13 +85,13 @@ public class EmergencyWebResponse {
         LocalDateTime localDateTime = LocalDateTime.parse(dateString, inputFormatter);
 
         // KST를 기준으로 ZonedDateTime 생성
-        ZonedDateTime zonedDateTime = localDateTime.atZone(ZoneId.of("Asia/Seoul"));
+        ZonedDateTime kstTime = localDateTime.atZone(ZoneId.of("Asia/Seoul"));
 
         // 출력 포맷 (서버 시간대 상관없이 KST 기준)
         DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("MM월 dd일 HH시 mm분 ss초")
                                                              .withZone(ZoneId.of("Asia/Seoul"));
 
-        return zonedDateTime.format(outputFormatter);
+        return kstTime.format(outputFormatter);
     } catch (Exception e) {
         return dateString;
     }
