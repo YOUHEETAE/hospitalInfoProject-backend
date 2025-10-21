@@ -18,7 +18,7 @@ import java.util.List;
 public class ChatbotResponse {
     
     /**
-     * 응답 타입: question, recommendation, inappropriate
+     * 응답 타입: question, suggest, inappropriate, emergency
      */
     @JsonProperty("type")
     private String type;
@@ -31,7 +31,7 @@ public class ChatbotResponse {
     
 
     /**
-     * 여러 진료과 목록(recommendation 일 때)
+     * 여러 진료과 목록(suggest 일 때)
      */
     @JsonProperty("departments")
     private List<String> departments;
@@ -42,9 +42,12 @@ public class ChatbotResponse {
     public boolean isQuestion() {
         return "question".equals(type);
     }
+    public boolean isEmergency() {
+    	return "emergency".equals(type);
+    }
 
     public boolean isRecommendation() {
-        return "recommendation".equals(type);
+        return "suggest".equals(type);
     }
 
     public boolean isInappropriate() {  
