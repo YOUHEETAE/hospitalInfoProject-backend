@@ -31,10 +31,13 @@ public class EmergencyMockService {
 	}
 
 	/**
-	 * Mock 데이터 캐시 업데이트
+	 * Mock 데이터 캐시 업데이트 (강제 재생성)
 	 */
 	private void updateMockDataCache() {
 		try {
+			// 강제로 새 데이터 생성
+			mockDataGenerator.generateRandomEmergencyData();
+			// 생성된 데이터 조회
 			List<EmergencyWebResponse> mockData = mockDataGenerator.getCachedEmergencyData();
 			updateCacheFromMockResults(mockData);
 			System.out.println("🔧 Mock 응급실 데이터 업데이트 완료: " + mockData.size() + "건");
