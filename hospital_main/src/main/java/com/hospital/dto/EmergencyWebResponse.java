@@ -74,13 +74,13 @@ public class EmergencyWebResponse {
 	        .build();
 	}
 	
-	private static String convertToIsoUtc(String dateString) {
+private static String convertToIsoUtc(String dateString) {
     if (dateString == null || dateString.length() != 14) {
         return null;
     }
 
      try {
-          
+
           DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
           LocalDateTime localDateTime = LocalDateTime.parse(dateString, inputFormatter);
 
@@ -91,6 +91,7 @@ public class EmergencyWebResponse {
             return dateString; // 변환 실패 시 원본 반환
         }
     }
+        // 장비 추출 로직 분리
 	// 장비 추출 로직 분리
 	private static List<String> availableEquipment(EmergencyApiResponse api) {
 	    Map<String, Boolean> equipmentMap = new LinkedHashMap<>();
