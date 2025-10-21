@@ -75,25 +75,27 @@ public class EmergencyWebResponse {
 	}
 	
 	private static String convertToIsoUtc(String dateString) {
-		if (dateString == null || dateString.length() != 14) {
-			return null;
-		}
-		
-		try {
-			// "yyyyMMddHHmmss" 파싱
-			DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-			LocalDateTime localDateTime = LocalDateTime.parse(dateString, inputFormatter);
-			
-		
-		    DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("MM월 dd일 HH시 mm분 ss초");
-			
-			// ISO 8601 형식으로 반환
-			return localDateTime.format(outputFormatter);
-		} catch (Exception e) {
-			return dateString; // 변환 실패 시 원본 반환
-		}
-	}
+    if (dateString == null || dateString.length() != 14) {
+        return null;
+    }
 
+    try {
+        // 입력 포맷
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        LocalDateTime localDateTime = LocalDateTime.parse(dateString, inputFormatter);
+
+        // KST를 기준으로 ZonedDateTime 생성
+        ZonedDateTime zonedDateTime = localDateTime.atZone(ZoneId.of("Asia/Seoul"));
+
+        // 출력 포맷 (서버 시간대 상관없이 KST 기준)
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("MM월 dd일 HH시 mm분 ss초")
+                                                             .withZone(ZoneId.of("Asia/Seoul"));
+
+        return zonedDateTime.format(outputFormatter);
+    } catch (Exception e) {
+        return dateString;
+    }
+}
 	// 장비 추출 로직 분리
 	private static List<String> availableEquipment(EmergencyApiResponse api) {
 	    Map<String, Boolean> equipmentMap = new LinkedHashMap<>();
