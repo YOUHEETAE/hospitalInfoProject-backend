@@ -17,6 +17,7 @@
 		<maven.compiler.source>21</maven.compiler.source>
 		<maven.compiler.target>21</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<sonar.organization>average25</sonar.organization>
 	</properties>
 	
 	<dependencies>
@@ -318,12 +319,13 @@
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-war-plugin</artifactId>
-				<version>3.3.2</version>
-				<configuration>
-					<webXml>src/main/webapp/WEB-INF/web.xml</webXml>
-				</configuration>
+            	<artifactId>maven-war-plugin</artifactId>
+            	<version>3.3.2</version> <configuration>
+                <failOnMissingWebXml>false</failOnMissingWebXml>
+            	</configuration>
 			</plugin>
 		</plugins>
 	</build>
+
 </project>
+
