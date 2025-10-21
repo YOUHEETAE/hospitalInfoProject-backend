@@ -79,18 +79,23 @@ private static String convertToIsoUtc(String dateString) {
         return null;
     }
 
-     try {
+    try {
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        LocalDateTime localDateTime = LocalDateTime.parse(dateString, inputFormatter);
+        
+        // UTC 시간으로 먼저 설정
+        ZonedDateTime utcDateTime = localDateTime.atZone(ZoneId.of("UTC"));
+        
+        // UTC를 KST(한국 시간)로 변환
+        ZonedDateTime kstDateTime = utcDateTime.withZoneSameInstant(ZoneId.of("Asia/Seoul"));
 
-          DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-          LocalDateTime localDateTime = LocalDateTime.parse(dateString, inputFormatter);
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("MM월 dd일 HH시 mm분 ss초");
+        return kstDateTime.format(outputFormatter);
 
-          DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("MM월 dd일 HH시 mm분 ss초");
-          return localDateTime.format(outputFormatter);
-
-        } catch (Exception e) {
-            return dateString; // 변환 실패 시 원본 반환
-        }
+    } catch (Exception e) {
+        return dateString; // 변환 실패 시 원본 반환
     }
+}
         // 장비 추출 로직 분리
 	// 장비 추출 로직 분리
 	private static List<String> availableEquipment(EmergencyApiResponse api) {
