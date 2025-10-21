@@ -276,18 +276,24 @@ public class EmergencyMockDataGenerator {
 	 */
 	private Integer generateRandomBedCount(String bedType, HospitalCharacteristics chars) {
 		int baseBeds = switch (bedType) {
-		case "emergency" -> ThreadLocalRandom.current().nextInt(5, 25);
-		case "operating" -> ThreadLocalRandom.current().nextInt(2, 12);
-		case "general" -> ThreadLocalRandom.current().nextInt(10, 50);
-		default -> 10;
+		case "emergency" -> ThreadLocalRandom.current().nextInt(20, 120);  // 5-25 -> 20-120
+		case "operating" -> ThreadLocalRandom.current().nextInt(5, 30);    // 2-12 -> 5-30
+		case "general" -> ThreadLocalRandom.current().nextInt(50, 200);    // 10-50 -> 50-200
+		default -> 50;
 		};
 
 		double loadFactor = getCurrentLoadFactor();
-		double randomVariation = (Math.random() - 0.5) * 0.4;
+		double randomVariation = (Math.random() - 0.5) * 0.6;  // 0.4 -> 0.6 (변동폭 증가)
 		double totalLoad = loadFactor * chars.busyFactor + randomVariation;
 
 		int occupiedBeds = (int) (baseBeds * totalLoad);
 		int availableBeds = baseBeds - occupiedBeds;
+
+		// 음수가 더 자주 나오도록: 20% 확률로 강제 포화
+		if (Math.random() < 0.2) {
+			int maxNegative = Math.max(2, baseBeds / 3);
+			availableBeds = -ThreadLocalRandom.current().nextInt(1, maxNegative);
+		}
 
 		if (availableBeds < 0) {
 			availableBeds = Math.max(availableBeds, -baseBeds / 2);
@@ -295,7 +301,6 @@ public class EmergencyMockDataGenerator {
 
 		return availableBeds;
 	}
-
 	/**
 	 * 현재 시간대별 부하 계수 계산 (1.0 이상이면 포화 가능)
 	 */
