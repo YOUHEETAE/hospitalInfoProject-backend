@@ -147,20 +147,46 @@ public class ChatbotService {
 	}
 
 	private String buildFullMessageWithHistory(String userMessage, String history) {
+		if (history == null || history.trim().isEmpty()) {
+			// 히스토리가 없으면 일반 메시지와 동일하게 처리
+			return buildFullMessage(userMessage);
+		}
 		return systemPrompt + "\n\n===이전 대화===\n" + history + "\n\n===사용자 메시지===\n" + userMessage;
 	}
 
 	private String extractJson(String text) {
-		text = text.trim();
-		if (text.startsWith("```json")) {
-			text = text.substring(7);
-		} else if (text.startsWith("```")) {
-			text = text.substring(3);
-		}
-		if (text.endsWith("```")) {
-			text = text.substring(0, text.length() - 3);
-		}
-		return text.trim();
+	    if (text == null) {
+	        return "";
+	    }
+	    
+	    text = text.trim();
+	    
+	    // 1. 마크다운 코드 블록 제거
+	    if (text.startsWith("```json")) {
+	        text = text.substring(7).trim();
+	    } else if (text.startsWith("```")) {
+	        text = text.substring(3).trim();
+	    }
+	    
+	    // 2. "json" 단어 제거
+	    if (text.toLowerCase().startsWith("json")) {
+	        text = text.substring(4).trim();
+	    }
+	    
+	    // 3. 끝의 ``` 제거
+	    if (text.endsWith("```")) {
+	        text = text.substring(0, text.length() - 3).trim();
+	    }
+	    
+	    // 4. 중복 따옴표 제거 (Gemini 버그 대응)
+	    text = text.replaceAll("\"\"(\\w+)\"\\s*:", "\"$1\":");
+	    
+	    // 5. 혹시 모를 추가 정리
+	    text = text.trim();
+	    
+	    log.debug("🔧 JSON 정제 완료: {}", text);
+	    
+	    return text;
 	}
 
 	private ChatbotResponse createErrorResponse(String errorMessage) {
