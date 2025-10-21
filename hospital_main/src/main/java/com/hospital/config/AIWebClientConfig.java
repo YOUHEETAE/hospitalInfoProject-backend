@@ -60,11 +60,6 @@ public class AIWebClientConfig {
                 .exchangeStrategies(exchangeStrategies)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.USER_AGENT, "Hospital-Chatbot/1.0")
-                .filter((request, next) -> {
-                    // 요청 로깅
-                    System.out.println("🚀 Gemini API 호출: " + request.method() + " " + request.url());
-                    return next.exchange(request);
-                })
                 .build();
     }
 }
