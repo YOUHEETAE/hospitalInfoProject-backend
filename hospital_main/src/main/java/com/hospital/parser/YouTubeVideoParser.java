@@ -13,6 +13,7 @@ import com.hospital.entity.YouTubeVideo;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.util.HtmlUtils;
 
 @Component
 @RequiredArgsConstructor
@@ -81,11 +82,11 @@ public class YouTubeVideoParser {
         
         return YouTubeVideo.builder()
                 .videoId(videoId)
-                .title(snippet.getTitle() != null ? snippet.getTitle() : "")
-                .description(snippet.getDescription() != null ? snippet.getDescription() : "")
+                .title(snippet.getTitle() != null ? HtmlUtils.htmlUnescape(snippet.getTitle()) : "")
+                .description(snippet.getDescription() != null ? HtmlUtils.htmlUnescape(snippet.getDescription()) : "")
                 .thumbnailHighUrl(getThumbnailUrl(snippet, "high"))
                 .channelId(snippet.getChannelId())
-                .channelTitle(snippet.getChannelTitle())
+                .channelTitle(snippet.getChannelTitle() != null ? HtmlUtils.htmlUnescape(snippet.getChannelTitle()) : null)
                 .publishedAt(parsePublishedAt(snippet.getPublishedAt()))
                 .mainCategory(mainCategory)        
                 .detailCategory(detailCategory)    
