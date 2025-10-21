@@ -114,4 +114,8 @@ public class ChatbotValidator {
 
 		return null; // 검증 통과
 	}
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> efaef4d75885d765b9000a076fa01f22efb97b8d
