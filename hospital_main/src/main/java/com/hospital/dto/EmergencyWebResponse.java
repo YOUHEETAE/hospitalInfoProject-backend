@@ -79,23 +79,25 @@ public class EmergencyWebResponse {
         return null;
     }
 
-    try {
-        // 입력 포맷
-        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-        LocalDateTime localDateTime = LocalDateTime.parse(dateString, inputFormatter);
+     try {
+            // 입력 포맷 (UTC 기준 문자열이라고 가정)
+            DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+            LocalDateTime localDateTime = LocalDateTime.parse(dateString, inputFormatter);
 
-        // KST를 기준으로 ZonedDateTime 생성
-        ZonedDateTime kstTime = localDateTime.atZone(ZoneId.of("Asia/Seoul"));
+            // 서버가 UTC이므로 UTC 기준 ZonedDateTime 생성
+            ZonedDateTime utcTime = localDateTime.atZone(ZoneId.of("UTC"));
 
-        // 출력 포맷 (서버 시간대 상관없이 KST 기준)
-        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("MM월 dd일 HH시 mm분 ss초")
-                                                             .withZone(ZoneId.of("Asia/Seoul"));
+            // UTC → KST 변환
+            ZonedDateTime kstTime = utcTime.withZoneSameInstant(KST);
 
-        return kstTime.format(outputFormatter);
-    } catch (Exception e) {
-        return dateString;
+            // 출력 포맷
+            DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("MM월 dd일 HH시 mm분 ss초");
+            return kstTime.format(outputFormatter);
+
+        } catch (Exception e) {
+            return dateString; // 변환 실패 시 원본 반환
+        }
     }
-}
 	// 장비 추출 로직 분리
 	private static List<String> availableEquipment(EmergencyApiResponse api) {
 	    Map<String, Boolean> equipmentMap = new LinkedHashMap<>();
