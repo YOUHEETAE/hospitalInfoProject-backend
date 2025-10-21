@@ -22,7 +22,6 @@ public class EmergencyMockDataGenerator {
 	private List<EmergencyApiResponse> cachedData = new ArrayList<>();
 	private List<EmergencyApiResponse> staticHospitalData = new ArrayList<>();
 	private final Random random = new Random();
-	private boolean schedulerEnabled = false;
 
 	// 지역별 응급실 분포 (총 300개로 수정)
 	private static final Map<String, Integer> REGIONAL_DISTRIBUTION;
@@ -120,22 +119,16 @@ public class EmergencyMockDataGenerator {
 	}
 
 	/**
-	 * 30초마다 응급실 동적 데이터만 갱신 (스케줄러용)
+	 * 응급실 동적 데이터 갱신 (외부 호출용)
 	 */
-	@Scheduled(fixedRate = 30000)
 	public void generateRandomEmergencyData() {
-		generateRandomEmergencyData(true);
+		generateRandomEmergencyData(false);
 	}
 
 	/**
 	 * 응급실 동적 데이터 생성 (내부 메서드)
-	 * @param checkScheduler true면 스케줄러 활성화 여부 체크, false면 무조건 생성
 	 */
-	private void generateRandomEmergencyData(boolean checkScheduler) {
-		if (checkScheduler && !schedulerEnabled) {
-			return;
-		}
-
+	private void generateRandomEmergencyData(boolean unused) {
 		log.info("응급실 동적 데이터 갱신 시작...");
 
 		List<EmergencyApiResponse> newData = new ArrayList<>();
@@ -181,38 +174,14 @@ public class EmergencyMockDataGenerator {
 		return "서울";
 	}
 
-	/**
-	 * 스케줄러 활성화 (엔드포인트에서 호출)
-	 */
-	public void enableScheduler() {
-		schedulerEnabled = true;
-		generateRandomEmergencyData();
-		log.info("Mock 데이터 스케줄러 활성화됨");
-	}
-
-	/**
-	 * 스케줄러 비활성화
-	 */
-	public void disableScheduler() {
-		schedulerEnabled = false;
-		log.info("Mock 데이터 스케줄러 비활성화됨");
-	}
-
-	/**
-	 * 스케줄러 상태 확인
-	 */
-	public boolean isSchedulerEnabled() {
-		return schedulerEnabled;
-	}
 
 	/**
 	 * 캐시된 응급실 데이터 조회 (검색용)
 	 */
 	public List<EmergencyWebResponse> getCachedEmergencyData() {
 		if (cachedData.isEmpty()) {
-			generateRandomEmergencyData(false);
-			schedulerEnabled = true;
-			log.info("검색으로 인해 Mock 데이터 스케줄러 자동 활성화됨");
+			generateRandomEmergencyData();
+			log.info("캐시가 비어있어 Mock 데이터 생성");
 		}
 		return cachedData.stream().map(EmergencyWebResponse::from).collect(Collectors.toList());
 	}

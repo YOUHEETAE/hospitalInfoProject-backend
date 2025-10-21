@@ -77,7 +77,7 @@ public class EmergencyApiWebSocketHandler extends TextWebSocketHandler {
     /**
      * 30초마다 Mock 데이터 브로드캐스트
      */
-    @Scheduled(fixedRate = 30000)
+    @Scheduled(fixedRate = 15000)
     public void scheduledBroadcast() {
         if (sessions.isEmpty()) {
             return;

@@ -23,7 +23,6 @@ public class EmergencyMockService {
 	private final EmergencyMockDataGenerator mockDataGenerator;
 	private final ObjectMapper objectMapper;
 	private volatile String latestEmergencyJson = null;
-	private final AtomicBoolean schedulerRunning = new AtomicBoolean(false);
 
 	@Autowired
 	public EmergencyMockService(EmergencyMockDataGenerator mockDataGenerator) {
@@ -46,35 +45,27 @@ public class EmergencyMockService {
 	}
 
 	/**
-	 * Mock WebSocket 연결 시 호출 - 스케줄러 상태만 활성화
+	 * Mock WebSocket 연결 시 호출 - 초기 데이터 로드만 수행
 	 */
 	public void onMockWebSocketConnected() {
-		if (schedulerRunning.compareAndSet(false, true)) {
-			System.out.println("🔧 Mock 모드 활성화 - Mock 데이터 사용");
-
-			// MockDataGenerator의 스케줄러만 활성화 (자체 스케줄러는 시작 안 함)
-			mockDataGenerator.enableScheduler();
-
-			// 초기 데이터 로드
-			updateMockDataCache();
-		}
+		System.out.println("🔧 Mock 모드 활성화 - Mock 데이터 사용");
+		// 초기 데이터 로드
+		updateMockDataCache();
 	}
 
 	/**
-	 * Mock 데이터를 캐시에 저장하고 WebSocket으로 브로드캐스트
+	 * Mock 데이터를 캐시에 저장
 	 */
 	public void updateCacheFromMockResults(List<EmergencyWebResponse> dtoList) {
-		if (!schedulerRunning.get() || dtoList == null || dtoList.isEmpty()) {
+		if (dtoList == null || dtoList.isEmpty()) {
 			return;
 		}
 
 		try {
-
 			String newJsonData = objectMapper.writeValueAsString(dtoList);
 
 			if (!newJsonData.equals(latestEmergencyJson)) {
 				latestEmergencyJson = newJsonData;
-				// 브로드캐스트 코드 제거 - WebSocketHandler에서 처리
 				System.out.println("✅ Mock 응급실 데이터 업데이트 완료");
 			}
 		} catch (Exception e) {
@@ -107,23 +98,10 @@ public class EmergencyMockService {
 	}
 
 	/**
-	 * Mock 스케줄러 강제 중지
+	 * Mock 스케줄러 강제 중지 (WebSocket 연결 종료 시 호출)
 	 */
 	public void stopMockScheduler() {
-		if (schedulerRunning.compareAndSet(true, false)) {
-			// MockDataGenerator의 스케줄러도 비활성화
-			mockDataGenerator.disableScheduler();
-			System.out.println("✅ Mock 응급실 스케줄러 강제 중지 완료");
-		} else {
-			System.out.println("⚠️ Mock 스케줄러가 이미 중지되어 있습니다.");
-		}
-	}
-
-	/**
-	 * Mock 스케줄러 상태 확인
-	 */
-	public boolean isMockSchedulerRunning() {
-		return schedulerRunning.get();
+		System.out.println("✅ Mock 응급실 스케줄러 중지 요청 (실제 스케줄러는 WebSocketHandler에서 관리)");
 	}
 
 	public void forceUpdateData() {
