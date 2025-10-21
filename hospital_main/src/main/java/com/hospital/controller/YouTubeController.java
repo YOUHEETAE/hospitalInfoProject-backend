@@ -37,7 +37,7 @@ public class YouTubeController {
 	}
     
 	/**
-	 * 페이지네이션 영상 조회 (100개씩) GET
+	 * 페이지네이션 영상 조회 (15개씩) GET
 	 * /youtube/videos/page?page=0&size=15&detailCategory=내과
 	 */
 	@GetMapping(value = "/videos/page", produces = MediaType.APPLICATION_JSON_VALUE)

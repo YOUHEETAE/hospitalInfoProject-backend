@@ -122,7 +122,7 @@ public class YouTubeDataInitializer {
             log.info("  → 수집: {}", channelKeyword);
             count += youTubeVideoService.fetchAndSaveVideos(
                 channelKeyword, 
-                8,  // 채널당 8개
+                50,  // 채널당 8개
                 "인증된 채널",
                 "인증된 채널"
             );
@@ -134,7 +134,7 @@ public class YouTubeDataInitializer {
     }
     
     /**
-     * 2. 진료과별 수집 (15개 × 2패턴 × 5개 = 150개)
+     * 2. 진료과별 수집 (50개 × 2패턴 × 5개 = 150개)
      */
     private int collectByDepartments() {
         int count = 0;
@@ -157,7 +157,7 @@ public class YouTubeDataInitializer {
                 
                 count += youTubeVideoService.fetchAndSaveVideos(
                     query,
-                    5,  // 패턴당 5개
+                    50,  // 패턴당 5개
                     "진료과",
                     dept
                 );
@@ -170,7 +170,7 @@ public class YouTubeDataInitializer {
     }
     
     /**
-     * 3. 질환별 수집 (15개 × 2패턴 × 5개 = 150개)
+     * 3. 질환별 수집 (50개 × 2패턴 × 5개 = 150개)
      */
     private int collectByDiseases() {
         int count = 0;
@@ -193,7 +193,7 @@ public class YouTubeDataInitializer {
                 
                 count += youTubeVideoService.fetchAndSaveVideos(
                     query,
-                    5,  // 패턴당 5개
+                    50,  // 패턴당 5개
                     "질환",
                     disease
                 );
@@ -206,7 +206,7 @@ public class YouTubeDataInitializer {
     }
     
     /**
-     * 4. 연령별 수집 (4개 × 2패턴 × 10개 = 80개)
+     * 4. 연령별 수집 (4개 × 2패턴 × 50개 = 80개)
      */
     private int collectByAgeGroups() {
         int count = 0;
@@ -229,7 +229,7 @@ public class YouTubeDataInitializer {
                 
                 count += youTubeVideoService.fetchAndSaveVideos(
                     query,
-                    10,  // 패턴당 10개
+                    50,  // 패턴당 10개
                     "연령",
                     age
                 );
@@ -256,7 +256,7 @@ public class YouTubeDataInitializer {
             
             count += youTubeVideoService.fetchAndSaveVideos(
                 query,
-                25,  // 패턴당 25개
+                50,  // 패턴당 50개
                 "계절",
                 "계절"
             );
@@ -278,7 +278,7 @@ public class YouTubeDataInitializer {
             
             count += youTubeVideoService.fetchAndSaveVideos(
                 keyword,
-                5,  // 키워드당 5개
+                50,  // 키워드당 5개
                 "응급",
                 "응급"  
             );
