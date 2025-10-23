@@ -28,7 +28,12 @@ public class ChatbotResponse {
      */
     @JsonProperty("message")
     private String message;
-    
+
+    /**
+     * UTC 타임스탬프 (ISO 8601 형식)
+     */
+    @JsonProperty("timestamp")
+    private String timestamp;
 
     /**
      * 여러 진료과 목록(suggest 일 때)
