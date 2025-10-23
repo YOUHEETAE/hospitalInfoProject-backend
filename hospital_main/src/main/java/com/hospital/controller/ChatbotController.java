@@ -37,12 +37,13 @@ public class ChatbotController {
 
         } catch (Exception e) {
             log.error("❌ 챗봇 처리 중 오류", e);
-            
+
             ChatbotResponse errorResponse = ChatbotResponse.builder()
                     .type("error")
                     .message("죄송합니다. 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.")
+                    .timestamp(java.time.Instant.now().toString())
                     .build();
-            
+
             return ResponseEntity.ok(errorResponse);
         }
     }
@@ -64,12 +65,13 @@ public class ChatbotController {
 
         } catch (Exception e) {
             log.error("❌ 챗봇 처리 중 오류 (히스토리 포함)", e);
-            
+
             ChatbotResponse errorResponse = ChatbotResponse.builder()
                     .type("error")
                     .message("죄송합니다. 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.")
+                    .timestamp(java.time.Instant.now().toString())
                     .build();
-            
+
             return ResponseEntity.ok(errorResponse);
         }
     }
