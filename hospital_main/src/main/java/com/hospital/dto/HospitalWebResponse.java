@@ -48,10 +48,12 @@ public class HospitalWebResponse {
     private List<String> medicalSubjects;
     
   
-    private Map<String, Integer> professionalDoctors; 
-    
-    
-    
+    private Map<String, Integer> professionalDoctors;
+
+    // 타임스탬프
+    private String timestamp;
+
+
 }
 
 
