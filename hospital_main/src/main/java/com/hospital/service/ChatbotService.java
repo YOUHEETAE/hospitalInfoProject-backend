@@ -79,6 +79,9 @@ public class ChatbotService {
 			// 3. JSON 파싱 및 검증
 			ChatbotResponse chatbotResponse = parseAndValidate(aiResponseText);
 
+			// 4. 타임스탬프 설정
+			chatbotResponse.setTimestamp(java.time.Instant.now().toString());
+
 			log.info("✅ 챗봇 응답 완료: type={}", chatbotResponse.getType());
 			return chatbotResponse;
 
@@ -109,6 +112,10 @@ public class ChatbotService {
 			}
 
 			ChatbotResponse chatbotResponse = parseAndValidate(aiResponseText);
+
+			// 타임스탬프 설정
+			chatbotResponse.setTimestamp(java.time.Instant.now().toString());
+
 			log.info("✅ 챗봇 응답 완료 (히스토리 포함): type={}", chatbotResponse.getType());
 			return chatbotResponse;
 

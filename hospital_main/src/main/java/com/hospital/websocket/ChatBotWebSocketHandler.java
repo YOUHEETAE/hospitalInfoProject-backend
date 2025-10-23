@@ -65,9 +65,6 @@ public class ChatBotWebSocketHandler extends TextWebSocketHandler {
             // 서비스에서 검증 + AI 호출 (이력 포함)
             ChatbotResponse response = chatbotService.chatWithHistory(userMessage, conversationHistory);
 
-            // UTC 타임스탬프 추가 (ISO 8601 형식)
-            response.setTimestamp(Instant.now().toString());
-
             System.out.println("🤖 [AI 응답 타입]: " + response.getType());
             System.out.println("📤 [AI 응답 메시지]: " + response.getMessage());
             System.out.println("⏰ [타임스탬프]: " + response.getTimestamp());
