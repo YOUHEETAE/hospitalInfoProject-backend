@@ -86,8 +86,9 @@ public class EmergencyWebResponse {
 			
 		
 		    DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("MM월 dd일 HH시 mm분 ss초");
+		 
 			
-			// ISO 8601 형식으로 반환
+			// kst 시간을 문자열 그대로 파싱
 			return localDateTime.format(outputFormatter);
 		} catch (Exception e) {
 			return dateString; // 변환 실패 시 원본 반환
