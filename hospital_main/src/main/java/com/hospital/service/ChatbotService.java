@@ -190,6 +190,10 @@ public class ChatbotService {
 	}
 
 	private ChatbotResponse createErrorResponse(String errorMessage) {
-		return ChatbotResponse.builder().type("error").message(errorMessage).build();
+		return ChatbotResponse.builder()
+				.type("error")
+				.message(errorMessage)
+				.timestamp(java.time.Instant.now().toString())
+				.build();
 	}
 }
