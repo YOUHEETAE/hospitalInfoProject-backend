@@ -1,6 +1,7 @@
 package com.hospital.websocket;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -64,8 +65,12 @@ public class ChatBotWebSocketHandler extends TextWebSocketHandler {
             // 서비스에서 검증 + AI 호출 (이력 포함)
             ChatbotResponse response = chatbotService.chatWithHistory(userMessage, conversationHistory);
 
+            // UTC 타임스탬프 추가 (ISO 8601 형식)
+            response.setTimestamp(Instant.now().toString());
+
             System.out.println("🤖 [AI 응답 타입]: " + response.getType());
             System.out.println("📤 [AI 응답 메시지]: " + response.getMessage());
+            System.out.println("⏰ [타임스탬프]: " + response.getTimestamp());
 
             // 대화 이력에 추가
             addToHistory(sessionId, userMessage, response);
@@ -108,11 +113,13 @@ public class ChatBotWebSocketHandler extends TextWebSocketHandler {
             conversationHistories.put(sessionId, history);
         }
 
-        // 사용자 메시지 추가
-        history.add("사용자: " + userMessage);
+        String timestamp = response.getTimestamp();
 
-        // AI 응답 추가
-        history.add("AI: " + response.getMessage());
+        // 사용자 메시지 추가 (타임스탬프 포함)
+        history.add("[" + timestamp + "] 사용자: " + userMessage);
+
+        // AI 응답 추가 (타임스탬프 포함)
+        history.add("[" + timestamp + "] AI: " + response.getMessage());
 
         // 최대 개수 초과 시 오래된 대화 삭제 (FIFO)
         while (history.size() > MAX_HISTORY_SIZE * 2) { // 사용자+AI 쌍이므로 *2
