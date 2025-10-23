@@ -74,6 +74,7 @@ public class EmergencyWebResponse {
 	        .build();
 	}
 	
+
 	private static String convertToIsoUtc(String dateString) {
 		if (dateString == null || dateString.length() != 14) {
 			return null;
