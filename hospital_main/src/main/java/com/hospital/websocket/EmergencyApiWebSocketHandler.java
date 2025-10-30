@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.hospital.service.EmergencyMockService;
+import com.hospital.service.EmergencyApiService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -20,25 +20,25 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 public class EmergencyApiWebSocketHandler extends TextWebSocketHandler {
 
     private final Set<WebSocketSession> sessions = Collections.synchronizedSet(new HashSet<>());
-    
-    private EmergencyMockService emergencyMockApiService;
-    
+
+    private EmergencyApiService emergencyApiService;
+
     @Autowired
-    public void setEmergencyApiService(EmergencyMockService emergencyMockApiService) {
-        this.emergencyMockApiService = emergencyMockApiService;
+    public void setEmergencyApiService(EmergencyApiService emergencyApiService) {
+        this.emergencyApiService = emergencyApiService;
     }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         sessions.add(session);
         System.out.println("WebSocket 연결됨: " + session.getId() + ", 총 연결수: " + sessions.size());
-        
+
         // 첫 접속자면 스케줄러 시작
-        emergencyMockApiService.onMockWebSocketConnected();
-        
+        emergencyApiService.onWebSocketConnected();
+
         // 초기 데이터 전송 (캐시된 데이터가 있으면)
         try {
-            JsonNode initialData = emergencyMockApiService.getMockEmergencyRoomData();
+            JsonNode initialData = emergencyApiService.getEmergencyRoomData();
             if (initialData != null && initialData.size() > 0) {
                 session.sendMessage(new TextMessage(initialData.toString()));
                 System.out.println("초기 데이터 전송 완료: " + session.getId());
@@ -54,10 +54,10 @@ public class EmergencyApiWebSocketHandler extends TextWebSocketHandler {
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         sessions.remove(session);
         System.out.println("WebSocket 연결 해제: " + session.getId() + ", 총 연결수: " + sessions.size());
-        
+
         // 연결된 세션이 없을 때만 스케줄러 중지
         if (getConnectedSessionCount() == 0) {
-            emergencyMockApiService.stopMockScheduler();
+            emergencyApiService.onWebSocketDisconnected();
         }
     }
 
@@ -65,38 +65,16 @@ public class EmergencyApiWebSocketHandler extends TextWebSocketHandler {
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
         System.err.println("WebSocket 에러: " + session.getId());
         exception.printStackTrace();
-        
+
         sessions.remove(session);
-        
+
         // 연결된 세션이 없을 때만 스케줄러 중지
         if (getConnectedSessionCount() == 0) {
-            emergencyMockApiService.stopMockScheduler();
+            emergencyApiService.onWebSocketDisconnected();
         }
     }
 
-    /**
-     * 30초마다 Mock 데이터 브로드캐스트
-     */
-    @Scheduled(fixedRate = 15000)
-    public void scheduledBroadcast() {
-        if (sessions.isEmpty()) {
-            return;
-        }
-        
-        try {
-            // 먼저 새로운 데이터 생성 요청
-            emergencyMockApiService.forceUpdateData();
-            
-            // 그 다음 최신 데이터 브로드캐스트
-            JsonNode data = emergencyMockApiService.getMockEmergencyRoomData();
-            if (data != null && data.size() > 0) {
-                broadcastEmergencyRoomData(data.toString());
-                System.out.println("스케줄된 브로드캐스트 완료");
-            }
-        } catch (Exception e) {
-            System.err.println("스케줄된 브로드캐스트 실패: " + e.getMessage());
-        }
-    }
+    
 
     /**
      * 모든 연결된 클라이언트에게 데이터 브로드캐스트

@@ -55,10 +55,15 @@ public class EmergencyApiCaller {
 	        HttpHeaders headers = new HttpHeaders();
 	        headers.setContentType(MediaType.APPLICATION_XML);
 	        headers.add("Accept", "application/xml, text/xml");
+	        headers.add("Accept-Charset", "UTF-8");
 
 	        HttpEntity<String> entity = new HttpEntity<>(headers);
-	        ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);
-	        String responseBody = response.getBody();
+	        ResponseEntity<byte[]> response = restTemplate.exchange(uri, HttpMethod.GET, entity, byte[].class);
+	        byte[] responseBytes = response.getBody();
+
+	        if (responseBytes == null || responseBytes.length == 0) return List.of();
+
+	        String responseBody = new String(responseBytes, StandardCharsets.UTF_8);
 
 	        if (responseBody == null || responseBody.isEmpty()) return List.of();
 

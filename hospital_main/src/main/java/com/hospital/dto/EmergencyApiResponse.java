@@ -1,6 +1,7 @@
 package com.hospital.dto;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
@@ -14,6 +15,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class EmergencyApiResponse {
 	
 	@JsonProperty("dutyName")
@@ -38,21 +40,21 @@ public class EmergencyApiResponse {
 	@JsonProperty("hvgc")
 	private Integer generalWardBeds; // 일반 입원실 병상
 
-	// === 장비/서비스 가용성 ===
+	// === 장비/서비스 가용성 (Y/N) ===
 	@JsonProperty("hvamyn")
-	private Boolean ambulanceAvailability; // 구급차 가용 여부
+	private String ambulanceAvailability; // 구급차 가용 여부 (Y/N)
 
 	@JsonProperty("hvventiayn")
-	private Boolean ventilatorAvailability; // 인공호흡기 가용
+	private String ventilatorAvailability; // 인공호흡기 가용 (Y/N)
 
 	@JsonProperty("hvctayn")
-	private Boolean ctAvailability; // CT 가용
+	private String ctAvailability; // CT 가용 (Y/N)
 
 	@JsonProperty("hvmriayn")
-	private Boolean mriAvailability; // MRI 가용
+	private String mriAvailability; // MRI 가용 (Y/N)
 
 	@JsonProperty("hvcrrtayn")
-	private Boolean crrtAvailability; // CRRT(투석) 가용
+	private String crrtAvailability; // CRRT(투석) 가용 (Y/N)
 
     
     
