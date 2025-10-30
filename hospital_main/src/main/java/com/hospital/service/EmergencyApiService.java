@@ -49,13 +49,14 @@ public class EmergencyApiService {
     }
 
     /**
-     * WebSocket 연결 해제 시 호출 - 마지막 연결이면 스케줄러 중지
+     * WebSocket 연결 해제 시 호출 - 마지막 연결이면 스케줄러 중지 및 캐시 삭제
      */
     public void onWebSocketDisconnected() {
         if (webSocketHandler.getConnectedSessionCount() == 0) {
             if (schedulerRunning.compareAndSet(true, false)) {
                 asyncRunner.stopAsync();
-                System.out.println("✅ 응급실 Async 스케줄러 종료 (마지막 연결 해제)");
+                latestEmergencyJson = null; // 캐시 삭제 (다음 접속 시 최신 데이터 제공)
+                System.out.println("✅ 응급실 Async 스케줄러 종료 및 캐시 삭제 (마지막 연결 해제)");
             }
         }
     }
@@ -93,6 +94,28 @@ public class EmergencyApiService {
         List<EmergencyWebResponse> emergencyData = new java.util.ArrayList<>();
         asyncRunner.collectAllCitiesData(emergencyData::addAll);
         return mapCoordinatesBatch(emergencyData);
+    }
+
+    /**
+     * 캐시 없을 때 WebSocket 초기 연결 시 즉시 fetch하여 전송
+     */
+    public void fetchAndSendInitialData(org.springframework.web.socket.WebSocketSession session) {
+        try {
+            List<EmergencyWebResponse> freshData = fetchAndMapEmergencyData();
+            String jsonData = objectMapper.writeValueAsString(freshData);
+
+            // 캐시 업데이트
+            latestEmergencyJson = jsonData;
+
+            // 세션에 전송
+            if (session.isOpen()) {
+                session.sendMessage(new org.springframework.web.socket.TextMessage(jsonData));
+                System.out.println("✅ 최신 데이터 fetch 및 전송 완료: " + session.getId() + " (" + freshData.size() + "건)");
+            }
+        } catch (Exception e) {
+            System.err.println("최신 데이터 fetch 및 전송 실패: " + session.getId());
+            e.printStackTrace();
+        }
     }
 
     /**
