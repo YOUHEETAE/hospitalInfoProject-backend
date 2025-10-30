@@ -36,14 +36,17 @@ public class EmergencyApiWebSocketHandler extends TextWebSocketHandler {
         // 첫 접속자면 스케줄러 시작
         emergencyApiService.onWebSocketConnected();
 
-        // 초기 데이터 전송 (캐시된 데이터가 있으면)
+        // 초기 데이터 전송
         try {
             JsonNode initialData = emergencyApiService.getEmergencyRoomData();
             if (initialData != null && initialData.size() > 0) {
+                // 캐시된 데이터가 있으면 즉시 전송
                 session.sendMessage(new TextMessage(initialData.toString()));
-                System.out.println("초기 데이터 전송 완료: " + session.getId());
+                System.out.println("초기 데이터 전송 완료 (캐시): " + session.getId());
             } else {
-                System.out.println("전송할 초기 데이터 없음: " + session.getId());
+                // 캐시가 없으면 즉시 fetch하여 전송
+                System.out.println("캐시 없음 - 최신 데이터 fetch 중: " + session.getId());
+                emergencyApiService.fetchAndSendInitialData(session);
             }
         } catch (Exception e) {
             System.err.println("초기 데이터 전송 실패: " + session.getId() + ", 오류: " + e.getMessage());
