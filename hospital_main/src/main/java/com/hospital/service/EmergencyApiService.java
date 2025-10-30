@@ -1,15 +1,5 @@
 package com.hospital.service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hospital.async.EmergencyAsyncRunner;
@@ -17,160 +7,220 @@ import com.hospital.dto.EmergencyWebResponse;
 import com.hospital.entity.HospitalMain;
 import com.hospital.repository.HospitalMainApiRepository;
 import com.hospital.websocket.EmergencyApiWebSocketHandler;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 @Service
 public class EmergencyApiService {
 
-	private final EmergencyAsyncRunner asyncRunner;
-	private final EmergencyApiWebSocketHandler webSocketHandler;
-	private final ObjectMapper objectMapper;
-	private final HospitalMainApiRepository hospitalMainApiRepository;
-	private volatile String latestEmergencyJson = null;
-	private final AtomicBoolean schedulerRunning = new AtomicBoolean(false);
+    private final EmergencyAsyncRunner asyncRunner;
+    private final EmergencyApiWebSocketHandler webSocketHandler;
+    private final ObjectMapper objectMapper;
+    private final HospitalMainApiRepository hospitalMainApiRepository;
+    private volatile String latestEmergencyJson = null;
+    private final AtomicBoolean schedulerRunning = new AtomicBoolean(false);
 
-	@Autowired
-	@Lazy
-	public EmergencyApiService(EmergencyAsyncRunner asyncRunner, EmergencyApiWebSocketHandler webSocketHandler,
-			HospitalMainApiRepository hospitalMainApiRepository) {
-		this.asyncRunner = asyncRunner;
-		this.webSocketHandler = webSocketHandler;
-		this.objectMapper = new ObjectMapper();
-		this.hospitalMainApiRepository = hospitalMainApiRepository;
-	}
+    @Autowired
+    @Lazy
+    public EmergencyApiService(EmergencyAsyncRunner asyncRunner,
+                              EmergencyApiWebSocketHandler webSocketHandler,
+                              HospitalMainApiRepository hospitalMainApiRepository) {
+        this.asyncRunner = asyncRunner;
+        this.webSocketHandler = webSocketHandler;
+        this.objectMapper = new ObjectMapper();
+        this.hospitalMainApiRepository = hospitalMainApiRepository;
+    }
 
-	public void updateCacheFromAsyncResults(List<EmergencyWebResponse> dtoList) {
-	    if (!schedulerRunning.get() || dtoList == null || dtoList.isEmpty())
-	        return;
+    /**
+     * WebSocket 연결 시 호출 - 첫 번째 연결이면 스케줄러 시작
+     */
+    public void onWebSocketConnected() {
+        if (schedulerRunning.compareAndSet(false, true)) {
+            asyncRunner.runAsyncForAllCities(this::updateCacheFromAsyncResults);
+            System.out.println("✅ 응급실 Async 스케줄러 시작 (첫 번째 연결)");
+        }
+    }
 
-	    List<EmergencyWebResponse> mappedList = dtoList.stream().map(dto -> {
-	        // 공백 제거 후 정확히 일치하는 병원만 검색
-	        List<HospitalMain> candidates = hospitalMainApiRepository.findHospitalsByName(dto.getDutyName()).stream()
-	                .filter(h -> h.getHospitalName().replaceAll("\\s+", "")
-	                             .equals(dto.getDutyName().replaceAll("\\s+", "")))
-	                .toList();
+    /**
+     * WebSocket 연결 해제 시 호출 - 마지막 연결이면 스케줄러 중지
+     */
+    public void onWebSocketDisconnected() {
+        if (webSocketHandler.getConnectedSessionCount() == 0) {
+            if (schedulerRunning.compareAndSet(true, false)) {
+                asyncRunner.stopAsync();
+                System.out.println("✅ 응급실 Async 스케줄러 종료 (마지막 연결 해제)");
+            }
+        }
+    }
 
-	        if (candidates.size() == 1) { // 정확히 하나일 때만 매핑
-	            HospitalMain matchedHospital = candidates.get(0);
-	            dto.setEmergencyAddress(matchedHospital.getHospitalAddress());
-	            dto.setCoordinateX(matchedHospital.getCoordinateX());
-	            dto.setCoordinateY(matchedHospital.getCoordinateY());
-	            return dto;
-	        }
+    /**
+     * Async에서 처리한 DTO 리스트를 캐시에 저장하고 WebSocket으로 브로드캐스트
+     */
+    public void updateCacheFromAsyncResults(List<EmergencyWebResponse> dtoList) {
+        if (!schedulerRunning.get() || dtoList == null || dtoList.isEmpty()) {
+            return;
+        }
 
-	        return null; // 매핑 실패거나 후보군이 여러 개일 때 제외
-	    }).filter(dto -> dto != null) // null 제거
-	      .toList();
+        try {
+            // 배치로 좌표 매핑 (한 번의 쿼리로 처리)
+            List<EmergencyWebResponse> mappedList = mapCoordinatesBatch(dtoList);
 
-	    try {
-	        String newJsonData = objectMapper.writeValueAsString(mappedList);
-	        if (!newJsonData.equals(latestEmergencyJson)) {
-	            latestEmergencyJson = newJsonData;
-	            webSocketHandler.broadcastEmergencyRoomData(newJsonData);
-	            System.out.println("✅ 정확히 매핑된 응급실 데이터만 업데이트 및 브로드캐스트 완료");
-	        }
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	    }
-	}
-	public List<EmergencyWebResponse> fetchAndMapEmergencyData() {
-	    // 1. 모든 도시 데이터 수집 (동기)
-	    List<EmergencyWebResponse> emergencyData = new ArrayList<>();
-	    asyncRunner.collectAllCitiesData(emergencyData::addAll);
+            String newJsonData = objectMapper.writeValueAsString(mappedList);
 
-	    // 2. 병원 DB와 매핑 (공백 제거 후 정확히 일치하는 경우만)
-	    List<EmergencyWebResponse> mappedList = emergencyData.stream().map(dto -> {
-	        List<HospitalMain> candidates = hospitalMainApiRepository.findHospitalsByName(dto.getDutyName()).stream()
-	                .filter(h -> h.getHospitalName().replaceAll("\\s+", "")
-	                             .equals(dto.getDutyName().replaceAll("\\s+", "")))
-	                .toList();
+            // 데이터가 변경된 경우에만 브로드캐스트
+            if (!newJsonData.equals(latestEmergencyJson)) {
+                latestEmergencyJson = newJsonData;
+                webSocketHandler.broadcastEmergencyRoomData(newJsonData);
+                System.out.println("✅ 응급실 데이터 업데이트 및 브로드캐스트 완료 (매핑: " + mappedList.size() + "건)");
+            }
+        } catch (Exception e) {
+            System.err.println("응급실 데이터 처리 중 오류 발생");
+            e.printStackTrace();
+        }
+    }
 
-	        if (candidates.size() == 1) { // 정확히 하나일 때만 매핑
-	            HospitalMain matchedHospital = candidates.get(0);
-	            dto.setEmergencyAddress(matchedHospital.getHospitalAddress());
-	            dto.setCoordinateX(matchedHospital.getCoordinateX());
-	            dto.setCoordinateY(matchedHospital.getCoordinateY());
-	            return dto;
-	        }
+    /**
+     * 응급실 데이터 수집 및 매핑 (컨트롤러용)
+     */
+    public List<EmergencyWebResponse> fetchAndMapEmergencyData() {
+        List<EmergencyWebResponse> emergencyData = new java.util.ArrayList<>();
+        asyncRunner.collectAllCitiesData(emergencyData::addAll);
+        return mapCoordinatesBatch(emergencyData);
+    }
 
-	        return null; // 매핑 실패거나 후보군이 여러 개일 때 제외
-	    }).filter(dto -> dto != null) // null 제거
-	      .toList();
+    /**
+     * 배치로 좌표 매핑 (성능 최적화 - IN 쿼리)
+     */
+    private List<EmergencyWebResponse> mapCoordinatesBatch(List<EmergencyWebResponse> dtoList) {
+        long startTime = System.currentTimeMillis();
+        System.out.println("🔍 매핑 시작 - 응급실 데이터: " + dtoList.size() + "건");
 
-	    return mappedList;
-	}
-	/**
-	 * WebSocket 연결 시 호출 - 첫 번째 연결이면 스케줄러 시작
-	 */
-	public void onWebSocketConnected() {
-		if (schedulerRunning.compareAndSet(false, true)) {
-			asyncRunner.runAsyncForAllCities(this::updateCacheFromAsyncResults);
-			System.out.println("✅ 응급실 Async 스케줄러 시작 (첫 번째 연결)");
-		}
-	}
+        // 1. 응급실 병원명 추출 (공백 제거)
+        long t1 = System.currentTimeMillis();
+        List<String> normalizedEmergencyNames = dtoList.stream()
+            .map(dto -> dto.getDutyName().replaceAll("\\s+", ""))
+            .distinct()
+            .collect(Collectors.toList());
+        long extractTime = System.currentTimeMillis() - t1;
+        System.out.println("✅ [1단계] 응급실 병원명 추출 완료: " + normalizedEmergencyNames.size() + "건 / " + extractTime + "ms");
 
-	/**
-	 * WebSocket 연결 해제 시 호출 - 마지막 연결이면 스케줄러 중지
-	 */
-	public void onWebSocketDisconnected() {
-		if (webSocketHandler.getConnectedSessionCount() == 0) {
-			if (schedulerRunning.compareAndSet(true, false)) {
-				asyncRunner.stopAsync();
-				System.out.println("✅ 응급실 Async 스케줄러 종료 (마지막 연결 해제)");
-			}
-		}
-	}
+        // 2. IN 쿼리로 필요한 병원만 조회 (Projection)
+        long t2 = System.currentTimeMillis();
+        List<Object[]> hospitalProjections = hospitalMainApiRepository.findByNormalizedNamesForCoordinateMapping(normalizedEmergencyNames);
+        long queryTime = System.currentTimeMillis() - t2;
+        System.out.println("✅ [2단계] DB IN 쿼리 조회 완료: " + hospitalProjections.size() + "건 / " + queryTime + "ms");
 
-	/**
-	 * WebSocket 초기 연결 시 캐시 반환
-	 */
-	public JsonNode getEmergencyRoomData() {
-		if (latestEmergencyJson == null) {
-			return objectMapper.createObjectNode();
-		}
+        // 3. 공백 제거한 병원명으로 Map 생성 (메모리 매칭)
+        long t3 = System.currentTimeMillis();
+        Map<String, HospitalCoordinate> hospitalMap = new HashMap<>();
+        for (Object[] row : hospitalProjections) {
+            String hospitalName = (String) row[0];
+            Double coordinateX = (Double) row[1];
+            Double coordinateY = (Double) row[2];
+            String hospitalAddress = (String) row[3];
 
-		try {
-			return objectMapper.readTree(latestEmergencyJson);
-		} catch (Exception e) {
-			System.err.println("응급실 데이터 파싱 중 오류 발생");
-			e.printStackTrace();
-			return objectMapper.createObjectNode();
-		}
-	}
+            String normalizedName = hospitalName.replaceAll("\\s+", "");
+            hospitalMap.putIfAbsent(normalizedName, new HospitalCoordinate(coordinateX, coordinateY, hospitalAddress));
+        }
+        long mapCreationTime = System.currentTimeMillis() - t3;
+        System.out.println("✅ [3단계] Map 생성 완료: " + hospitalMap.size() + "건 / " + mapCreationTime + "ms");
 
-	/**
-	 * 스케줄러 강제 중지
-	 */
-	public void stopScheduler() {
-		if (schedulerRunning.compareAndSet(true, false)) {
-			asyncRunner.stopAsync();
-			System.out.println("✅ 응급실 스케줄러 강제 중지 완료");
-		} else {
-			System.out.println("⚠️ 스케줄러가 이미 중지되어 있습니다.");
-		}
-	}
+        // 4. 응급실 데이터와 매칭
+        long t4 = System.currentTimeMillis();
+        List<EmergencyWebResponse> mappedList = dtoList.stream()
+            .filter(dto -> {
+                String normalizedName = dto.getDutyName().replaceAll("\\s+", "");
+                HospitalCoordinate coord = hospitalMap.get(normalizedName);
 
-	/**
-	 * 서비스 상태 정보 반환
-	 */
-	public Map<String, Object> getStats() {
-		Map<String, Object> stats = new HashMap<>();
-		stats.put("schedulerRunning", schedulerRunning.get());
-		stats.put("hasLatestData", latestEmergencyJson != null);
-		stats.put("lastDataSize", getEmergencyRoomData().size());
-		stats.put("connectedSessions", webSocketHandler.getConnectedSessionCount());
+                if (coord != null) {
+                    dto.setCoordinateX(coord.coordinateX);
+                    dto.setCoordinateY(coord.coordinateY);
+                    dto.setEmergencyAddress(coord.address);
+                    return true; // 매핑 성공
+                }
+                return false; // 매핑 실패 제외
+            })
+            .collect(Collectors.toList());
+        long matchingTime = System.currentTimeMillis() - t4;
+        System.out.println("✅ [4단계] 매칭 완료: " + mappedList.size() + "건 / " + matchingTime + "ms");
 
-		// AsyncRunner에서 통계 가져오기 (있다면)
-		stats.put("completedCount", asyncRunner.getCompletedCount());
-		stats.put("failedCount", asyncRunner.getFailedCount());
-		stats.put("processedCount", asyncRunner.getProcessedCount());
+        long totalTime = System.currentTimeMillis() - startTime;
+        System.out.println("✅ [전체] 배치 매핑 완료: " + totalTime + "ms (추출:" + extractTime + "ms, DB:" + queryTime + "ms, Map:" + mapCreationTime + "ms, 매칭:" + matchingTime + "ms)");
 
-		return stats;
-	}
+        return mappedList;
+    }
 
-	/**
-	 * 스케줄러 상태 확인
-	 */
-	public boolean isSchedulerRunning() {
-		return schedulerRunning.get();
-	}
+    // 내부 클래스: 좌표 정보를 담는 간단한 DTO
+    private static class HospitalCoordinate {
+        Double coordinateX;
+        Double coordinateY;
+        String address;
+
+        HospitalCoordinate(Double coordinateX, Double coordinateY, String address) {
+            this.coordinateX = coordinateX;
+            this.coordinateY = coordinateY;
+            this.address = address;
+        }
+    }
+
+    /**
+     * WebSocket 초기 연결 시 캐시 반환
+     */
+    public JsonNode getEmergencyRoomData() {
+        if (latestEmergencyJson == null) {
+            return objectMapper.createObjectNode();
+        }
+
+        try {
+            return objectMapper.readTree(latestEmergencyJson);
+        } catch (Exception e) {
+            System.err.println("응급실 데이터 파싱 중 오류 발생");
+            e.printStackTrace();
+            return objectMapper.createObjectNode();
+        }
+    }
+
+    /**
+     * 스케줄러 강제 중지
+     */
+    public void stopScheduler() {
+        if (schedulerRunning.compareAndSet(true, false)) {
+            asyncRunner.stopAsync();
+            System.out.println("✅ 응급실 스케줄러 강제 중지 완료");
+        } else {
+            System.out.println("⚠️ 스케줄러가 이미 중지되어 있습니다.");
+        }
+    }
+
+    /**
+     * 서비스 상태 정보 반환
+     */
+    public Map<String, Object> getStats() {
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("schedulerRunning", schedulerRunning.get());
+        stats.put("hasLatestData", latestEmergencyJson != null);
+        stats.put("lastDataSize", getEmergencyRoomData().size());
+        stats.put("connectedSessions", webSocketHandler.getConnectedSessionCount());
+
+        // AsyncRunner에서 통계 가져오기 (있다면)
+        stats.put("completedCount", asyncRunner.getCompletedCount());
+        stats.put("failedCount", asyncRunner.getFailedCount());
+        stats.put("processedCount", asyncRunner.getProcessedCount());
+
+        return stats;
+    }
+
+    /**
+     * 스케줄러 상태 확인
+     */
+    public boolean isSchedulerRunning() {
+        return schedulerRunning.get();
+    }
 }

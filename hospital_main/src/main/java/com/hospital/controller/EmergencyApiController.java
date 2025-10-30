@@ -42,17 +42,18 @@ public class EmergencyApiController {
 	public ResponseEntity<Map<String, Object>> getEmergencyList() {
 	    log.info("응급실 정보 즉시 수집 시작...");
 
-	    // EmergencyApiService의 테스트용 메서드 호출
-	    List<EmergencyWebResponse> mappedList = emergencyApiService.fetchAndMapEmergencyData();
+	    // EmergencyApiService를 통해 배치 매핑 적용
+	    List<EmergencyWebResponse> emergencyData = emergencyApiService.fetchAndMapEmergencyData();
 
 	    Map<String, Object> response = new HashMap<>();
 	    response.put("success", true);
 	    response.put("message", "응급실 정보 수집 완료");
-	    response.put("data", mappedList);
-	    response.put("count", mappedList.size());
+	    response.put("connectedWebSocketSessions", emergencyApiWebSocketHandler.getConnectedSessionCount());
+	    response.put("data", emergencyData);
+	    response.put("count", emergencyData.size());
 	    response.put("timestamp", LocalDateTime.now());
 
-	    log.info("응급실 정보 수집 완료 ({}건)", mappedList.size());
+	    log.info("응급실 정보 수집 완료 ({}건)", emergencyData.size());
 
 	    return ResponseEntity.ok(response);
 	}
@@ -63,7 +64,7 @@ public class EmergencyApiController {
 
 	    // 모든 WebSocket 세션 강제 종료 (이로 인해 자동으로 스케줄러도 중지됨)
 	    emergencyApiWebSocketHandler.closeAllSessions();
-	    
+
 	    // 혹시 남아있을 스케줄러 강제 중지
 	    emergencyApiService.stopScheduler();
 
@@ -84,7 +85,7 @@ public class EmergencyApiController {
 	    boolean schedulerRunning = emergencyApiService.isSchedulerRunning();
 	    int connectedSessions = emergencyApiWebSocketHandler.getConnectedSessionCount();
 	    Map<String, Object> stats = emergencyApiService.getStats();
-	    
+
 	    Map<String, Object> response = new HashMap<>();
 	    response.put("success", true);
 	    response.put("schedulerRunning", schedulerRunning);
@@ -105,12 +106,12 @@ public class EmergencyApiController {
 	        response.put("message", "대기 중 - WebSocket 연결 없음");
 	    }
 
-	    log.info("응급실 서비스 상태: {}, 세션: {}, 스케줄러: {}", 
+	    log.info("응급실 서비스 상태: {}, 세션: {}, 스케줄러: {}",
 	        response.get("status"), connectedSessions, schedulerRunning);
-	        
+
 	    return ResponseEntity.ok(response);
 	}
-	
+
 	@GetMapping("/manual-start")
 	public ResponseEntity<String> manualStart() {
 	    emergencyApiService.onWebSocketConnected();

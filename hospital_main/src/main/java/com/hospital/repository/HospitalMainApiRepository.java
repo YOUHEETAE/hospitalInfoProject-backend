@@ -40,6 +40,16 @@ public interface HospitalMainApiRepository extends JpaRepository<HospitalMain, S
 	@Override
 	List<HospitalMain> findAll();
 
+	// 응급실 좌표 매핑용 경량 조회 (필요한 필드만 선택)
+	@QueryHints({ @QueryHint(name = "org.hibernate.readOnly", value = "true") })
+	@Query("SELECT h.hospitalName, h.coordinateX, h.coordinateY, h.hospitalAddress FROM HospitalMain h")
+	List<Object[]> findAllForCoordinateMappingProjection();
+
+	// 응급실 좌표 매핑용 IN 쿼리 (응급실 병원명 리스트로 조회)
+	@QueryHints({ @QueryHint(name = "org.hibernate.readOnly", value = "true") })
+	@Query("SELECT h.hospitalName, h.coordinateX, h.coordinateY, h.hospitalAddress FROM HospitalMain h WHERE REPLACE(h.hospitalName, ' ', '') IN :normalizedNames")
+	List<Object[]> findByNormalizedNamesForCoordinateMapping(@Param("normalizedNames") List<String> normalizedNames);
+
 	@Modifying
 	@Transactional
 	List<HospitalMain> deleteByHospitalCodeIn(List<String> hospitalcodes);
