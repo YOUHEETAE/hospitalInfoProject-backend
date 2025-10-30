@@ -10,9 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hospital.converter.HospitalConverter;
 import com.hospital.converter.PharmacyConverter;
-import com.hospital.dto.EmergencyWebResponse;
-import com.hospital.dto.HospitalWebResponse;
-import com.hospital.dto.PharmacyWebResponse;
 import com.hospital.dto.UnifiedSearchResponse;
 import com.hospital.entity.HospitalMain;
 import com.hospital.entity.Pharmacy;
@@ -26,18 +23,18 @@ public class UnifiedSearchService {
 	private final PharmacyApiRepository pharmacyApiRepository;
 	private final HospitalConverter hospitalConverter;
 	private final PharmacyConverter pharmacyConverter;
-	private final EmergencyMockService emergencyMockService;
+	private final EmergencyApiService emergencyApiService;
 	
 	@Autowired
 	public UnifiedSearchService(HospitalMainApiRepository hospitalMainApiRepository,
 			PharmacyApiRepository pharmacyApiRepository, HospitalConverter hospitalConverter,
-			PharmacyConverter pharmacyConverter, EmergencyMockService emergencyMockService) {
+			PharmacyConverter pharmacyConverter, EmergencyApiService emergencyApiService) {
 
 		this.hospitalMainApiRepository = hospitalMainApiRepository;
 		this.pharmacyApiRepository = pharmacyApiRepository;
 		this.hospitalConverter = hospitalConverter;
 		this.pharmacyConverter = pharmacyConverter;
-		this.emergencyMockService = emergencyMockService;
+		this.emergencyApiService = emergencyApiService;
 	}
 
 	@Transactional(readOnly = true)
@@ -61,7 +58,7 @@ public class UnifiedSearchService {
 				.map(UnifiedSearchResponse::fromPharmacy)
 				.collect(Collectors.toList());
 
-		List<UnifiedSearchResponse> emergencies = emergencyMockService.getMockDataDirect().stream()
+		List<UnifiedSearchResponse> emergencies = emergencyApiService.fetchAndMapEmergencyData().stream()
 				.filter(e -> {
 					String dutyNameClean = e.getDutyName().replace(" ", "");
 					return dutyNameClean.contains(input);

@@ -1,6 +1,7 @@
 package com.hospital.controller;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.hospital.async.EmergencyAsyncRunner;
 import com.hospital.dto.EmergencyWebResponse;
 import com.hospital.service.EmergencyApiService;
 import com.hospital.websocket.EmergencyApiWebSocketHandler;
@@ -26,43 +28,32 @@ public class EmergencyApiController {
 
 	private final EmergencyApiService emergencyApiService;
 	private final EmergencyApiWebSocketHandler emergencyApiWebSocketHandler;
+	private final EmergencyAsyncRunner emergencyAsyncRunner;
 
-	public EmergencyApiController(EmergencyApiService emergencyApiService, EmergencyApiWebSocketHandler emergencyApiWebSocketHandler) {
+	public EmergencyApiController(EmergencyApiService emergencyApiService,
+	                               EmergencyApiWebSocketHandler emergencyApiWebSocketHandler,
+	                               EmergencyAsyncRunner emergencyAsyncRunner) {
 		this.emergencyApiService = emergencyApiService;
 		this.emergencyApiWebSocketHandler = emergencyApiWebSocketHandler;
+		this.emergencyAsyncRunner = emergencyAsyncRunner;
 	}
 
 	@GetMapping(value = "/start", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Map<String, Object>> getEmergencyList() {
-	    log.info("응급실 정보 조회 시작...");
+	    log.info("응급실 정보 즉시 수집 시작...");
 
-	    // 캐시된 최신 데이터 가져오기 (스케줄러는 WebSocket에서 자동 관리)
-	    JsonNode emergencyData = emergencyApiService.getEmergencyRoomData();
+	    // EmergencyApiService의 테스트용 메서드 호출
+	    List<EmergencyWebResponse> mappedList = emergencyApiService.fetchAndMapEmergencyData();
 
 	    Map<String, Object> response = new HashMap<>();
 	    response.put("success", true);
-	    response.put("message", "응급실 정보 조회 성공");
-	    response.put("data", emergencyData);
-	    response.put("count", emergencyData.size());
-	    
-	    // 스케줄러 상태 정보 추가
-	    boolean schedulerRunning = emergencyApiService.isSchedulerRunning();
-	    int connectedSessions = emergencyApiWebSocketHandler.getConnectedSessionCount();
-	    
-	    response.put("schedulerRunning", schedulerRunning);
-	    response.put("connectedWebSocketSessions", connectedSessions);
-	    
-	    if (schedulerRunning) {
-	        response.put("note", "WebSocket 연결이 있어 실시간 데이터 수집 중");
-	    } else {
-	        response.put("note", "WebSocket 연결 없음 - 캐시된 데이터 제공");
-	    }
-	    
+	    response.put("message", "응급실 정보 수집 완료");
+	    response.put("data", mappedList);
+	    response.put("count", mappedList.size());
 	    response.put("timestamp", LocalDateTime.now());
 
-	    log.info("응급실 정보 조회 완료 ({}건, 스케줄러: {}, WebSocket 세션: {})", 
-	        emergencyData.size(), schedulerRunning, connectedSessions);
-	        
+	    log.info("응급실 정보 수집 완료 ({}건)", mappedList.size());
+
 	    return ResponseEntity.ok(response);
 	}
 
