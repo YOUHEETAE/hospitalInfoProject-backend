@@ -20,7 +20,7 @@ import lombok.Setter;
 @JsonSerialize(using = UnifiedSearchResponseSerializer.class)
 public class UnifiedSearchResponse {
 	// 공통 필드
-	private String medicalType; // "HOSPITAL", "PHARMACY", "EMERGENCY"
+	private String medicalType; // "HOSPITAL", "PHARMACY"
 	private String name;
 	private String address;
 	private String tel;
@@ -47,13 +47,6 @@ public class UnifiedSearchResponse {
 	// 약국 전용 필드
 	private String pharmacyCode;
 
-	// 응급실 전용 필드
-	private String hpid;
-	private String hvidate;
-	private Boolean hvamyn;
-	private List<String> availableEquipment;
-	private Map<String, Integer> availableBeds;
-
 	// 변환 메서드
 	public static UnifiedSearchResponse fromHospital(HospitalWebResponse hospital) {
 		return UnifiedSearchResponse.builder().medicalType("HOSPITAL").hospitalCode(hospital.getHospitalCode())
@@ -73,14 +66,5 @@ public class UnifiedSearchResponse {
 		return UnifiedSearchResponse.builder().medicalType("PHARMACY").pharmacyCode(pharmacy.getPharmacyCode())
 				.name(pharmacy.getPharmacyName()).address(pharmacy.getPharmacyAddress()).tel(pharmacy.getPharmacyTel())
 				.coordinateX(pharmacy.getCoordinateX()).coordinateY(pharmacy.getCoordinateY()).build();
-	}
-
-	public static UnifiedSearchResponse fromEmergency(EmergencyWebResponse emergency) {
-		return UnifiedSearchResponse.builder().medicalType("EMERGENCY").name(emergency.getDutyName())
-				.address(emergency.getEmergencyAddress()).tel(emergency.getDutyTel3())
-				.coordinateX(emergency.getCoordinateX()).coordinateY(emergency.getCoordinateY())
-				.hpid(emergency.getHpid()).hvidate(emergency.getHvidate()).hvamyn(emergency.getHvamyn())
-				.availableEquipment(emergency.getAvailableEquipment()).availableBeds(emergency.getAvailableBeds())
-				.build();
 	}
 }

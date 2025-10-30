@@ -23,18 +23,16 @@ public class UnifiedSearchService {
 	private final PharmacyApiRepository pharmacyApiRepository;
 	private final HospitalConverter hospitalConverter;
 	private final PharmacyConverter pharmacyConverter;
-	private final EmergencyApiService emergencyApiService;
-	
+
 	@Autowired
 	public UnifiedSearchService(HospitalMainApiRepository hospitalMainApiRepository,
 			PharmacyApiRepository pharmacyApiRepository, HospitalConverter hospitalConverter,
-			PharmacyConverter pharmacyConverter, EmergencyApiService emergencyApiService) {
+			PharmacyConverter pharmacyConverter) {
 
 		this.hospitalMainApiRepository = hospitalMainApiRepository;
 		this.pharmacyApiRepository = pharmacyApiRepository;
 		this.hospitalConverter = hospitalConverter;
 		this.pharmacyConverter = pharmacyConverter;
-		this.emergencyApiService = emergencyApiService;
 	}
 
 	@Transactional(readOnly = true)
@@ -58,18 +56,9 @@ public class UnifiedSearchService {
 				.map(UnifiedSearchResponse::fromPharmacy)
 				.collect(Collectors.toList());
 
-		List<UnifiedSearchResponse> emergencies = emergencyApiService.fetchAndMapEmergencyData().stream()
-				.filter(e -> {
-					String dutyNameClean = e.getDutyName().replace(" ", "");
-					return dutyNameClean.contains(input);
-				})
-				.map(UnifiedSearchResponse::fromEmergency)
-				.collect(Collectors.toList());
-
 		List<UnifiedSearchResponse> result = new java.util.ArrayList<>();
 		result.addAll(hospitalsResult);
 		result.addAll(pharmaciesResult);
-		result.addAll(emergencies);
 
 		return result;
 
