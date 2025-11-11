@@ -36,12 +36,12 @@ public class DiseaseStatsApiCaller {
 		this.objectMapper = objectMapper;
 	}
 
-	public DiseaseStatsApiResponse callApi(int StartYear, int EndYear, int pageNo, int numOfRows) {
+	public DiseaseStatsApiResponse callApi(int StartYear, int EndYear, int pageNo) {
 		String encodedServiceKey = URLEncoder.encode(serviceKey, StandardCharsets.UTF_8);
 
 		URI uri = UriComponentsBuilder.fromUriString(baseUrl).queryParam("serviceKey", encodedServiceKey)
 				.queryParam("resType", "2").queryParam("searchPeriodType", "3").queryParam("searchStartYear", StartYear)
-				.queryParam("searchEndYear", EndYear).queryParam("pageNo", pageNo).queryParam("numOfRows", numOfRows)
+				.queryParam("searchEndYear", EndYear).queryParam("pageNo", pageNo).queryParam("numOfRows", "100")
 				.build(true).toUri();
 
 		try {
