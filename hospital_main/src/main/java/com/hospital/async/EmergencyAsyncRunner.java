@@ -2,7 +2,6 @@ package com.hospital.async;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.util.concurrent.RateLimiter;
 import com.hospital.caller.EmergencyApiCaller;
 import com.hospital.config.RegionConfig;
 import com.hospital.dto.EmergencyApiResponse;
@@ -24,7 +23,6 @@ import java.util.function.Consumer;
 @Slf4j
 public class EmergencyAsyncRunner {
 
-    private final RateLimiter rateLimiter = RateLimiter.create(5.0); // 초당 5개 요청 제한
     private final EmergencyApiCaller apiCaller;
     private final RegionConfig regionConfig;
     private final ObjectMapper objectMapper;
@@ -49,16 +47,16 @@ public class EmergencyAsyncRunner {
     }
 
     /**
-     * 30초마다 반복 실행하는 스케줄러 시작
+     * 3분마다 반복 실행하는 스케줄러 시작
      */
     public void runAsyncForAllCities(Consumer<List<EmergencyWebResponse>> callback) {
         if (running.compareAndSet(false, true)) {
-            log.info("✅ 응급실 30초 주기 스케줄러 시작");
+            log.info("✅ 응급실 3분 주기 스케줄러 시작");
 
             // 즉시 첫 실행
             taskScheduler.schedule(() -> collectAllCitiesData(callback), Instant.now());
 
-            // 30초마다 반복 실행
+            // 3분마다 반복 실행
             scheduledTask = taskScheduler.scheduleWithFixedDelay(() -> {
                 if (running.get()) {
                     try {
@@ -67,7 +65,7 @@ public class EmergencyAsyncRunner {
                         log.error("스케줄 실행 중 오류 발생: {}", e.getMessage(), e);
                     }
                 }
-            }, Instant.now().plusSeconds(30), Duration.ofSeconds(30));
+            }, Instant.now().plusSeconds(180), Duration.ofMinutes(3));
 
         } else {
             log.warn("이미 스케줄러가 실행 중입니다.");
@@ -125,9 +123,6 @@ public class EmergencyAsyncRunner {
         int numOfRows = 100;
 
         try {
-            // RateLimiter 적용
-            rateLimiter.acquire();
-
             // 페이지 1만 호출
             List<JsonNode> responseList = apiCaller.callEmergencyApiByCityPage(city, 1, numOfRows);
 

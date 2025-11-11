@@ -35,6 +35,12 @@ public class EmergencyApiService {
         this.asyncRunner = asyncRunner;
         this.webSocketHandler = webSocketHandler;
         this.objectMapper = new ObjectMapper();
+        // null 값 제외 설정 (Map 내부 포함)
+        this.objectMapper.setSerializationInclusion(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL);
+        this.objectMapper.configOverride(java.util.Map.class)
+            .setInclude(com.fasterxml.jackson.annotation.JsonInclude.Value.construct(
+                com.fasterxml.jackson.annotation.JsonInclude.Include.ALWAYS,
+                com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL));
         this.hospitalMainApiRepository = hospitalMainApiRepository;
     }
 
@@ -197,12 +203,17 @@ public class EmergencyApiService {
      * WebSocket 초기 연결 시 캐시 반환
      */
     public JsonNode getEmergencyRoomData() {
+        System.out.println("🔍 getEmergencyRoomData() 호출 - latestEmergencyJson null 여부: " + (latestEmergencyJson == null));
+
         if (latestEmergencyJson == null) {
+            System.out.println("⚠️ 캐시 없음 - 빈 ObjectNode 반환");
             return objectMapper.createObjectNode();
         }
 
         try {
-            return objectMapper.readTree(latestEmergencyJson);
+            JsonNode result = objectMapper.readTree(latestEmergencyJson);
+            System.out.println("✅ 캐시 반환 - 타입: " + result.getNodeType() + ", 크기: " + result.size());
+            return result;
         } catch (Exception e) {
             System.err.println("응급실 데이터 파싱 중 오류 발생");
             e.printStackTrace();

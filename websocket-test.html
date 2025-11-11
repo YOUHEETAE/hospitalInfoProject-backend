@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        #status { font-size: 20px; margin: 20px 0; }
+        #messages { margin-top: 20px; }
+        .log { margin: 5px 0; padding: 10px; background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>응급실 WebSocket Test</h1>
+    <div id="status">⏳ 연결 중...</div>
+    <div id="messages"></div>
+
+    <script>
+        const ws = new WebSocket('ws://localhost:8080/emergency-websocket');
+        const messagesDiv = document.getElementById('messages');
+
+        function addLog(message) {
+            const log = document.createElement('div');
+            log.className = 'log';
+            log.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            messagesDiv.appendChild(log);
+        }
+
+        ws.onopen = () => {
+            document.getElementById('status').innerHTML = '✅ WebSocket 연결 성공';
+            addLog('WebSocket 연결 성공');
+            console.log('WebSocket 연결 성공');
+        };
+
+        ws.onmessage = (event) => {
+            console.log('📩 받은 원본 데이터:', event.data);
+            try {
+                const data = JSON.parse(event.data);
+                console.log('📊 파싱된 데이터:', data);
+                const count = Array.isArray(data) ? data.length : '배열 아님';
+                console.log('📈 데이터 개수:', count);
+
+                addLog(`✅ 데이터 수신 - ${count}건`);
+
+                if (Array.isArray(data) && data.length > 0) {
+                    console.log('첫 번째 병원:', data[0]);
+                }
+            } catch (e) {
+                console.error('파싱 에러:', e);
+                addLog(`❌ 파싱 에러: ${e.message}`);
+            }
+        };
+
+        ws.onerror = (error) => {
+            document.getElementById('status').innerHTML = '❌ WebSocket 에러';
+            addLog('❌ WebSocket 에러 발생');
+            console.error('WebSocket 에러:', error);
+        };
+
+        ws.onclose = () => {
+            document.getElementById('status').innerHTML = '🔌 WebSocket 연결 종료';
+            addLog('🔌 WebSocket 연결 종료');
+        };
+    </script>
+</body>
+</html>

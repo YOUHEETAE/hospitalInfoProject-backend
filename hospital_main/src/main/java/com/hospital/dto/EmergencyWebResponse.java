@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.core.JsonParser;
@@ -30,6 +31,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class EmergencyWebResponse {
 
 	// === 필수 기본 정보 ===
@@ -61,6 +63,7 @@ public class EmergencyWebResponse {
 	
 	
 	// === 핵심 병상 현황 ===
+	@JsonInclude(content = JsonInclude.Include.NON_NULL)
 	public Map<String, Integer> availableBeds;
 	
 	public static EmergencyWebResponse from(EmergencyApiResponse api) {
@@ -98,17 +101,13 @@ public class EmergencyWebResponse {
 	    }
 
 	    try {
+	        // yyyyMMddHHmmss 형식 문자열을 파싱 (시간대 변환 없이)
 	        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 	        LocalDateTime localDateTime = LocalDateTime.parse(dateString, inputFormatter);
-	        
-	        // UTC 시간으로 먼저 설정
-	        ZonedDateTime utcDateTime = localDateTime.atZone(ZoneId.of("UTC"));
-	        
-	        // UTC를 KST(한국 시간)로 변환
-	        ZonedDateTime kstDateTime = utcDateTime.withZoneSameInstant(ZoneId.of("Asia/Seoul"));
 
+	        // "MM월 dd일 HH시 mm분 ss초" 형식으로 변환
 	        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("MM월 dd일 HH시 mm분 ss초");
-	        return kstDateTime.format(outputFormatter);
+	        return localDateTime.format(outputFormatter);
 
 	    } catch (Exception e) {
 	        return dateString; // 변환 실패 시 원본 반환
@@ -131,10 +130,22 @@ public class EmergencyWebResponse {
 	
 	private static Map<String, Integer> availableBeds(EmergencyApiResponse api){
 		Map <String, Integer> bedsMap = new LinkedHashMap<>();
-		bedsMap.put("응급실 일반 병상", api.getEmergencyBeds());
-		bedsMap.put("수술실 병상", api.getOperatingBeds());
-		bedsMap.put("일반 입원실 병상", api.getGeneralWardBeds());
-		
+
+		// null 값을 가진 항목은 Map에 추가하지 않음
+		Integer emergencyBeds = api.getEmergencyBeds();
+		Integer operatingBeds = api.getOperatingBeds();
+		Integer generalWardBeds = api.getGeneralWardBeds();
+
+		if (emergencyBeds != null) {
+			bedsMap.put("응급실 일반 병상", emergencyBeds);
+		}
+		if (operatingBeds != null) {
+			bedsMap.put("수술실 병상", operatingBeds);
+		}
+		if (generalWardBeds != null) {
+			bedsMap.put("일반 입원실 병상", generalWardBeds);
+		}
+
 		return bedsMap;
 	}
 
