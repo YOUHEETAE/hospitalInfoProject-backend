@@ -68,15 +68,15 @@ public class DiseaseStatsApiResponse {
 		private int totalCount;
 
 	}
+
 	@Getter
 	@Setter
 	@NoArgsConstructor
 	@AllArgsConstructor
 	@JsonIgnoreProperties(ignoreUnknown = true)
-	public static class ApiItemsWrapper{
+	public static class ApiItemsWrapper {
 		@JsonProperty("item")
-	private List<DiseaseStatsApiItem> item;
+		private List<DiseaseStatsApiItem> item;
 	}
-	
 
 }
