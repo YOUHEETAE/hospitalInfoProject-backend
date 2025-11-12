@@ -81,15 +81,15 @@ public class HospitalApiController {
 
 		log.info("병원 기본 정보 저장 시작... (인증된 요청)");
 		
-		int savedCount = hospitalMainService.updateHospitalMain();
+		hospitalMainService.updateHospitalMain();
 		
 		Map<String, Object> response = new HashMap<>();
 		response.put("success", true);
-		response.put("message", "병원 정보 저장 완료");
-		response.put("savedCount", savedCount);
+		response.put("message", "병원 정보 시작됨");
+		response.put("note", "진행상황은 로그 또는 /status API로 확인");
 		response.put("timestamp", LocalDateTime.now());
 		
-		log.info("병원 정보 {}개 DB 저장 완료!", savedCount);
+		log.info("병원 정보 {}개 DB 저장 완료!");
 		return ResponseEntity.ok(response);
 	}
 	@GetMapping(value = "/main/status", produces = MediaType.APPLICATION_JSON_VALUE)

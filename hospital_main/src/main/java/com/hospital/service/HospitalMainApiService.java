@@ -31,7 +31,7 @@ public class HospitalMainApiService {
 
 	}
 
-	public int updateHospitalMain() {
+	public void updateHospitalMain() {
 		log.info("병원 데이터 수집 시작 - 대상 지역: {}", regionConfig.getCityName());
 		
 		hospitalMainApiRepository.deleteAllInBatch();
@@ -44,8 +44,7 @@ public class HospitalMainApiService {
 		for (String sidoCd : sidoCodes) {
 			hospitalMainAsyncRunner.runAsync(sidoCd);
 		}
-		log.info("{}개 지역 병렬 처리 시작", sidoCodes.size());
-		return sidoCodes.size(); // 총 지역 수만 반환
+		log.info("{}개 지역 병렬 처리 완료", sidoCodes.size());
 
 	}
 
