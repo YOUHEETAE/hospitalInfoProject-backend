@@ -22,28 +22,15 @@ public class HospitalMainApiParser {
 	public List<HospitalMain> parseHospitals(HospitalMainApiResponse apiResponseDto) {
 		log.debug("병원 데이터 파싱 시작");
 
-		// 1. 응답 검증
-		validateApiResponse(apiResponseDto);
+	
 
-		// 2. 아이템 추출 및 변환
+		// 아이템 추출 및 변환
 		List<HospitalMain> hospitals = extractAndConvertItems(apiResponseDto);
 
 		log.debug("병원 데이터 파싱 완료: {}건", hospitals.size());
 		return hospitals;
 	}
 
-	private void validateApiResponse(HospitalMainApiResponse response) {
-		if (response == null || response.getResponse() == null || response.getResponse().getHeader() == null) {
-			throw new RuntimeException("API 응답이 올바르지 않습니다");
-		}
-
-		String resultCode = response.getResponse().getHeader().getResultCode();
-		String resultMsg = response.getResponse().getHeader().getResultMsg();
-
-		if (!"00".equals(resultCode)) {
-			throw new RuntimeException("API 응답 오류: " + resultCode + " - " + resultMsg);
-		}
-	}
 
 	private List<HospitalMain> extractAndConvertItems(HospitalMainApiResponse response) {
 		return Optional.ofNullable(response).map(HospitalMainApiResponse::getResponse)
