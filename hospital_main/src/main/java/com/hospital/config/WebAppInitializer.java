@@ -1,5 +1,6 @@
 package com.hospital.config;
 
+import com.hospital.filter.GzipResponseFilter;
 import jakarta.servlet.FilterRegistration;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
@@ -42,8 +43,15 @@ public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServlet
         // web.xml의 <async-supported>true</async-supported>
         encodingFilter.setAsyncSupported(true);
 
-        // web.xml의 <filter-mapping> 
+        // web.xml의 <filter-mapping>
         encodingFilter.addMappingForUrlPatterns(null, true, "/*");
+
+        // GzipResponseFilter를 등록 (JSON, HTML 등 자동 압축)
+        FilterRegistration.Dynamic gzipFilter = servletContext.addFilter("gzipFilter", GzipResponseFilter.class);
+        gzipFilter.setAsyncSupported(true);
+        gzipFilter.addMappingForUrlPatterns(null, false, "/web/*");
+
+        System.out.println("✅ Gzip 압축 필터 등록 완료");
     }
 }
 
