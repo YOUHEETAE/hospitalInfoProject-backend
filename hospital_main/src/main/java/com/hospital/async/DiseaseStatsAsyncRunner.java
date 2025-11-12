@@ -21,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DiseaseStatsAsyncRunner {
 
-    private final RateLimiter rateLimiter = RateLimiter.create(5.0);
     private final AtomicInteger completedCount = new AtomicInteger(0);
     private final AtomicInteger failedCount = new AtomicInteger(0);
     private final AtomicInteger insertedCount = new AtomicInteger(0);
@@ -43,7 +42,6 @@ public class DiseaseStatsAsyncRunner {
 
     @Async("apiExecutor")
     public void runAsync(int startYear, int endYear) {
-        rateLimiter.acquire();
         try {
             log.info("질병 통계 수집 시작 - 기간: {}-{}", startYear, endYear);
 
