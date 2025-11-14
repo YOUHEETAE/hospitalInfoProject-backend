@@ -33,23 +33,25 @@ public class EmergencyApiWebSocketHandler extends TextWebSocketHandler {
         sessions.add(session);
         System.out.println("WebSocket 연결됨: " + session.getId() + ", 총 연결수: " + sessions.size());
 
-        // 첫 접속자면 스케줄러 시작
-        emergencyApiService.onWebSocketConnected();
+        boolean isFirstConnection = (sessions.size() == 1);
 
-        // 초기 데이터 전송
-        try {
-            JsonNode initialData = emergencyApiService.getEmergencyRoomData();
-            if (initialData != null && initialData.size() > 0) {
-                // 캐시된 데이터가 있으면 즉시 전송
-                session.sendMessage(new TextMessage(initialData.toString()));
-                System.out.println("초기 데이터 전송 완료 (캐시): " + session.getId());
-            } else {
-                // 캐시가 없으면 즉시 fetch하여 전송
-                System.out.println("캐시 없음 - 최신 데이터 fetch 중: " + session.getId());
-                emergencyApiService.fetchAndSendInitialData(session);
+        // 첫 접속자면 스케줄러 시작 (스케줄러가 즉시 데이터를 수집하고 브로드캐스트함)
+        if (isFirstConnection) {
+            emergencyApiService.onWebSocketConnected();
+            System.out.println("첫 연결 - 스케줄러 시작 및 데이터 수집 대기 중: " + session.getId());
+        } else {
+            // 추가 연결일 경우 캐시된 데이터가 있으면 즉시 전송
+            try {
+                JsonNode initialData = emergencyApiService.getEmergencyRoomData();
+                if (initialData != null && initialData.size() > 0) {
+                    session.sendMessage(new TextMessage(initialData.toString()));
+                    System.out.println("초기 데이터 전송 완료 (캐시): " + session.getId());
+                } else {
+                    System.out.println("추가 연결 - 스케줄러 데이터 대기 중: " + session.getId());
+                }
+            } catch (Exception e) {
+                System.err.println("초기 데이터 전송 실패: " + session.getId() + ", 오류: " + e.getMessage());
             }
-        } catch (Exception e) {
-            System.err.println("초기 데이터 전송 실패: " + session.getId() + ", 오류: " + e.getMessage());
         }
     }
 

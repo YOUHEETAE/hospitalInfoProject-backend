@@ -27,6 +27,9 @@ public class EmergencyApiService {
     private volatile String latestEmergencyJson = null;
     private final AtomicBoolean schedulerRunning = new AtomicBoolean(false);
 
+    // 이전 응급실 데이터를 hpid(병원코드)로 캐싱
+    private final Map<String, EmergencyWebResponse> previousDataMap = new HashMap<>();
+
     @Autowired
     @Lazy
     public EmergencyApiService(EmergencyAsyncRunner asyncRunner,
@@ -62,6 +65,7 @@ public class EmergencyApiService {
             if (schedulerRunning.compareAndSet(true, false)) {
                 asyncRunner.stopAsync();
                 latestEmergencyJson = null; // 캐시 삭제 (다음 접속 시 최신 데이터 제공)
+                previousDataMap.clear(); // 이전 데이터 캐시 초기화
                 System.out.println("✅ 응급실 Async 스케줄러 종료 및 캐시 삭제 (마지막 연결 해제)");
             }
         }
@@ -79,13 +83,16 @@ public class EmergencyApiService {
             // 배치로 좌표 매핑 (한 번의 쿼리로 처리)
             List<EmergencyWebResponse> mappedList = mapCoordinatesBatch(dtoList);
 
+            // 변경 감지 및 타임스탬프 업데이트
+            int changedCount = detectChangesAndUpdateTimestamp(mappedList);
+
             String newJsonData = objectMapper.writeValueAsString(mappedList);
 
             // 데이터가 변경된 경우에만 브로드캐스트
             if (!newJsonData.equals(latestEmergencyJson)) {
                 latestEmergencyJson = newJsonData;
                 webSocketHandler.broadcastEmergencyRoomData(newJsonData);
-                System.out.println("✅ 응급실 데이터 업데이트 및 브로드캐스트 완료 (매핑: " + mappedList.size() + "건)");
+                System.out.println("✅ 응급실 데이터 업데이트 및 브로드캐스트 완료 (매핑: " + mappedList.size() + "건, 변경: " + changedCount + "건)");
             }
         } catch (Exception e) {
             System.err.println("응급실 데이터 처리 중 오류 발생");
@@ -122,6 +129,41 @@ public class EmergencyApiService {
             System.err.println("최신 데이터 fetch 및 전송 실패: " + session.getId());
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 이전 데이터와 비교하여 변경된 병원을 찾고 타임스탬프 업데이트
+     * @return 변경된 병원 수
+     */
+    private int detectChangesAndUpdateTimestamp(List<EmergencyWebResponse> newDataList) {
+        int changedCount = 0;
+
+        for (EmergencyWebResponse newData : newDataList) {
+            String hpid = newData.getHpid();
+            if (hpid == null) {
+                continue;
+            }
+
+            EmergencyWebResponse previousData = previousDataMap.get(hpid);
+
+            if (previousData == null) {
+                // 신규 병원 - API의 원본 타임스탬프 유지 (이미 UTC로 변환되어 있음)
+                // updateTimestampToNow()를 호출하지 않음
+                changedCount++;
+            } else if (!previousData.equals(newData)) {
+                // 데이터가 변경된 병원 - 타임스탬프를 현재 시각으로 업데이트
+                newData.updateTimestampToNow();
+                changedCount++;
+            } else {
+                // 변경 없음 - 이전 타임스탬프 유지
+                newData.setHvidate(previousData.getHvidate());
+            }
+
+            // 현재 데이터를 previousDataMap에 업데이트 (타임스탬프 제외하고 비교하므로 괜찮음)
+            previousDataMap.put(hpid, newData);
+        }
+
+        return changedCount;
     }
 
     /**
@@ -227,6 +269,7 @@ public class EmergencyApiService {
     public void stopScheduler() {
         if (schedulerRunning.compareAndSet(true, false)) {
             asyncRunner.stopAsync();
+            previousDataMap.clear(); // 이전 데이터 캐시 초기화
             System.out.println("✅ 응급실 스케줄러 강제 중지 완료");
         } else {
             System.out.println("⚠️ 스케줄러가 이미 중지되어 있습니다.");
