@@ -21,6 +21,7 @@ import java.io.IOException;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -32,6 +33,7 @@ import lombok.Setter;
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@EqualsAndHashCode(exclude = "hvidate")
 public class EmergencyWebResponse {
 
 	// === 필수 기본 정보 ===
@@ -96,23 +98,28 @@ public class EmergencyWebResponse {
 	}
 
 	private static String convertToIsoUtc(String dateString) {
-	    if (dateString == null || dateString.length() != 14) {
-	        return null;
-	    }
+    if (dateString == null || dateString.length() != 14) {
+        return null;
+    }
 
-	    try {
-	        // yyyyMMddHHmmss 형식 문자열을 파싱 (시간대 변환 없이)
-	        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-	        LocalDateTime localDateTime = LocalDateTime.parse(dateString, inputFormatter);
+    try {
+        // yyyyMMddHHmmss 형식 문자열을 파싱 (한국 시간대 기준)
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        LocalDateTime localDateTime = LocalDateTime.parse(dateString, inputFormatter);
+        
+        // 한국 시간대(KST)로 ZonedDateTime 생성
+        ZonedDateTime kstTime = localDateTime.atZone(ZoneId.of("Asia/Seoul"));
+        
+        // UTC로 변환
+        ZonedDateTime utcTime = kstTime.withZoneSameInstant(ZoneId.of("UTC"));
+        
+        // ISO 8601 형식으로 반환 (예: 2024-11-09T15:30:00Z)
+        return utcTime.format(DateTimeFormatter.ISO_INSTANT);
 
-	        // "MM월 dd일 HH시 mm분 ss초" 형식으로 변환
-	        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("MM월 dd일 HH시 mm분 ss초");
-	        return localDateTime.format(outputFormatter);
-
-	    } catch (Exception e) {
-	        return dateString; // 변환 실패 시 원본 반환
-	    }
-	}
+    } catch (Exception e) {
+        return dateString; // 변환 실패 시 원본 반환
+    }
+}
 
 	// 장비 추출 로직 분리 (Y/N 문자열 처리)
 	private static List<String> availableEquipment(EmergencyApiResponse api) {
@@ -147,6 +154,16 @@ public class EmergencyWebResponse {
 		}
 
 		return bedsMap;
+	}
+
+	/**
+	 * 타임스탬프를 현재 UTC 시각으로 업데이트
+	 */
+	public void updateTimestampToNow() {
+		// 현재 시각을 UTC로 변환
+		ZonedDateTime utcNow = ZonedDateTime.now(ZoneId.of("UTC"));
+		// ISO 8601 형식으로 설정 (예: 2024-11-09T15:30:00Z)
+		this.hvidate = utcNow.format(DateTimeFormatter.ISO_INSTANT);
 	}
 
 	/**
