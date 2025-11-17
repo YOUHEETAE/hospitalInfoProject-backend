@@ -1,9 +1,7 @@
 package com.hospital.async;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hospital.caller.EmergencyApiCaller;
-import com.hospital.config.RegionConfig;
+import com.hospital.dto.EmergencyApiItem;
 import com.hospital.dto.EmergencyApiResponse;
 import com.hospital.dto.EmergencyWebResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -24,8 +22,6 @@ import java.util.function.Consumer;
 public class EmergencyAsyncRunner {
 
     private final EmergencyApiCaller apiCaller;
-    private final RegionConfig regionConfig;
-    private final ObjectMapper objectMapper;
     private final TaskScheduler taskScheduler;
 
     private final AtomicBoolean running = new AtomicBoolean(false);
@@ -38,12 +34,9 @@ public class EmergencyAsyncRunner {
 
     @Autowired
     public EmergencyAsyncRunner(EmergencyApiCaller apiCaller,
-                               RegionConfig regionConfig,
                                TaskScheduler taskScheduler) {
         this.apiCaller = apiCaller;
-        this.regionConfig = regionConfig;
         this.taskScheduler = taskScheduler;
-        this.objectMapper = new ObjectMapper();
     }
 
     /**
@@ -73,95 +66,82 @@ public class EmergencyAsyncRunner {
     }
 
     /**
-     * 모든 도시 데이터를 순차로 수집
+     * 전국 응급실 데이터를 한 번에 수집
      */
     public void collectAllCitiesData(Consumer<List<EmergencyWebResponse>> callback) {
         long startTime = System.currentTimeMillis();
-        List<String> cities = regionConfig.getEmergencyCityNames();
-        log.info("🔄 응급실 데이터 순차 수집 시작 - 도시 수: {}", cities.size());
+        log.info("🔄 응급실 데이터 수집 시작");
 
         resetCounters();
 
-        List<EmergencyWebResponse> allCityData = new ArrayList<>();
+        List<EmergencyWebResponse> allData = new ArrayList<>();
 
-        for (String city : cities) {
-            try {
-                log.info("🔄 {} 데이터 수집 시작", city);
+        try {
+            log.info("🔄 전국 응급실 데이터 호출 시작 (pageNo=1, numOfRows=500)");
 
-                List<EmergencyWebResponse> cityData = collectCityData(city);
+            EmergencyApiResponse response = apiCaller.callEmergencyApiByCityPage(1, 500);
 
-                if (!cityData.isEmpty()) {
-                    allCityData.addAll(cityData);
-                    processedCount.addAndGet(cityData.size());
-                    log.info("✅ {} 수집 완료 - {} 건", city, cityData.size());
-                } else {
-                    log.info("⚠️ {} 데이터 없음", city);
-                }
-                completedCount.incrementAndGet();
-
-            } catch (Exception e) {
-                failedCount.incrementAndGet();
-                log.error("❌ {} 수집 실패: {}", city, e.getMessage());
+            if (response == null || response.getBody() == null) {
+                log.warn("⚠️ API 응답 없음");
+                return;
             }
+
+            // EmergencyApiResponse를 EmergencyWebResponse 리스트로 변환
+            List<EmergencyWebResponse> data = parseResponse(response);
+
+            if (!data.isEmpty()) {
+                allData.addAll(data);
+                processedCount.addAndGet(data.size());
+                completedCount.incrementAndGet();
+                log.info("✅ 데이터 수집 완료 - {} 건", data.size());
+            } else {
+                log.warn("⚠️ 파싱된 데이터 없음");
+            }
+
+        } catch (Exception e) {
+            failedCount.incrementAndGet();
+            log.error("❌ 데이터 수집 실패: {}", e.getMessage());
         }
 
-        if (!allCityData.isEmpty()) {
-            callback.accept(allCityData);
+        if (!allData.isEmpty()) {
+            callback.accept(allData);
             long duration = System.currentTimeMillis() - startTime;
-            log.info("✅ 순차 수집 완료 - 총 {} 건 (성공: {}, 실패: {}, 소요시간: {}ms)",
-                    processedCount.get(), completedCount.get(), failedCount.get(), duration);
+            log.info("✅ 수집 완료 - 총 {}건 (소요시간: {}ms)", processedCount.get(), duration);
         } else {
             log.warn("⚠️ 수집된 데이터가 없습니다.");
         }
     }
 
     /**
-     * 특정 도시의 응급실 데이터 수집 (한 페이지, 최대 100건)
+     * API 응답을 EmergencyWebResponse 리스트로 변환
      */
-    private List<EmergencyWebResponse> collectCityData(String city) throws Exception {
-        List<EmergencyWebResponse> cityData = new ArrayList<>();
-        int numOfRows = 100;
+    private List<EmergencyWebResponse> parseResponse(EmergencyApiResponse apiResponse) {
+        List<EmergencyWebResponse> result = new ArrayList<>();
 
-        try {
-            // 페이지 1만 호출
-            List<JsonNode> responseList = apiCaller.callEmergencyApiByCityPage(city, 1, numOfRows);
-
-            if (responseList == null || responseList.isEmpty()) {
-                log.debug("📭 {} 페이지 1 - 응답 없음", city);
-                return cityData;
-            }
-
-            for (JsonNode node : responseList) {
-                try {
-                    JsonNode bodyNode = node.path("body");
-                    if (bodyNode.isMissingNode()) continue;
-
-                    JsonNode itemsNode = bodyNode.path("items");
-                    if (itemsNode.isMissingNode()) continue;
-
-                    JsonNode itemNode = itemsNode.path("item");
-                    if (itemNode.isMissingNode() || !itemNode.isArray()) continue;
-
-                    EmergencyApiResponse[] apiArr = objectMapper.treeToValue(itemNode, EmergencyApiResponse[].class);
-                    if (apiArr != null && apiArr.length > 0) {
-                        for (EmergencyApiResponse apiResponse : apiArr) {
-                            EmergencyWebResponse webResponse = EmergencyWebResponse.from(apiResponse);
-                            cityData.add(webResponse);
-                        }
-                    }
-                } catch (Exception parseEx) {
-                    log.warn("⚠️ {} 페이지 1 JSON 파싱 오류: {}", city, parseEx.getMessage());
-                }
-            }
-
-            log.debug("✅ {} 전체 수집 완료 - 총 {} 건", city, cityData.size());
-
-        } catch (Exception e) {
-            log.error("❌ {} 수집 실패: {}", city, e.getMessage());
-            throw e;
+        if (apiResponse == null || apiResponse.getBody() == null) {
+            return result;
         }
 
-        return cityData;
+        EmergencyApiResponse.Body body = apiResponse.getBody();
+        if (body == null || body.getItems() == null) {
+            return result;
+        }
+
+        List<EmergencyApiItem> items = body.getItems().getItem();
+        if (items == null || items.isEmpty()) {
+            return result;
+        }
+
+        for (EmergencyApiItem item : items) {
+            try {
+                EmergencyWebResponse webResponse = EmergencyWebResponse.from(item);
+                result.add(webResponse);
+            } catch (Exception e) {
+                log.warn("⚠️ 응급실 데이터 변환 오류: {}", e.getMessage());
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -206,7 +186,6 @@ public class EmergencyAsyncRunner {
         stats.put("completed", completedCount.get());
         stats.put("failed", failedCount.get());
         stats.put("processed", processedCount.get());
-        stats.put("totalCities", regionConfig.getEmergencyCityNames().size());
         return stats;
     }
 }

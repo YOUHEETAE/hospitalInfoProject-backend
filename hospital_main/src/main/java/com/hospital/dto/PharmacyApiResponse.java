@@ -1,48 +1,61 @@
 package com.hospital.dto;
 
-import jakarta.xml.bind.annotation.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import java.util.List;
 
 @Getter
 @Setter
-@XmlRootElement(name = "response")
-@XmlAccessorType(XmlAccessType.FIELD)
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JacksonXmlRootElement(localName = "response")
 public class PharmacyApiResponse {
 
-    @XmlElement(name = "header")
+    @JsonProperty("header")
     private Header header;
 
-    @XmlElement(name = "body")
+    @JsonProperty("body")
     private Body body;
 
     @Getter
     @Setter
-    @XmlAccessorType(XmlAccessType.FIELD)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Header {
-        @XmlElement(name = "resultCode")
+        @JsonProperty("resultCode")
         private String resultCode;
 
-        @XmlElement(name = "resultMsg")
+        @JsonProperty("resultMsg")
         private String resultMsg;
     }
 
     @Getter
     @Setter
-    @XmlAccessorType(XmlAccessType.FIELD)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Body {
-        @XmlElementWrapper(name = "items")
-        @XmlElement(name = "item")
+        @JacksonXmlElementWrapper(localName = "items")
+        @JacksonXmlProperty(localName = "item")
         private List<PharmacyApiItem> items;
 
-        @XmlElement(name = "numOfRows")
+        @JsonProperty("numOfRows")
         private Integer numOfRows;
 
-        @XmlElement(name = "pageNo")
+        @JsonProperty("pageNo")
         private Integer pageNo;
 
-        @XmlElement(name = "totalCount")
+        @JsonProperty("totalCount")
         private Integer totalCount;
     }
 }

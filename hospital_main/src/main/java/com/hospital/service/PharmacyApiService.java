@@ -1,14 +1,12 @@
 package com.hospital.service;
 
 import com.hospital.async.PharmacyAsyncRunner;
-import com.hospital.config.RegionConfig;
 import com.hospital.repository.PharmacyApiRepository;
+
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Slf4j
 @Service
@@ -16,19 +14,18 @@ public class PharmacyApiService {
 
     private final PharmacyAsyncRunner pharmacyAsyncRunner;
     private final PharmacyApiRepository pharmacyApiRepository;
-    private final RegionConfig regionConfig;
 
     @Autowired
     public PharmacyApiService(PharmacyAsyncRunner pharmacyAsyncRunner,
-                              PharmacyApiRepository pharmacyApiRepository,
-                              RegionConfig regionConfig) {
+                              PharmacyApiRepository pharmacyApiRepository) {
         this.pharmacyAsyncRunner = pharmacyAsyncRunner;
         this.pharmacyApiRepository = pharmacyApiRepository;
-        this.regionConfig = regionConfig;
     }
 
     /**
      * 전국 약국 데이터 수집 (비동기 처리)
+     * - 시도 구분 없이 전국 데이터를 페이지 단위로 수집
+     * - numOfRows=500, pageNo를 증가시키며 호출
      */
     public int savePharmacy() {
         log.info("전국 약국 데이터 수집 시작");
@@ -38,18 +35,13 @@ public class PharmacyApiService {
         pharmacyApiRepository.resetAutoIncrement();
         log.info("기존 약국 데이터 전체 삭제 완료");
 
-        // 전국 시도코드 가져오기
-        List<String> sidoCodes = regionConfig.getNationwideSidoCodes();
-        
-        // 카운터 초기화 및 비동기 실행
-        pharmacyAsyncRunner.setTotalCount(sidoCodes.size());
-        
-        for (String sidoCd : sidoCodes) {
-            pharmacyAsyncRunner.runAsync(sidoCd);
-        }
+        // 카운터 초기화 및 비동기 실행 (단일 작업)
+        pharmacyAsyncRunner.setTotalCount(1);
+        pharmacyAsyncRunner.runAsync();
 
-        log.info("전국 {}개 시도 비동기 처리 시작", sidoCodes.size());
-        return sidoCodes.size();    }
+        log.info("전국 약국 데이터 비동기 처리 시작");
+        return 1;
+    }
 
     public int getCompletedCount() {
 		return pharmacyAsyncRunner.getCompletedCount();
@@ -57,5 +49,9 @@ public class PharmacyApiService {
 
 	public int getFailedCount() {
 		return pharmacyAsyncRunner.getFailedCount();
+	}
+
+	public int getInsertedCount() {
+		return pharmacyAsyncRunner.getInsertedCount();
 	}
 }

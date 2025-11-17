@@ -1,8 +1,12 @@
 package com.hospital.dto;
 
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,64 +16,71 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JacksonXmlRootElement(localName = "response")
 public class EmergencyApiResponse {
-	
-	@JsonProperty("dutyName")
-	private String dutyName; // 기관명
 
-	@JsonProperty("dutyTel3")
-	private String dutyTel3; // 응급실 전화번호
+	@JsonProperty("header")
+	private Header header;
 
-	@JsonProperty("hpid")
-	private String hpid; // 기관 코드
+	@JsonProperty("body")
+	private Body body;
 
-	@JsonProperty("hvidate")
-	private String lastUpdatedDate; // 입력일시
+	// 직접 header, body에 접근 가능하도록 반환
+	public EmergencyApiResponse getResponse() {
+		return this;
+	}
 
-	// === 핵심 병상 현황 ===
-	@JsonProperty("hvec")
-	private Integer emergencyBeds; // 응급실 일반 병상 (음수=포화)
+	@Getter
+	@Setter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	public static class Header {
 
-	@JsonProperty("hvoc")
-	private Integer operatingBeds; // 수술실 병상
+		@JsonProperty("resultCode")
+		private String ResultCode;
 
-	@JsonProperty("hvgc")
-	private Integer generalWardBeds; // 일반 입원실 병상
+		@JsonProperty("resultMsg")
+		private String ResultMsg;
 
-	// === 장비/서비스 가용성 (Y/N) ===
-	@JsonProperty("hvamyn")
-	private String ambulanceAvailability; // 구급차 가용 여부 (Y/N)
+	}
 
-	@JsonProperty("hvventiayn")
-	private String ventilatorAvailability; // 인공호흡기 가용 (Y/N)
+	@Getter
+	@Setter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	public static class Body {
 
-	@JsonProperty("hvctayn")
-	private String ctAvailability; // CT 가용 (Y/N)
+		@JsonProperty("items")
+		private ApiItemsWrapper items;
 
-	@JsonProperty("hvmriayn")
-	private String mriAvailability; // MRI 가용 (Y/N)
 
-	@JsonProperty("hvcrrtayn")
-	private String crrtAvailability; // CRRT(투석) 가용 (Y/N)
+		@JsonProperty("pageNo")
+		private int pageNo;
 
-    
-    
-    // === 좌표 정보 ===
-    private Double coordinateX;     // x 좌표 (위도)
-    private Double coordinateY;     // y 좌표 (경도)
-    
-    private String emergencyAddress; // 주소
-    
-    
- // 좌표 설정 메서드
- 	public void setCoordinates(Double coordinateX, Double coordinateY) {
- 		this.coordinateX = coordinateX;
- 		this.coordinateY = coordinateY;
- 	}
-   
+		@JsonProperty("numOfRows")
+		private int numOfRows;
+
+		@JsonProperty("totalCount")
+		private int totalCount;
+
+	}
+
+	@Getter
+	@Setter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	public static class ApiItemsWrapper {
+
+		@JacksonXmlElementWrapper(useWrapping = false)
+		@JacksonXmlProperty(localName = "item")
+		private List<EmergencyApiItem> item;
+	}
+
 }
-

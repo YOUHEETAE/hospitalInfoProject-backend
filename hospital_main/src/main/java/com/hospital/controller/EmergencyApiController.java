@@ -6,17 +6,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.hospital.async.EmergencyAsyncRunner;
 import com.hospital.dto.EmergencyWebResponse;
 import com.hospital.service.EmergencyApiService;
+import com.hospital.service.EmergencyLiveService;
 import com.hospital.websocket.EmergencyApiWebSocketHandler;
 
 import lombok.extern.slf4j.Slf4j;
@@ -26,16 +29,37 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/emergency")
 public class EmergencyApiController {
 
-	private final EmergencyApiService emergencyApiService;
-	private final EmergencyApiWebSocketHandler emergencyApiWebSocketHandler;
-	private final EmergencyAsyncRunner emergencyAsyncRunner;
+	@Value("${api.admin.key}")
+	private String adminApiKey;
 
-	public EmergencyApiController(EmergencyApiService emergencyApiService,
+	private final EmergencyLiveService emergencyLiveService;
+	private final EmergencyApiWebSocketHandler emergencyApiWebSocketHandler;
+	private final EmergencyApiService emergencyApiService;
+
+	public EmergencyApiController(EmergencyLiveService emergencyLiveService,
 	                               EmergencyApiWebSocketHandler emergencyApiWebSocketHandler,
-	                               EmergencyAsyncRunner emergencyAsyncRunner) {
-		this.emergencyApiService = emergencyApiService;
+	                               EmergencyApiService emergencyApiService) {
+		this.emergencyLiveService = emergencyLiveService;
 		this.emergencyApiWebSocketHandler = emergencyApiWebSocketHandler;
-		this.emergencyAsyncRunner = emergencyAsyncRunner;
+		this.emergencyApiService = emergencyApiService;
+	}
+	
+	private boolean isValidApiKey(String apiKey) {
+		if (apiKey == null || apiKey.trim().isEmpty()) {
+			return false;
+		}
+		return adminApiKey.equals(apiKey);
+	}
+
+	private ResponseEntity<Map<String, Object>> unauthorizedResponse() {
+		Map<String, Object> response = new HashMap<>();
+		response.put("success", false);
+		response.put("error", "UNAUTHORIZED");
+		response.put("message", "유효하지 않은 API 키입니다");
+		response.put("timestamp", LocalDateTime.now());
+
+		log.warn("API 키 인증 실패");
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
 	}
 
 	@GetMapping(value = "/start", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -43,7 +67,7 @@ public class EmergencyApiController {
 	    log.info("응급실 정보 즉시 수집 시작...");
 
 	    // EmergencyApiService를 통해 배치 매핑 적용
-	    List<EmergencyWebResponse> emergencyData = emergencyApiService.fetchAndMapEmergencyData();
+	    List<EmergencyWebResponse> emergencyData = emergencyLiveService.fetchAndMapEmergencyData();
 
 	    Map<String, Object> response = new HashMap<>();
 	    response.put("success", true);
@@ -66,7 +90,7 @@ public class EmergencyApiController {
 	    emergencyApiWebSocketHandler.closeAllSessions();
 
 	    // 혹시 남아있을 스케줄러 강제 중지
-	    emergencyApiService.stopScheduler();
+	    emergencyLiveService.stopScheduler();
 
 	    Map<String, Object> response = new HashMap<>();
 	    response.put("success", true);
@@ -82,9 +106,9 @@ public class EmergencyApiController {
 	public ResponseEntity<Map<String, Object>> getServiceStatus() {
 	    log.info("응급실 서비스 상태 조회...");
 
-	    boolean schedulerRunning = emergencyApiService.isSchedulerRunning();
+	    boolean schedulerRunning = emergencyLiveService.isSchedulerRunning();
 	    int connectedSessions = emergencyApiWebSocketHandler.getConnectedSessionCount();
-	    Map<String, Object> stats = emergencyApiService.getStats();
+	    Map<String, Object> stats = emergencyLiveService.getStats();
 
 	    Map<String, Object> response = new HashMap<>();
 	    response.put("success", true);
@@ -92,7 +116,7 @@ public class EmergencyApiController {
 	    response.put("connectedWebSocketSessions", connectedSessions);
 	    response.put("connectionStatus", emergencyApiWebSocketHandler.getConnectionStatus());
 	    response.put("collectionStats", stats);
-	    response.put("lastDataCount", emergencyApiService.getEmergencyRoomData().size());
+	    response.put("lastDataCount", emergencyLiveService.getEmergencyRoomData().size());
 	    response.put("timestamp", LocalDateTime.now());
 
 	    if (schedulerRunning && connectedSessions > 0) {
@@ -114,7 +138,47 @@ public class EmergencyApiController {
 
 	@GetMapping("/manual-start")
 	public ResponseEntity<String> manualStart() {
-	    emergencyApiService.onWebSocketConnected();
+		emergencyLiveService.onWebSocketConnected();
 	    return ResponseEntity.ok("수동으로 스케줄러 시작됨");
 	}
+
+	/**
+	 * 응급실 코드 데이터 수집 및 DB 저장
+	 */
+	@PostMapping(value = "/codes/save", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String, Object>> saveEmergencyCodes(
+			@RequestHeader(value = "X-API-Key", required = false) String apiKey) {
+
+		// API 키 검증
+		if (!isValidApiKey(apiKey)) {
+			return unauthorizedResponse();
+		}
+
+		log.info("응급실 코드 데이터 수집 요청...");
+
+		try {
+			int savedCount = emergencyApiService.saveEmergencyCodes();
+
+			Map<String, Object> response = new HashMap<>();
+			response.put("success", true);
+			response.put("message", "응급실 코드 데이터 저장 완료");
+			response.put("savedCount", savedCount);
+			response.put("timestamp", LocalDateTime.now());
+
+			log.info("응급실 코드 데이터 저장 완료 - {}건", savedCount);
+			return ResponseEntity.ok(response);
+
+		} catch (Exception e) {
+			log.error("응급실 코드 데이터 저장 실패: {}", e.getMessage(), e);
+
+			Map<String, Object> response = new HashMap<>();
+			response.put("success", false);
+			response.put("error", "SAVE_FAILED");
+			response.put("message", "응급실 코드 데이터 저장 실패: " + e.getMessage());
+			response.put("timestamp", LocalDateTime.now());
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+	}
+
 }

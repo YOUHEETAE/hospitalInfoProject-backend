@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.hospital.service.EmergencyApiService;
+import com.hospital.service.EmergencyLiveService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,10 +21,10 @@ public class EmergencyApiWebSocketHandler extends TextWebSocketHandler {
 
     private final Set<WebSocketSession> sessions = Collections.synchronizedSet(new HashSet<>());
 
-    private EmergencyApiService emergencyApiService;
+    private EmergencyLiveService emergencyApiService;
 
     @Autowired
-    public void setEmergencyApiService(EmergencyApiService emergencyApiService) {
+    public void setEmergencyApiService(EmergencyLiveService emergencyApiService) {
         this.emergencyApiService = emergencyApiService;
     }
 

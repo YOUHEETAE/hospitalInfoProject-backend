@@ -20,7 +20,7 @@
 	<logger name="org.mariadb" level="WARN" />
 
 	<logger name="org.springframework" level="INFO" />
-	<logger name="com.hospital" level="INFO" />
+	<logger name="com.hospital" level="debug" />
 
 	<root level="INFO">
 		<appender-ref ref="CONSOLE" />

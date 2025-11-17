@@ -68,7 +68,7 @@ public class EmergencyWebResponse {
 	@JsonInclude(content = JsonInclude.Include.NON_NULL)
 	public Map<String, Integer> availableBeds;
 	
-	public static EmergencyWebResponse from(EmergencyApiResponse api) {
+	public static EmergencyWebResponse from(EmergencyApiItem api) {
 	   List<String> equipmentData = availableEquipment(api);
 	   Map<String, Integer> BedsData = availableBeds(api);
 
@@ -122,7 +122,7 @@ public class EmergencyWebResponse {
 }
 
 	// 장비 추출 로직 분리 (Y/N 문자열 처리)
-	private static List<String> availableEquipment(EmergencyApiResponse api) {
+	private static List<String> availableEquipment(EmergencyApiItem api) {
 	    Map<String, String> equipmentMap = new LinkedHashMap<>();
 	    equipmentMap.put("인공호흡기", api.getVentilatorAvailability());
 	    equipmentMap.put("CT", api.getCtAvailability());
@@ -135,7 +135,7 @@ public class EmergencyWebResponse {
 	        .collect(Collectors.toList());
 	}
 	
-	private static Map<String, Integer> availableBeds(EmergencyApiResponse api){
+	private static Map<String, Integer> availableBeds(EmergencyApiItem api){
 		Map <String, Integer> bedsMap = new LinkedHashMap<>();
 
 		// null 값을 가진 항목은 Map에 추가하지 않음
