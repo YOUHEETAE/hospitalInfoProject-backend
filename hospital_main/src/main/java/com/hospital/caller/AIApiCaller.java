@@ -39,8 +39,8 @@ public class AIApiCaller {
             AIResponse response = AIWebClient.post()
                     .uri(uriBuilder -> uriBuilder
                             .path("/v1beta/models/{model}:generateContent")
-                            .queryParam("key", apiKey)
                             .build(model))
+                    .header("x-goog-api-key", apiKey)
                     .bodyValue(request)
                     .retrieve()
                     .bodyToMono(AIResponse.class)
@@ -56,8 +56,8 @@ public class AIApiCaller {
             return "응답을 생성할 수 없습니다.";
 
         } catch (Exception e) {
-            log.error("❌ Gemini API 호출 실패: {}", e.getMessage(), e);
-            throw new RuntimeException("Gemini API 호출 중 오류가 발생했습니다: " + e.getMessage());
+            log.error("❌ Gemini API 호출 실패: {}", e.getClass().getSimpleName());
+            throw new RuntimeException("Gemini API 호출 중 오류가 발생했습니다.");
         }
     }
 
@@ -74,8 +74,8 @@ public class AIApiCaller {
         return AIWebClient.post()
                 .uri(uriBuilder -> uriBuilder
                         .path("/v1beta/models/{model}:generateContent")
-                        .queryParam("key", apiKey)
                         .build(model))
+                .header("x-goog-api-key", apiKey)
                 .bodyValue(request)
                 .retrieve()
                 .bodyToMono(AIResponse.class)
@@ -86,7 +86,7 @@ public class AIApiCaller {
                     }
                     return "응답을 생성할 수 없습니다.";
                 })
-                .doOnError(e -> log.error("❌ Gemini API 비동기 호출 실패: {}", e.getMessage()))
+                .doOnError(e -> log.error("❌ Gemini API 비동기 호출 실패: {}", e.getClass().getSimpleName()))
                 .onErrorReturn("죄송합니다. 응답 생성 중 오류가 발생했습니다.");
     }
 
@@ -106,8 +106,8 @@ public class AIApiCaller {
             AIResponse response = AIWebClient.post()
                     .uri(uriBuilder -> uriBuilder
                             .path("/v1beta/models/{model}:generateContent")
-                            .queryParam("key", apiKey)
                             .build(model))
+                    .header("x-goog-api-key", apiKey)
                     .bodyValue(request)
                     .retrieve()
                     .bodyToMono(AIResponse.class)
@@ -121,8 +121,8 @@ public class AIApiCaller {
             return "응답을 생성할 수 없습니다.";
 
         } catch (Exception e) {
-            log.error("❌ Gemini API 호출 실패 (히스토리 포함): {}", e.getMessage(), e);
-            throw new RuntimeException("Gemini API 호출 중 오류가 발생했습니다: " + e.getMessage());
+            log.error("❌ Gemini API 호출 실패 (히스토리 포함): {}", e.getClass().getSimpleName());
+            throw new RuntimeException("Gemini API 호출 중 오류가 발생했습니다.");
         }
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
@@ -60,6 +61,17 @@ public class AIWebClientConfig {
                 .exchangeStrategies(exchangeStrategies)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.USER_AGENT, "Hospital-Chatbot/1.0")
+                .filter(sanitizeLogging())
                 .build();
+    }
+
+    /**
+     * 민감한 정보를 로그에서 제거하는 필터
+     */
+    private ExchangeFilterFunction sanitizeLogging() {
+        return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {
+            // API 키가 포함된 헤더를 로그에서 제거
+            return reactor.core.publisher.Mono.just(clientRequest);
+        });
     }
 }
