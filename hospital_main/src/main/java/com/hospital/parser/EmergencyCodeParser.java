@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.hospital.dto.EmergencyApiItem;
 import com.hospital.dto.EmergencyApiResponse;
-import com.hospital.entity.EmergencyCode;
+import com.hospital.entity.EmergencyLocation;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,9 +19,9 @@ import lombok.extern.slf4j.Slf4j;
 public class EmergencyCodeParser {
 
 	/**
-	 * EmergencyApiResponse에서 응급실 코드(hpid) 추출하여 EmergencyCode 엔티티 리스트로 변환
+	 * EmergencyApiResponse에서 응급실 코드(hpid) 추출하여 EmergencyLocation 엔티티 리스트로 변환
 	 */
-	public List<EmergencyCode> parseCode(EmergencyApiResponse apiResponse) {
+	public List<EmergencyLocation> parseCode(EmergencyApiResponse apiResponse) {
 		log.debug("응급실 코드 파싱 시작");
 
 		if (apiResponse == null) {
@@ -29,12 +29,12 @@ public class EmergencyCodeParser {
 			return Collections.emptyList();
 		}
 
-		List<EmergencyCode> codes = extractAndConvertItems(apiResponse);
+		List<EmergencyLocation> codes = extractAndConvertItems(apiResponse);
 		log.debug("응급실 코드 파싱 완료 - 변환된 코드 수: {}", codes.size());
 		return codes;
 	}
 
-	private List<EmergencyCode> extractAndConvertItems(EmergencyApiResponse response) {
+	private List<EmergencyLocation> extractAndConvertItems(EmergencyApiResponse response) {
 		return Optional.ofNullable(response)
 				.map(EmergencyApiResponse::getBody)
 				.map(EmergencyApiResponse.Body::getItems)
@@ -46,13 +46,13 @@ public class EmergencyCodeParser {
 				.collect(Collectors.toList());
 	}
 
-	private EmergencyCode convertToEmergencyCode(EmergencyApiItem itemDto) {
+	private EmergencyLocation convertToEmergencyCode(EmergencyApiItem itemDto) {
 		if (itemDto == null || itemDto.getHpid() == null || itemDto.getHpid().trim().isEmpty()) {
 			log.warn("유효하지 않은 데이터 - hpid 없음");
 			return null;
 		}
 
-		return EmergencyCode.builder()
+		return EmergencyLocation.builder()
 				.emergencyCode(itemDto.getHpid())
 				.build();
 	}

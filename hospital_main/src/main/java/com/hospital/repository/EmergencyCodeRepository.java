@@ -5,9 +5,9 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.hospital.entity.EmergencyCode;
+import com.hospital.entity.EmergencyLocation;
 
-public interface EmergencyCodeRepository extends JpaRepository<EmergencyCode, String> {
+public interface EmergencyCodeRepository extends JpaRepository<EmergencyLocation, String> {
 
 	@Modifying
 	@Transactional

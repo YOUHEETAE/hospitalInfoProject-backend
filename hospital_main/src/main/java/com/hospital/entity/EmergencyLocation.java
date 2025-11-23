@@ -22,7 +22,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 @DynamicUpdate
-public class EmergencyCode {
+public class EmergencyLocation {
 
 	@Id
 	@Column(name = "emergency_code", length = 50)

@@ -3,7 +3,7 @@ package com.hospital.service;
 import com.hospital.async.EmergencyAsyncRunner;
 import com.hospital.caller.EmergencyApiCaller;
 import com.hospital.dto.EmergencyApiResponse;
-import com.hospital.entity.EmergencyCode;
+import com.hospital.entity.EmergencyLocation;
 import com.hospital.parser.EmergencyCodeParser;
 import com.hospital.repository.EmergencyCodeRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +50,7 @@ public class EmergencyApiService {
 			}
 
 			// 응급실 코드 파싱
-			List<EmergencyCode> emergencyCodes = emergencyCodeParser.parseCode(response);
+			List<EmergencyLocation> emergencyCodes = emergencyCodeParser.parseCode(response);
 
 			if (emergencyCodes.isEmpty()) {
 				log.warn("파싱된 응급실 코드가 없습니다.");
