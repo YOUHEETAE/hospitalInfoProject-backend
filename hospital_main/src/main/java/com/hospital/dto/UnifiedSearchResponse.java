@@ -26,6 +26,9 @@ public class UnifiedSearchResponse {
 	private String tel;
 	private Double coordinateX;
 	private Double coordinateY;
+	private String todayOpen;
+	private String todayClose;
+	private Map<String, Map<String, String>> weeklySchedule;
 
 	// 병원 전용 필드
 	private String hospitalCode;
@@ -36,9 +39,6 @@ public class UnifiedSearchResponse {
 	private String weekdayLunch;
 	private Integer parkingCapacity;
 	private Boolean parkingFee;
-	private String todayOpen;
-	private String todayClose;
-	private Map<String, Map<String, String>> weeklySchedule;
 	private String noTrmtHoli;
 	private String noTrmtSun;
 	private List<String> medicalSubjects;
@@ -46,6 +46,9 @@ public class UnifiedSearchResponse {
 
 	// 약국 전용 필드
 	private String pharmacyCode;
+	private String pharmacyFax;
+	private String pharmacyEtc;
+	private String pharmacyMapInfo;
 
 	// 변환 메서드
 	public static UnifiedSearchResponse fromHospital(HospitalWebResponse hospital) {
@@ -65,6 +68,9 @@ public class UnifiedSearchResponse {
 	public static UnifiedSearchResponse fromPharmacy(PharmacyWebResponse pharmacy) {
 		return UnifiedSearchResponse.builder().medicalType("PHARMACY").pharmacyCode(pharmacy.getPharmacyCode())
 				.name(pharmacy.getPharmacyName()).address(pharmacy.getPharmacyAddress()).tel(pharmacy.getPharmacyTel())
-				.coordinateX(pharmacy.getCoordinateX()).coordinateY(pharmacy.getCoordinateY()).build();
+				.coordinateX(pharmacy.getCoordinateX()).coordinateY(pharmacy.getCoordinateY())
+				.pharmacyFax(pharmacy.getPharmacyFax()).pharmacyEtc(pharmacy.getPharmacyEtc())
+				.pharmacyMapInfo(pharmacy.getPharmacyMapInfo()).todayOpen(pharmacy.getTodayOpen())
+				.todayClose(pharmacy.getTodayClose()).weeklySchedule(pharmacy.getWeeklySchedule()).build();
 	}
 }
