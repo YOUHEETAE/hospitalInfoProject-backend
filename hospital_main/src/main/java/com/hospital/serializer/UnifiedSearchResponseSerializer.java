@@ -52,9 +52,15 @@ public class UnifiedSearchResponseSerializer extends StdSerializer<UnifiedSearch
             writeIfNotNull(gen, "pharmacyCode", value.getPharmacyCode());
             writeIfNotNull(gen, "pharmacyName", value.getName());
             writeIfNotNull(gen, "pharmacyAddress", value.getAddress());
-            writeIfNotNull(gen, "PharmacyTel", value.getTel());
+            writeIfNotNull(gen, "pharmacyTel", value.getTel());
+            writeIfNotNull(gen, "pharmacyFax", value.getPharmacyFax());
+            writeIfNotNull(gen, "pharmacyEtc", value.getPharmacyEtc());
+            writeIfNotNull(gen, "pharmacyMapInfo", value.getPharmacyMapInfo());
             writeIfNotNull(gen, "coordinateX", value.getCoordinateX());
             writeIfNotNull(gen, "coordinateY", value.getCoordinateY());
+            writeIfNotNull(gen, "todayOpen", value.getTodayOpen());
+            writeIfNotNull(gen, "todayClose", value.getTodayClose());
+            writeIfNotNull(gen, "weeklySchedule", value.getWeeklySchedule());
         }
 
         gen.writeEndObject();
