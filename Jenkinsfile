@@ -92,7 +92,7 @@ gemini.api.model=${GEMINI_API_MODEL}
 chatbot.system-prompt-file=${CHATBOT_SYSTEM_PROMPT_FILE}
 
 # Disease Statistics API
-diseasesStats.api.key=${DISEASE_STATS_API_KEY}
+diseasesStats.api.Key=${DISEASE_STATS_API_KEY}
 diseasesStats.api.base-url=${DISEASE_STATS_API_BASE_URL}
 """
 
