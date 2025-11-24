@@ -429,7 +429,7 @@ ENDSSH
                             ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} '
                                 echo "🏥 헬스체크 시작..."
                                 sleep 10
-                                curl -f -s --connect-timeout 5 http://${EC2_HOST}:8888/api/proDoc/status > /dev/null && echo "✅ 백엔드 정상" || echo "⚠️ 백엔드 확인 필요"
+                                curl -f -s --connect-timeout 5 http://${EC2_HOST}:8888/actuator/health > /dev/null && echo "✅ 백엔드 정상" || echo "⚠️ 백엔드 확인 필요"
                                 curl -f -s --connect-timeout 5 http://${EC2_HOST}:9090/-/healthy > /dev/null && echo "✅ 프로메테우스 정상" || echo "⚠️ 프로메테우스 확인 필요"
                                 curl -f -s --connect-timeout 5 http://${EC2_HOST}:3000/api/health > /dev/null && echo "✅ 그라파나 정상" || echo "⚠️ 그라파나 확인 필요"
                             '
@@ -445,4 +445,5 @@ ENDSSH
             sh 'rm -f backend.tar.gz deploy_pkg.tar.gz *.yml env.prod || true'
         }
     }
+
 }
