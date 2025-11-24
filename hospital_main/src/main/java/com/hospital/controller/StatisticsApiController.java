@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hospital.service.DiseaseStatsService;
+import com.hospital.service.DiseaseStatsApiService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,9 +27,9 @@ public class StatisticsApiController {
 	@Value("${api.admin.key}")
 	private String adminApiKey;
 
-	private final DiseaseStatsService diseaseStatsService;
+	private final DiseaseStatsApiService diseaseStatsService;
 
-	public StatisticsApiController(DiseaseStatsService diseaseStatsService) {
+	public StatisticsApiController(DiseaseStatsApiService diseaseStatsService) {
 		this.diseaseStatsService = diseaseStatsService;
 	}
 
