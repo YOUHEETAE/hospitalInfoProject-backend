@@ -62,13 +62,14 @@ public class DiseaseStatsConverter {
 
 	private List<DiseaseStatsWebResponse.WeeklyData> convertToWeeklyDataList(List<DiseaseStats> entities) {
 		LocalDate today = LocalDate.now();
+		LocalDate thisWeekMonday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
 
 		return entities.stream()
 				.map(this::convertToWeeklyData)
 				.filter(data -> {
 					try {
 						LocalDate dataDate = LocalDate.parse(data.getPeriod());
-						return dataDate.isBefore(today);
+						return dataDate.isBefore(thisWeekMonday);
 					} catch (Exception e) {
 						log.warn("날짜 파싱 실패로 데이터 제외: {}", data.getPeriod());
 						return false;
@@ -86,16 +87,20 @@ public class DiseaseStatsConverter {
 
 		DiseaseStats first = entities.get(0);
 
-		// "계" 데이터 찾기
-		Integer totalCount = entities.stream().filter(e -> "계".equals(e.getPeriod())).findFirst()
-				.map(e -> convertStringToInteger(e.getResultValue())).orElse(0);
-
 		// "계" 제외한 주차 데이터만
 		List<DiseaseStats> weeklyEntities = entities.stream().filter(e -> !"계".equals(e.getPeriod()))
 				.collect(Collectors.toList());
 
+		// 필터링된 주차 데이터 변환
+		List<DiseaseStatsWebResponse.WeeklyData> weeklyDataList = convertToWeeklyDataList(weeklyEntities);
+
+		// 필터링된 데이터의 합계 계산
+		Integer totalCount = weeklyDataList.stream()
+				.mapToInt(DiseaseStatsWebResponse.WeeklyData::getCount)
+				.sum();
+
 		return DiseaseStatsWebResponse.builder().icdGroupName(first.getIcdGroupName()).icdName(first.getIcdName())
-				.weeklyData(convertToWeeklyDataList(weeklyEntities)).totalCount(totalCount).build();
+				.weeklyData(weeklyDataList).totalCount(totalCount).build();
 	}
 
 	public List<DiseaseStatsWebResponse> convertToDtos(List<DiseaseStats> entities) {
