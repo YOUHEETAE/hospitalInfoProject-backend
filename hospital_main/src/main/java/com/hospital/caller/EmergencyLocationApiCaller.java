@@ -1,40 +1,47 @@
 package com.hospital.caller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.hospital.dto.EmergencyApiResponse;
-import lombok.extern.slf4j.Slf4j;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.hospital.dto.EmergencyApiResponse;
+import com.hospital.dto.EmergencyLocationApiResponse;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
-public class EmergencyApiCaller {
+public class EmergencyLocationApiCaller {
 
 	private final RestTemplate restTemplate;
 	private final XmlMapper xmlMapper;
 
-	@Value("${hospital.emergency.api.baseUrl}")
+	@Value("${hospital.emergencyLocation.api.baseUrl}")
 	private String baseUrl;
 
 	@Value("${hospital.emergency.api.serviceKey}")
 	private String serviceKey;
 
-	public EmergencyApiCaller(RestTemplate restTemplate, XmlMapper xmlMapper) {
+	public EmergencyLocationApiCaller(RestTemplate restTemplate, XmlMapper xmlMapper) {
 		this.restTemplate = restTemplate;
 		this.xmlMapper = xmlMapper;
 	}
 
-	public EmergencyApiResponse callApi(int pageNo, int numOfRows) {
+	public EmergencyLocationApiResponse callApi(int pageNo, int numOfRows) {
 	    try {
 	        String encodedServiceKey = URLEncoder.encode(serviceKey, StandardCharsets.UTF_8.toString());
 
@@ -65,7 +72,7 @@ public class EmergencyApiCaller {
 	        log.debug("응급실 API 응답 길이: {} bytes", responseBody.length());
 
 	        // XML 응답을 EmergencyApiResponse DTO로 매핑
-	        EmergencyApiResponse mappedResponse = xmlMapper.readValue(responseBody, EmergencyApiResponse.class);
+	        EmergencyLocationApiResponse mappedResponse = xmlMapper.readValue(responseBody, EmergencyLocationApiResponse.class);
 
 	        // resultCode 검사
 	        if (mappedResponse.getHeader() == null) {

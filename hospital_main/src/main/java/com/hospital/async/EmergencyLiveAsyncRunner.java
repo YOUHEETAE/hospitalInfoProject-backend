@@ -19,7 +19,7 @@ import java.util.function.Consumer;
 
 @Service
 @Slf4j
-public class EmergencyAsyncRunner {
+public class EmergencyLiveAsyncRunner {
 
     private final EmergencyApiCaller apiCaller;
     private final TaskScheduler taskScheduler;
@@ -33,7 +33,7 @@ public class EmergencyAsyncRunner {
     private final AtomicInteger processedCount = new AtomicInteger(0);
 
     @Autowired
-    public EmergencyAsyncRunner(EmergencyApiCaller apiCaller,
+    public EmergencyLiveAsyncRunner(EmergencyApiCaller apiCaller,
                                TaskScheduler taskScheduler) {
         this.apiCaller = apiCaller;
         this.taskScheduler = taskScheduler;
@@ -79,7 +79,7 @@ public class EmergencyAsyncRunner {
         try {
             log.info("🔄 전국 응급실 데이터 호출 시작 (pageNo=1, numOfRows=500)");
 
-            EmergencyApiResponse response = apiCaller.callEmergencyApiByCityPage(1, 500);
+            EmergencyApiResponse response = apiCaller.callApi(1, 500);
 
             if (response == null || response.getBody() == null) {
                 log.warn("⚠️ API 응답 없음");
