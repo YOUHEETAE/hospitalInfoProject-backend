@@ -5,9 +5,8 @@ pipeline {
         // Docker 이미지 설정
         IMAGE_NAME = 'hospital-backend'
         IMAGE_TAG = "${BUILD_NUMBER}"
-        
-        // EC2 배포 환경
-        EC2_HOST = credentials('EC2_HOST')
+
+        // EC2 배포 환경 (공인 IP는 자동 감지)
         EC2_USER = credentials('EC2_USER')
         
         // 데이터베이스 설정
@@ -50,6 +49,24 @@ pipeline {
     }
     
     stages {
+        stage('EC2 공인 IP 자동 감지') {
+            steps {
+                script {
+                    def publicIp = sh(
+                        script: 'curl -s --connect-timeout 5 http://169.254.169.254/latest/meta-data/public-ipv4 || echo ""',
+                        returnStdout: true
+                    ).trim()
+
+                    if (publicIp) {
+                        env.EC2_HOST = publicIp
+                        echo "✅ EC2 공인 IP 자동 감지: ${publicIp}"
+                    } else {
+                        error "❌ EC2 메타데이터에서 공인 IP를 가져올 수 없습니다."
+                    }
+                }
+            }
+        }
+
         stage('소스코드 체크아웃') {
             steps {
                 checkout scm
