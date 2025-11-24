@@ -44,6 +44,9 @@ pipeline {
         GEMINI_API_MODEL = credentials('GEMINI_API_MODEL')
         
         CHATBOT_SYSTEM_PROMPT_FILE = credentials('CHATBOT_SYSTEM_PROMPT_FILE')
+
+        DISEASE_STATS_API_KEY = credentials('DISEASE_STATS_API_KEY')
+        DISEASE_STATS_API_BASE_URL = credentials('DISEASE_STATS_API_BASE_URL')
     }
     
     stages {
@@ -87,6 +90,10 @@ gemini.api.model=${GEMINI_API_MODEL}
 
 # Chatbot
 chatbot.system-prompt-file=${CHATBOT_SYSTEM_PROMPT_FILE}
+
+# Disease Statistics API
+diseasesStats.api.key=${DISEASE_STATS_API_KEY}
+diseasesStats.api.base-url=${DISEASE_STATS_API_BASE_URL}
 """
 
                     // DB Properties 생성
@@ -158,6 +165,9 @@ GEMINI_API_URL=${GEMINI_API_URL}
 GEMINI_API_MODEL=${GEMINI_API_MODEL}
 
 CHATBOT_SYSTEM_PROMPT_FILE=${CHATBOT_SYSTEM_PROMPT_FILE}
+
+DISEASE_STATS_API_KEY=${DISEASE_STATS_API_KEY}
+DISEASE_STATS_API_BASE_URL=${DISEASE_STATS_API_BASE_URL}
 """
 
                     // 2. Prometheus Core Config

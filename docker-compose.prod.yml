@@ -68,6 +68,10 @@ services:
 
       # Chatbot 환경변수
       - CHATBOT_SYSTEM_PROMPT_FILE=${CHATBOT_SYSTEM_PROMPT_FILE}
+
+      # Disease Statistics API 환경변수
+      - DISEASE_STATS_API_KEY=${DISEASE_STATS_API_KEY}
+      - DISEASE_STATS_API_BASE_URL=${DISEASE_STATS_API_BASE_URL}
     volumes:
       - /opt/hospital/logs/backend:/app/logs
     depends_on:
