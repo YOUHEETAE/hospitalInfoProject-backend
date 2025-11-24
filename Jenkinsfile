@@ -52,16 +52,19 @@ pipeline {
         stage('EC2 공인 IP 자동 감지') {
             steps {
                 script {
+                    // EC2 메타데이터에서 공인 IP 가져오기 시도
                     def publicIp = sh(
-                        script: 'curl -s --connect-timeout 5 http://169.254.169.254/latest/meta-data/public-ipv4 || echo ""',
+                        script: 'curl -s --connect-timeout 5 http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null || echo ""',
                         returnStdout: true
                     ).trim()
 
-                    if (publicIp) {
+                    if (publicIp && publicIp != "") {
                         env.EC2_HOST = publicIp
                         echo "✅ EC2 공인 IP 자동 감지: ${publicIp}"
                     } else {
-                        error "❌ EC2 메타데이터에서 공인 IP를 가져올 수 없습니다."
+                        // 메타데이터 접근 실패 시 localhost 사용 (같은 서버에서 배포)
+                        env.EC2_HOST = "localhost"
+                        echo "⚠️ EC2 메타데이터 접근 불가 - localhost 사용 (같은 서버 배포)"
                     }
                 }
             }
