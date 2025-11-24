@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hospital.dto.EmergencyWebResponse;
-import com.hospital.service.EmergencyApiService;
+import com.hospital.service.EmergencyLocationApiService;
 import com.hospital.service.EmergencyLiveService;
 import com.hospital.websocket.EmergencyApiWebSocketHandler;
 
@@ -34,14 +34,14 @@ public class EmergencyApiController {
 
 	private final EmergencyLiveService emergencyLiveService;
 	private final EmergencyApiWebSocketHandler emergencyApiWebSocketHandler;
-	private final EmergencyApiService emergencyApiService;
+	private final EmergencyLocationApiService emergencyLocationApiService;
 
 	public EmergencyApiController(EmergencyLiveService emergencyLiveService,
 	                               EmergencyApiWebSocketHandler emergencyApiWebSocketHandler,
-	                               EmergencyApiService emergencyApiService) {
+	                               EmergencyLocationApiService emergencyLocationApiService) {
 		this.emergencyLiveService = emergencyLiveService;
 		this.emergencyApiWebSocketHandler = emergencyApiWebSocketHandler;
-		this.emergencyApiService = emergencyApiService;
+		this.emergencyLocationApiService = emergencyLocationApiService;
 	}
 	
 	private boolean isValidApiKey(String apiKey) {
@@ -145,8 +145,8 @@ public class EmergencyApiController {
 	/**
 	 * 응급실 코드 데이터 수집 및 DB 저장
 	 */
-	@PostMapping(value = "/codes/save", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Map<String, Object>> saveEmergencyCodes(
+	@PostMapping(value = "/location/save", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String, Object>> saveEmergenyLocations(
 			@RequestHeader(value = "X-API-Key", required = false) String apiKey) {
 
 		// API 키 검증
@@ -157,15 +157,14 @@ public class EmergencyApiController {
 		log.info("응급실 코드 데이터 수집 요청...");
 
 		try {
-			int savedCount = emergencyApiService.saveEmergencyCodes();
+			emergencyLocationApiService.saveEmergencyLocations();
 
 			Map<String, Object> response = new HashMap<>();
 			response.put("success", true);
 			response.put("message", "응급실 코드 데이터 저장 완료");
-			response.put("savedCount", savedCount);
 			response.put("timestamp", LocalDateTime.now());
 
-			log.info("응급실 코드 데이터 저장 완료 - {}건", savedCount);
+			log.info("응급실 코드 데이터 저장 완료");
 			return ResponseEntity.ok(response);
 
 		} catch (Exception e) {

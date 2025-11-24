@@ -1,29 +1,32 @@
 package com.hospital.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hospital.async.EmergencyAsyncRunner;
-import com.hospital.dto.EmergencyWebResponse;
-import com.hospital.entity.HospitalMain;
-import com.hospital.repository.HospitalMainApiRepository;
-import com.hospital.websocket.EmergencyApiWebSocketHandler;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hospital.async.EmergencyLiveAsyncRunner;
+import com.hospital.dto.EmergencyWebResponse;
+import com.hospital.repository.EmergencyLocationRepository;
+import com.hospital.repository.HospitalMainApiRepository;
+import com.hospital.websocket.EmergencyApiWebSocketHandler;
+
 @Service
 public class EmergencyLiveService {
 
-    private final EmergencyAsyncRunner asyncRunner;
+    private final EmergencyLiveAsyncRunner asyncRunner;
     private final EmergencyApiWebSocketHandler webSocketHandler;
     private final ObjectMapper objectMapper;
-    private final HospitalMainApiRepository hospitalMainApiRepository;
+    private final EmergencyLocationRepository emergencyLocationRepository;
     private volatile String latestEmergencyJson = null;
     private final AtomicBoolean schedulerRunning = new AtomicBoolean(false);
 
@@ -32,9 +35,9 @@ public class EmergencyLiveService {
 
     @Autowired
     @Lazy
-    public EmergencyLiveService(EmergencyAsyncRunner asyncRunner,
+    public EmergencyLiveService(EmergencyLiveAsyncRunner asyncRunner,
                               EmergencyApiWebSocketHandler webSocketHandler,
-                              HospitalMainApiRepository hospitalMainApiRepository) {
+                              EmergencyLocationRepository emergencyLocationRepository) {
         this.asyncRunner = asyncRunner;
         this.webSocketHandler = webSocketHandler;
         this.objectMapper = new ObjectMapper();
@@ -44,7 +47,7 @@ public class EmergencyLiveService {
             .setInclude(com.fasterxml.jackson.annotation.JsonInclude.Value.construct(
                 com.fasterxml.jackson.annotation.JsonInclude.Include.ALWAYS,
                 com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL));
-        this.hospitalMainApiRepository = hospitalMainApiRepository;
+        this.emergencyLocationRepository = emergencyLocationRepository;
     }
 
     /**
@@ -112,7 +115,7 @@ public class EmergencyLiveService {
     /**
      * 캐시 없을 때 WebSocket 초기 연결 시 즉시 fetch하여 전송
      */
-    public void fetchAndSendInitialData(org.springframework.web.socket.WebSocketSession session) {
+    public void fetchAndSendInitialData(WebSocketSession session) {
         try {
             List<EmergencyWebResponse> freshData = fetchAndMapEmergencyData();
             String jsonData = objectMapper.writeValueAsString(freshData);
@@ -122,7 +125,7 @@ public class EmergencyLiveService {
 
             // 세션에 전송
             if (session.isOpen()) {
-                session.sendMessage(new org.springframework.web.socket.TextMessage(jsonData));
+                session.sendMessage(new TextMessage(jsonData));
                 System.out.println("✅ 최신 데이터 fetch 및 전송 완료: " + session.getId() + " (" + freshData.size() + "건)");
             }
         } catch (Exception e) {
@@ -167,74 +170,58 @@ public class EmergencyLiveService {
     }
 
     /**
-     * 배치로 좌표 매핑 (성능 최적화 - IN 쿼리)
+     * 배치로 좌표 매핑 (hpid 기반)
      */
     private List<EmergencyWebResponse> mapCoordinatesBatch(List<EmergencyWebResponse> dtoList) {
-        long startTime = System.currentTimeMillis();
-        System.out.println("🔍 매핑 시작 - 응급실 데이터: " + dtoList.size() + "건");
-
-        // 1. 응급실 병원명 추출 (공백 제거)
-        long t1 = System.currentTimeMillis();
-        List<String> normalizedEmergencyNames = dtoList.stream()
-            .map(dto -> dto.getDutyName().replaceAll("\\s+", ""))
+        // hpid 목록 추출
+        List<String> hpidList = dtoList.stream()
+            .map(EmergencyWebResponse::getHpid)
+            .filter(hpid -> hpid != null && !hpid.isEmpty())
             .distinct()
             .collect(Collectors.toList());
-        long extractTime = System.currentTimeMillis() - t1;
-        System.out.println("✅ [1단계] 응급실 병원명 추출 완료: " + normalizedEmergencyNames.size() + "건 / " + extractTime + "ms");
 
-        // 2. IN 쿼리로 필요한 병원만 조회 (Projection)
-        long t2 = System.currentTimeMillis();
-        List<Object[]> hospitalProjections = hospitalMainApiRepository.findByNormalizedNamesForCoordinateMapping(normalizedEmergencyNames);
-        long queryTime = System.currentTimeMillis() - t2;
-        System.out.println("✅ [2단계] DB IN 쿼리 조회 완료: " + hospitalProjections.size() + "건 / " + queryTime + "ms");
+        // EmergencyLocation에서 좌표 조회 및 Map 생성
+        Map<String, EmergencyCoordinate> locationMap = new HashMap<>();
+        emergencyLocationRepository.findCoordinatesByHpidList(hpidList).forEach(row -> {
+            Double x = parseCoordinate((String) row[1]);
+            Double y = parseCoordinate((String) row[2]);
+            if (x != null && y != null) {
+                locationMap.put((String) row[0], new EmergencyCoordinate(x, y, (String) row[3]));
+            }
+        });
 
-        // 3. 공백 제거한 병원명으로 Map 생성 (메모리 매칭)
-        long t3 = System.currentTimeMillis();
-        Map<String, HospitalCoordinate> hospitalMap = new HashMap<>();
-        for (Object[] row : hospitalProjections) {
-            String hospitalName = (String) row[0];
-            Double coordinateX = (Double) row[1];
-            Double coordinateY = (Double) row[2];
-            String hospitalAddress = (String) row[3];
-
-            String normalizedName = hospitalName.replaceAll("\\s+", "");
-            hospitalMap.putIfAbsent(normalizedName, new HospitalCoordinate(coordinateX, coordinateY, hospitalAddress));
-        }
-        long mapCreationTime = System.currentTimeMillis() - t3;
-        System.out.println("✅ [3단계] Map 생성 완료: " + hospitalMap.size() + "건 / " + mapCreationTime + "ms");
-
-        // 4. 응급실 데이터와 매칭
-        long t4 = System.currentTimeMillis();
-        List<EmergencyWebResponse> mappedList = dtoList.stream()
+        // 좌표 매핑 및 필터링
+        return dtoList.stream()
             .filter(dto -> {
-                String normalizedName = dto.getDutyName().replaceAll("\\s+", "");
-                HospitalCoordinate coord = hospitalMap.get(normalizedName);
-
+                EmergencyCoordinate coord = locationMap.get(dto.getHpid());
                 if (coord != null) {
                     dto.setCoordinateX(coord.coordinateX);
                     dto.setCoordinateY(coord.coordinateY);
                     dto.setEmergencyAddress(coord.address);
-                    return true; // 매핑 성공
+                    return true;
                 }
-                return false; // 매핑 실패 제외
+                return false;
             })
             .collect(Collectors.toList());
-        long matchingTime = System.currentTimeMillis() - t4;
-        System.out.println("✅ [4단계] 매칭 완료: " + mappedList.size() + "건 / " + matchingTime + "ms");
-
-        long totalTime = System.currentTimeMillis() - startTime;
-        System.out.println("✅ [전체] 배치 매핑 완료: " + totalTime + "ms (추출:" + extractTime + "ms, DB:" + queryTime + "ms, Map:" + mapCreationTime + "ms, 매칭:" + matchingTime + "ms)");
-
-        return mappedList;
     }
 
-    // 내부 클래스: 좌표 정보를 담는 간단한 DTO
-    private static class HospitalCoordinate {
+    private Double parseCoordinate(String coordinate) {
+        if (coordinate == null || coordinate.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return Double.parseDouble(coordinate.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private static class EmergencyCoordinate {
         Double coordinateX;
         Double coordinateY;
         String address;
 
-        HospitalCoordinate(Double coordinateX, Double coordinateY, String address) {
+        EmergencyCoordinate(Double coordinateX, Double coordinateY, String address) {
             this.coordinateX = coordinateX;
             this.coordinateY = coordinateY;
             this.address = address;
@@ -286,7 +273,7 @@ public class EmergencyLiveService {
         stats.put("lastDataSize", getEmergencyRoomData().size());
         stats.put("connectedSessions", webSocketHandler.getConnectedSessionCount());
 
-        // AsyncRunner에서 통계 가져오기 (있다면)
+        // AsyncRunner에서 통계 가져오기 
         stats.put("completedCount", asyncRunner.getCompletedCount());
         stats.put("failedCount", asyncRunner.getFailedCount());
         stats.put("processedCount", asyncRunner.getProcessedCount());
