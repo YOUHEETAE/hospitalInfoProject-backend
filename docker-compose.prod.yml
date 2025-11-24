@@ -1,0 +1,94 @@
+version: '3.8'
+services:
+  # MariaDB 데이터베이스
+  mariadb:
+    image: mariadb:10.11
+    container_name: hospital-mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-1234}
+      MYSQL_DATABASE: hospital_api_db
+      MYSQL_USER: hospitaluser
+      MYSQL_PASSWORD: ${DB_PASSWORD:-1234}
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_unicode_ci
+    ports:
+      - "${DB_PORT:-3500}:3500"
+    volumes:
+      - /opt/hospital/data/mariadb:/var/lib/mysql
+    command: --port=3500 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    restart: unless-stopped
+    networks:
+      - hospital-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-1234}"]
+      timeout: 5s
+      retries: 10
+      interval: 10s
+      start_period: 30s
+
+  # Spring 백엔드
+  backend:
+    image: hospital-backend:${IMAGE_TAG:-latest}
+    container_name: hospital-backend
+    ports:
+      - "${BACKEND_PORT:-8888}:8888"
+    environment:
+      - DB_URL=${DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_PROFILES_ACTIVE=${ENVIRONMENT:-production}
+
+      # API 키 환경변수
+      - HOSPITAL_MAIN_API_KEY=${HOSPITAL_MAIN_API_KEY}
+      - HOSPITAL_DETAIL_API_KEY=${HOSPITAL_DETAIL_API_KEY}
+      - HOSPITAL_MEDICAL_SUBJECT_API_KEY=${HOSPITAL_MEDICAL_SUBJECT_API_KEY}
+      - HOSPITAL_PRODOC_API_KEY=${HOSPITAL_PRODOC_API_KEY}
+      - HOSPITAL_PHARMACY_API_KEY=${HOSPITAL_PHARMACY_API_KEY}
+      - HOSPITAL_EMERGENCY_API_KEY=${HOSPITAL_EMERGENCY_API_KEY}
+      - API_ADMIN_KEY=${API_ADMIN_KEY}
+
+      # API Base URL 환경변수
+      - HOSPITAL_MAIN_API_BASE_URL=${HOSPITAL_MAIN_API_BASE_URL}
+      - HOSPITAL_DETAIL_API_BASE_URL=${HOSPITAL_DETAIL_API_BASE_URL}
+      - HOSPITAL_MEDICAL_SUBJECT_API_BASE_URL=${HOSPITAL_MEDICAL_SUBJECT_API_BASE_URL}
+      - HOSPITAL_PRODOC_API_BASE_URL=${HOSPITAL_PRODOC_API_BASE_URL}
+      - HOSPITAL_PHARMACY_API_BASE_URL=${HOSPITAL_PHARMACY_API_BASE_URL}
+      - HOSPITAL_EMERGENCY_API_BASE_URL=${HOSPITAL_EMERGENCY_API_BASE_URL}
+
+      # YouTube API 환경변수
+      - YOUTUBE_API_KEY=${YOUTUBE_API_KEY}
+      - YOUTUBE_API_BASE_URL=${YOUTUBE_API_BASE_URL}
+      - YOUTUBE_API_TRUSTED_CHANNELS=${YOUTUBE_API_TRUSTED_CHANNELS}
+
+      # Gemini API 환경변수
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_API_URL=${GEMINI_API_URL}
+      - GEMINI_API_MODEL=${GEMINI_API_MODEL}
+
+      # Chatbot 환경변수
+      - CHATBOT_SYSTEM_PROMPT_FILE=${CHATBOT_SYSTEM_PROMPT_FILE}
+
+      # Disease Statistics API 환경변수
+      - DISEASE_STATS_API_KEY=${DISEASE_STATS_API_KEY}
+      - DISEASE_STATS_API_BASE_URL=${DISEASE_STATS_API_BASE_URL}
+    volumes:
+      - /opt/hospital/logs/backend:/app/logs
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - hospital-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      timeout: 10s
+      retries: 5
+      interval: 30s
+      start_period: 120s
+
+networks:
+  hospital-network:
+    name: hospital-network  # 네트워크 이름을 명시적으로 지정
+    driver: bridge
+
