@@ -64,24 +64,24 @@ pipeline {
 # Hospital API Keys
 hospital.main.api.key=${HOSPITAL_MAIN_API_KEY}
 hospital.detail.api.key=${HOSPITAL_DETAIL_API_KEY}
-hospital.medical.subject.api.key=${HOSPITAL_MEDICAL_SUBJECT_API_KEY}
-hospital.prodoc.api.key=${HOSPITAL_PRODOC_API_KEY}
+hospital.medicalSubject.api.key=${HOSPITAL_MEDICAL_SUBJECT_API_KEY}
+hospital.proDoc.api.key=${HOSPITAL_PRODOC_API_KEY}
 hospital.pharmacy.api.key=${HOSPITAL_PHARMACY_API_KEY}
-hospital.emergency.api.key=${HOSPITAL_EMERGENCY_API_KEY}
+hospital.emergency.api.serviceKey=${HOSPITAL_EMERGENCY_API_KEY}
 api.admin.key=${API_ADMIN_KEY}
 
 # Hospital API Base URLs
 hospital.main.api.base-url=${HOSPITAL_MAIN_API_BASE_URL}
 hospital.detail.api.base-url=${HOSPITAL_DETAIL_API_BASE_URL}
-hospital.medical.subject.api.base-url=${HOSPITAL_MEDICAL_SUBJECT_API_BASE_URL}
-hospital.prodoc.api.base-url=${HOSPITAL_PRODOC_API_BASE_URL}
+hospital.medicalSubject.api.base-url=${HOSPITAL_MEDICAL_SUBJECT_API_BASE_URL}
+hospital.proDoc.api.base-url=${HOSPITAL_PRODOC_API_BASE_URL}
 hospital.pharmacy.api.base-url=${HOSPITAL_PHARMACY_API_BASE_URL}
-hospital.emergency.api.base-url=${HOSPITAL_EMERGENCY_API_BASE_URL}
+hospital.emergency.api.baseUrl=${HOSPITAL_EMERGENCY_API_BASE_URL}
 
 # YouTube API
-youtube.api.key=${YOUTUBE_API_KEY}
-youtube.api.base-url=${YOUTUBE_API_BASE_URL}
-youtube.api.trusted-channels=${YOUTUBE_API_TRUSTED_CHANNELS}
+youTube.api.key=${YOUTUBE_API_KEY}
+youTube.api.base-url=${YOUTUBE_API_BASE_URL}
+youTube.api.trusted-channels=${YOUTUBE_API_TRUSTED_CHANNELS}
 
 # Gemini API
 gemini.api.key=${GEMINI_API_KEY}
