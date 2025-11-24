@@ -81,7 +81,7 @@ services:
     networks:
       - hospital-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8888/api/proDoc/status"]
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
       timeout: 10s
       retries: 5
       interval: 30s
@@ -91,3 +91,4 @@ networks:
   hospital-network:
     name: hospital-network  # 네트워크 이름을 명시적으로 지정
     driver: bridge
+
