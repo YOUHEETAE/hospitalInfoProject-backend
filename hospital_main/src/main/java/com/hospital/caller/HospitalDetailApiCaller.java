@@ -35,7 +35,7 @@ public class HospitalDetailApiCaller {
 			// 최종 호출할 전체 URL 생성
 			String fullUrl = baseUrl + "?serviceKey=" + serviceKey + "&_type=json&" + queryParams;
 
-			log.debug("API 호출 URL: {}", fullUrl);
+			log.debug("HospitalDetail API 호출 시작");
 
 			//  외부 API 호출 (GET 방식)
 			String response = restTemplate.getForObject(fullUrl, String.class);

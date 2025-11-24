@@ -33,8 +33,8 @@ public class ProDocApiCaller {
         try {
             // 최종 호출할 전체 URL 생성
             String fullUrl = baseUrl + "?serviceKey=" + serviceKey + "&_type=json&" + queryParams;
-            
-            log.debug("ProDoc API 호출: {}", fullUrl);
+
+            log.debug("ProDoc API 호출 시작");
             
             // 외부 API 호출 (GET 방식) - 커넥션 풀 적용된 RestTemplate 사용
             String response = restTemplate.getForObject(fullUrl, String.class);

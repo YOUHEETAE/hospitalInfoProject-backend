@@ -45,8 +45,8 @@ public class DiseaseStatsApiCaller {
 				.build(true).toUri();
 
 		try {
-			
-			log.debug("응답 uri : {}", uri.toString()); 
+
+			log.debug("DiseaseStats API 호출 시작 - 페이지: {}", pageNo); 
 			
 			String responseJson = restTemplate.getForObject(uri, String.class);
 

@@ -52,7 +52,7 @@ public class MedicalSubjectApiCaller {
                                      .build(true)
                                      .toUri();
         
-        log.info("실제 호출 URL: {}", uri.toString());
+        log.info("MedicalSubject API 호출 시작");
 
         try {
             
