@@ -68,7 +68,7 @@ public class DiseaseStatsConverter {
 				.filter(data -> {
 					try {
 						LocalDate dataDate = LocalDate.parse(data.getPeriod());
-						return dataDate.isBefore(today) || dataDate.isEqual(today);
+						return dataDate.isBefore(today);
 					} catch (Exception e) {
 						log.warn("날짜 파싱 실패로 데이터 제외: {}", data.getPeriod());
 						return false;
