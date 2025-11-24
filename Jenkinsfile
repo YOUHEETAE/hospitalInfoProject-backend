@@ -347,7 +347,7 @@ providers:
                             sudo chown -R ec2-user:ec2-user /opt/hospital/
 
                             # deploy.sh를 Unix 형식으로 변환 및 실행 권한 부여
-                            dos2unix deploy.sh 2>/dev/null || sed -i "s/\r$//" deploy.sh
+                            dos2unix deploy.sh 2>/dev/null || sed -i "s/\\r\$//" deploy.sh
                             chmod +x deploy.sh
 
                             echo "📦 Docker 이미지 로드..."
@@ -370,15 +370,15 @@ providers:
                             
                             # Node Exporter 실행
                             echo "▶️ Node Exporter 시작..."
-                            docker run -d --name node-exporter --restart unless-stopped --network hospital-network -p 9100:9100 -v /proc:/host/proc:ro -v /sys:/host/sys:ro -v /:/rootfs:ro --pid host prom/node-exporter:latest --path.procfs=/host/proc --path.rootfs=/rootfs --path.sysfs=/host/sys --collector.filesystem.mount-points-exclude="^/(sys|proc|dev|host|etc)(\$|/)"
+                            docker run -d --name node-exporter --restart unless-stopped --network hospital-network -p 9100:9100 -v /proc:/host/proc:ro -v /sys:/host/sys:ro -v /:/rootfs:ro --pid host prom/node-exporter:latest --path.procfs=/host/proc --path.rootfs=/rootfs --path.sysfs=/host/sys --collector.filesystem.mount-points-exclude="^/(sys|proc|dev|host|etc)(\\$|/)"
 
                             # Prometheus 실행
                             echo "▶️ Prometheus 시작..."
-                            docker run -d --name prometheus --restart unless-stopped --network hospital-network -p 9090:9090 -v /opt/hospital/monitoring/prometheus/config:/etc/prometheus -v /opt/hospital/monitoring/prometheus/data:/prometheus --user "\$(id -u):\$(id -g)" prom/prometheus:latest --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --web.console.libraries=/etc/prometheus/console_libraries --web.console.templates=/etc/prometheus/consoles --storage.tsdb.retention.time=200h --web.enable-lifecycle --web.enable-admin-api
+                            docker run -d --name prometheus --restart unless-stopped --network hospital-network -p 9090:9090 -v /opt/hospital/monitoring/prometheus/config:/etc/prometheus -v /opt/hospital/monitoring/prometheus/data:/prometheus --user "\\$(id -u):\\$(id -g)" prom/prometheus:latest --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --web.console.libraries=/etc/prometheus/console_libraries --web.console.templates=/etc/prometheus/consoles --storage.tsdb.retention.time=200h --web.enable-lifecycle --web.enable-admin-api
 
                             # Grafana 실행
                             echo "▶️ Grafana 시작..."
-                            docker run -d --name grafana --restart unless-stopped --network hospital-network -p 3000:3000 -v /opt/hospital/monitoring/grafana/data:/var/lib/grafana -v /opt/hospital/monitoring/grafana/provisioning:/etc/grafana/provisioning -e GF_SECURITY_ADMIN_USER=admin -e GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD} -e GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-worldmap-panel,grafana-clock-panel -e GF_USERS_ALLOW_SIGN_UP=false --user "\$(id -u):\$(id -g)" grafana/grafana:latest
+                            docker run -d --name grafana --restart unless-stopped --network hospital-network -p 3000:3000 -v /opt/hospital/monitoring/grafana/data:/var/lib/grafana -v /opt/hospital/monitoring/grafana/provisioning:/etc/grafana/provisioning -e GF_SECURITY_ADMIN_USER=admin -e GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD} -e GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-worldmap-panel,grafana-clock-panel -e GF_USERS_ALLOW_SIGN_UP=false --user "\\$(id -u):\\$(id -g)" grafana/grafana:latest
 
                             echo "✅ 모니터링 스택 시작 완료"
                             
