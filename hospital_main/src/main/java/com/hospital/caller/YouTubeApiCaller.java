@@ -56,7 +56,7 @@ public class YouTubeApiCaller {
                     .queryParam("key", serviceKey);
 
             String url = builder.build(false).toUriString();
-            log.debug("YouTube API 요청 URL: {}", url);
+            log.debug("YouTube API 요청 시작");
 
             // API 호출
             String response = restTemplate.getForObject(url, String.class);

@@ -52,7 +52,7 @@ public class EmergencyLocationApiCaller {
 	                .build(true)
 	                .toUri();
 
-	        log.debug("응급실 API 호출 URI: {}", uri);
+	        log.debug("응급실 위치 API 호출 시작 - 페이지: {}", pageNo);
 
 	        HttpHeaders headers = new HttpHeaders();
 	        headers.setContentType(MediaType.APPLICATION_XML);

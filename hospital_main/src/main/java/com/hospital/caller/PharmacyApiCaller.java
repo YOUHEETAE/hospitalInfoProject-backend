@@ -51,7 +51,7 @@ public class PharmacyApiCaller {
                     .build(true)
                     .toUri();
 
-            log.debug("약국 API 호출 URI: {}", uri);
+            log.debug("약국 API 호출 시작 - 페이지: {}", pageNo);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_XML);
