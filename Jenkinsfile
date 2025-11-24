@@ -347,7 +347,7 @@ providers:
                             sudo chown -R ec2-user:ec2-user /opt/hospital/
 
                             # deploy.sh를 Unix 형식으로 변환 및 실행 권한 부여
-                            dos2unix deploy.sh 2>/dev/null || sed -i "s/\\r\$//" deploy.sh
+                            dos2unix deploy.sh 2>/dev/null || sed -i '"'"'s/\\r\$//'"'"' deploy.sh
                             chmod +x deploy.sh
 
                             echo "📦 Docker 이미지 로드..."
