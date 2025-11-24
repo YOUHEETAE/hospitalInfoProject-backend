@@ -61,8 +61,20 @@ public class DiseaseStatsConverter {
 	}
 
 	private List<DiseaseStatsWebResponse.WeeklyData> convertToWeeklyDataList(List<DiseaseStats> entities) {
+		LocalDate today = LocalDate.now();
 
-		return entities.stream().map(this::convertToWeeklyData).sorted((a, b) -> a.getPeriod().compareTo(b.getPeriod()))
+		return entities.stream()
+				.map(this::convertToWeeklyData)
+				.filter(data -> {
+					try {
+						LocalDate dataDate = LocalDate.parse(data.getPeriod());
+						return dataDate.isBefore(today) || dataDate.isEqual(today);
+					} catch (Exception e) {
+						log.warn("날짜 파싱 실패로 데이터 제외: {}", data.getPeriod());
+						return false;
+					}
+				})
+				.sorted((a, b) -> a.getPeriod().compareTo(b.getPeriod()))
 				.collect(Collectors.toList());
 
 	}
