@@ -1,5 +1,6 @@
 package com.hospital.dto;
 
+import com.hospital.analyzer.RiskLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,15 +15,13 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class DiseaseStatsWebResponse {
-    // 질병 정보
-    private String icdGroupName; 
-    private String icdName;      
-    
-    // 주차별 데이터
+    private String icdGroupName;
+    private String icdName;
     private List<WeeklyData> weeklyData;
-    
-    //합계 데이터
     private Integer totalCount;
+    private RiskLevel riskLevel;
+    private Integer recentChange;
+    private Double recentChangeRate;
     
     
     // 내부 클래스

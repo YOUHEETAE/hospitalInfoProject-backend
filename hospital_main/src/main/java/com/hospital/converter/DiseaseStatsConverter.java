@@ -9,18 +9,20 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
+import com.hospital.analyzer.DiseaseTrendAnalyzer;
+import com.hospital.analyzer.RiskLevel;
 import com.hospital.dto.DiseaseStatsWebResponse;
 import com.hospital.entity.DiseaseStats;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class DiseaseStatsConverter {
 
-	public DiseaseStatsConverter() {
-
-	}
+	private final DiseaseTrendAnalyzer trendAnalyzer;
 
 	private DiseaseStatsWebResponse.WeeklyData convertToWeeklyData(DiseaseStats entity) {
 		return DiseaseStatsWebResponse.WeeklyData.builder().period(convertPeriodToDate(entity.getPeriod()))
@@ -87,20 +89,44 @@ public class DiseaseStatsConverter {
 
 		DiseaseStats first = entities.get(0);
 
-		// "계" 제외한 주차 데이터만
 		List<DiseaseStats> weeklyEntities = entities.stream().filter(e -> !"계".equals(e.getPeriod()))
 				.collect(Collectors.toList());
 
-		// 필터링된 주차 데이터 변환
 		List<DiseaseStatsWebResponse.WeeklyData> weeklyDataList = convertToWeeklyDataList(weeklyEntities);
 
-		// 필터링된 데이터의 합계 계산
 		Integer totalCount = weeklyDataList.stream()
 				.mapToInt(DiseaseStatsWebResponse.WeeklyData::getCount)
 				.sum();
 
-		return DiseaseStatsWebResponse.builder().icdGroupName(first.getIcdGroupName()).icdName(first.getIcdName())
-				.weeklyData(weeklyDataList).totalCount(totalCount).build();
+		RiskLevel riskLevel = trendAnalyzer.analyzeTrend(
+				first.getIcdName(),
+				first.getIcdGroupName(),
+				weeklyDataList
+		);
+
+		Integer recentChange = null;
+		Double recentChangeRate = null;
+		if (weeklyDataList.size() >= 2) {
+			int lastWeek = weeklyDataList.get(weeklyDataList.size() - 1).getCount();
+			int prevWeek = weeklyDataList.get(weeklyDataList.size() - 2).getCount();
+			recentChange = lastWeek - prevWeek;
+			if (prevWeek > 0) {
+				recentChangeRate = (double) recentChange / prevWeek;
+				recentChangeRate = Math.round(recentChangeRate * 1000.0) / 1000.0;
+			} else {
+				recentChangeRate = lastWeek > 0 ? 1.0 : 0.0;
+			}
+		}
+
+		return DiseaseStatsWebResponse.builder()
+				.icdGroupName(first.getIcdGroupName())
+				.icdName(first.getIcdName())
+				.weeklyData(weeklyDataList)
+				.totalCount(totalCount)
+				.riskLevel(riskLevel)
+				.recentChange(recentChange)
+				.recentChangeRate(recentChangeRate)
+				.build();
 	}
 
 	public List<DiseaseStatsWebResponse> convertToDtos(List<DiseaseStats> entities) {
