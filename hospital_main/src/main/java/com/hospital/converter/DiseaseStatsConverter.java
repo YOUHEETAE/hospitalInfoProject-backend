@@ -9,18 +9,20 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
+import com.hospital.analyzer.DiseaseTrendAnalyzer;
+import com.hospital.analyzer.RiskLevel;
 import com.hospital.dto.DiseaseStatsWebResponse;
 import com.hospital.entity.DiseaseStats;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class DiseaseStatsConverter {
 
-	public DiseaseStatsConverter() {
-
-	}
+	private final DiseaseTrendAnalyzer trendAnalyzer;
 
 	private DiseaseStatsWebResponse.WeeklyData convertToWeeklyData(DiseaseStats entity) {
 		return DiseaseStatsWebResponse.WeeklyData.builder().period(convertPeriodToDate(entity.getPeriod()))
@@ -61,8 +63,21 @@ public class DiseaseStatsConverter {
 	}
 
 	private List<DiseaseStatsWebResponse.WeeklyData> convertToWeeklyDataList(List<DiseaseStats> entities) {
+		LocalDate today = LocalDate.now();
+		LocalDate thisWeekMonday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
 
-		return entities.stream().map(this::convertToWeeklyData).sorted((a, b) -> a.getPeriod().compareTo(b.getPeriod()))
+		return entities.stream()
+				.map(this::convertToWeeklyData)
+				.filter(data -> {
+					try {
+						LocalDate dataDate = LocalDate.parse(data.getPeriod());
+						return dataDate.isBefore(thisWeekMonday);
+					} catch (Exception e) {
+						log.warn("날짜 파싱 실패로 데이터 제외: {}", data.getPeriod());
+						return false;
+					}
+				})
+				.sorted((a, b) -> a.getPeriod().compareTo(b.getPeriod()))
 				.collect(Collectors.toList());
 
 	}
@@ -74,16 +89,44 @@ public class DiseaseStatsConverter {
 
 		DiseaseStats first = entities.get(0);
 
-		// "계" 데이터 찾기
-		Integer totalCount = entities.stream().filter(e -> "계".equals(e.getPeriod())).findFirst()
-				.map(e -> convertStringToInteger(e.getResultValue())).orElse(0);
-
-		// "계" 제외한 주차 데이터만
 		List<DiseaseStats> weeklyEntities = entities.stream().filter(e -> !"계".equals(e.getPeriod()))
 				.collect(Collectors.toList());
 
-		return DiseaseStatsWebResponse.builder().icdGroupName(first.getIcdGroupName()).icdName(first.getIcdName())
-				.weeklyData(convertToWeeklyDataList(weeklyEntities)).totalCount(totalCount).build();
+		List<DiseaseStatsWebResponse.WeeklyData> weeklyDataList = convertToWeeklyDataList(weeklyEntities);
+
+		Integer totalCount = weeklyDataList.stream()
+				.mapToInt(DiseaseStatsWebResponse.WeeklyData::getCount)
+				.sum();
+
+		RiskLevel riskLevel = trendAnalyzer.analyzeTrend(
+				first.getIcdName(),
+				first.getIcdGroupName(),
+				weeklyDataList
+		);
+
+		Integer recentChange = null;
+		Double recentChangeRate = null;
+		if (weeklyDataList.size() >= 2) {
+			int lastWeek = weeklyDataList.get(weeklyDataList.size() - 1).getCount();
+			int prevWeek = weeklyDataList.get(weeklyDataList.size() - 2).getCount();
+			recentChange = lastWeek - prevWeek;
+			if (prevWeek > 0) {
+				recentChangeRate = (double) recentChange / prevWeek;
+				recentChangeRate = Math.round(recentChangeRate * 1000.0) / 1000.0;
+			} else {
+				recentChangeRate = lastWeek > 0 ? 1.0 : 0.0;
+			}
+		}
+
+		return DiseaseStatsWebResponse.builder()
+				.icdGroupName(first.getIcdGroupName())
+				.icdName(first.getIcdName())
+				.weeklyData(weeklyDataList)
+				.totalCount(totalCount)
+				.riskLevel(riskLevel)
+				.recentChange(recentChange)
+				.recentChangeRate(recentChangeRate)
+				.build();
 	}
 
 	public List<DiseaseStatsWebResponse> convertToDtos(List<DiseaseStats> entities) {
